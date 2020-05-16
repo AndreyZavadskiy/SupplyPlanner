@@ -1,0 +1,65 @@
+[
+  {
+    "outputFileName": "wwwroot/bundles/site.bundle.css",
+    "inputFiles": [
+      "wwwroot/css/site.css",
+      "wwwroot/css/custom.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/bundles/site.bundle.js",
+    "inputFiles": [
+      "wwwroot/js/site.js"
+    ],
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/bundles/dt.bundle.css",
+    "inputFiles": [
+      "wwwroot/lib/datatables/css/dataTables.bootstrap4.css",
+      "wwwroot/lib/datatables/ext/buttons/css/buttons.bootstrap4.css",
+      "wwwroot/lib/datatables/ext/fixedheader/css/fixedHeader.bootstrap4.css",
+      "wwwroot/lib/datatables/ext/select/css/select.bootstrap4.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/bundles/dt.bundle.js",
+    "inputFiles": [
+      "wwwroot/lib/datatables/js/jquery.dataTables.js",
+      "wwwroot/lib/datatables/js/dataTables.bootstrap4.js",
+      "wwwroot/lib/datatables/ext/jszip/jszip.js",
+      "wwwroot/lib/datatables/ext/buttons/js/dataTables.buttons.js",
+      "wwwroot/lib/datatables/ext/buttons/js/buttons.bootstrap4.js",
+      "wwwroot/lib/datatables/ext/buttons/js/buttons.flash.js",
+      "wwwroot/lib/datatables/ext/buttons/js/buttons.html5.js",
+      "wwwroot/lib/datatables/ext/buttons/js/buttons.print.js",
+      "wwwroot/lib/datatables/ext/fixedheader/js/dataTables.fixedHeader.js",
+      "wwwroot/lib/datatables/ext/select/js/dataTables.select.js"
+    ],
+    "minify": {
+      "enabled": false,
+      "renameLocals": false
+    },
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/bundles/dt.bundle.min.js",
+    "inputFiles": [
+      "wwwroot/lib/datatables/js/jquery.dataTables.min.js",
+      "wwwroot/lib/datatables/js/dataTables.bootstrap4.min.js",
+      "wwwroot/lib/datatables/ext/jszip/jszip.min.js",
+      "wwwroot/lib/datatables/ext/buttons/js/dataTables.buttons.min.js",
+      "wwwroot/lib/datatables/ext/buttons/js/buttons.bootstrap4.min.js",
+      "wwwroot/lib/datatables/ext/buttons/js/buttons.flash.min.js",
+      "wwwroot/lib/datatables/ext/buttons/js/buttons.html5.min.js",
+      "wwwroot/lib/datatables/ext/buttons/js/buttons.print.min.js",
+      "wwwroot/lib/datatables/ext/fixedheader/js/dataTables.fixedHeader.min.js",
+      "wwwroot/lib/datatables/ext/select/js/dataTables.select.min.js"
+    ],
+    "minify": {
+      "enabled": false,
+      "renameLocals": false
+    },
+    "sourceMap": false
+  }
+]

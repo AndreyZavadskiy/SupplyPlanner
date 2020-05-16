@@ -1,0 +1,25 @@
+﻿/*  bootstrap container */
+.container {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/*  DataTables  */
+div.dt-action-group {
+    margin-bottom: 1rem;
+}
+
+button.dt-action-button {
+    margin-right: 1rem;
+}
+
+table.dataTable tbody td.select-checkbox:before, table.dataTable tbody th.select-checkbox:before {
+    margin-top: 0px !important;
+}
+
+/*  custom elements */
+input.selectAll {
+    position: absolute;
+    margin-left: 0.2em;
+    top: 1.5em;
+}
