@@ -181,6 +181,8 @@ namespace SP.Data.Migrations
                         .HasMaxLength(50);
 
                     b.HasKey("Id");
+                    // дополнительный индекс для поиска AspNetUser -> Person
+                    b.HasIndex("AspNetUserId");
 
                     b.ToTable("Person");
                 });
@@ -306,6 +308,25 @@ namespace SP.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+            {
+                b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                    .WithMany()
+                    .HasForeignKey("RoleId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity("SP.Core.Model.Person", b =>
+            {
+                b.HasOne("SP.Data.ApplicationUser", null)
+                    .WithMany()
+                    .HasForeignKey("AspNetUserId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+            });
+
 #pragma warning restore 612, 618
         }
     }

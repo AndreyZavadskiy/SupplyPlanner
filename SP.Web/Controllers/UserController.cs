@@ -3,19 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using SP.Data;
+using SP.Service.Models;
+using SP.Service.Services;
 using SP.Web.Models;
 
 namespace SP.Web.Controllers
 {
     public class UserController : Controller
     {
-        public class UserListInfo
+        private readonly IUserService _userService;
+        private readonly IDictionaryService _dictionaryService;
+
+        public UserController(IUserService userService, IDictionaryService dictionaryService)
         {
-            public string Id { get; set; }
-            public string Code { get; set; }
-            public string FullName { get; set; }
-            public string RoleDescription { get; set; }
-            public string TerritoryDescription { get; set; }
+            _userService = userService;
+            _dictionaryService = dictionaryService;
         }
 
         public IActionResult Index()
@@ -23,33 +27,50 @@ namespace SP.Web.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Получить список всех пользователей
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
-        public IActionResult LoadData()
+        public async Task<IActionResult> LoadListAsync()
         {
-            var row1 = new UserListInfo
-            {
-                Id = "648104d1-b0c3-4bd9-aab4-523329645a9c",
-                Code = "1",
-                FullName = "Иванов Иван Иванович",
-                RoleDescription = string.Empty,
-                TerritoryDescription = string.Empty
-            };
-            var row2 = new UserListInfo
-            {
-                Id = "cf6a1bf6-d8af-4973-9602-4ccd9994c148",
-                Code = "2",
-                FullName = "Петров Петр Петрович",
-                RoleDescription = "Администратор",
-                TerritoryDescription = string.Empty
-            };
+            var userList = await _userService.GetUserListAsync();
 
-            var result = new List<UserListInfo>
-            {
-                row1,
-                row2
-            };
-
-            return Json(new { data = result });
+            return Json(new { data = userList });
         }
+
+        /// <summary>
+        /// Получить данные по конкретному пользовтелю
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("User/{id}")]
+        public async Task<IActionResult> EditAsync(int id)
+        {
+            var user = await _userService.GetUserAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var roleList = await _dictionaryService.GetRolesAsync();
+            ViewBag.Roles = new SelectList(roleList, "Id", "Name");
+
+            return View("User", user);
+        }
+
+        [HttpPost]
+        public IActionResult Edit([FromForm] UserModel model)
+        {
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult Save([FromForm] UserModel model)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

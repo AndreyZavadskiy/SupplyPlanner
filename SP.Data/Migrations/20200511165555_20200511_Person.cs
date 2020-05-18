@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SP.Data.Migrations
 {
-    public partial class _202005111955 : Migration
+    public partial class _20200511_Person : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -34,7 +34,19 @@ namespace SP.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Person", x => x.Id);
+                    // внешняя ссылка на таблицу AspNetUsers
+                    table.ForeignKey(
+                        name: "FK_Person_AspNetUsers",
+                        column: x => x.AspNetUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
+            // дополнительный индекс для поиска AspNetUser -> Person
+            migrationBuilder.CreateIndex(
+                name: "IX_Person_AspNetUserId",
+                table: "Person",
+                column: "AspNetUserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

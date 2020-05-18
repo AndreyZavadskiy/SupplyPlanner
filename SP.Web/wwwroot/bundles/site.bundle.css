@@ -70,10 +70,26 @@ body {
   line-height: 60px; /* Vertically center the text there */
 }
 
-/*  bootstrap container */
+/*  bootstrap 4 */
 .container {
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
+}
+
+
+.row-no-gutters {
+    margin-right: 0;
+    margin-left: 0;
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.row-no-gutters > .col,
+.row-no-gutters > [class*="col-"] {
+    margin-right: 0;
+    margin-left: 0;
+    padding-right: 0;
+    padding-left: 0;
 }
 
 /*  DataTables  */
@@ -94,4 +110,8 @@ input.selectAll {
     position: absolute;
     margin-left: 0.2em;
     top: 1.5em;
+}
+
+.form-button {
+    margin-right: 1em;
 }

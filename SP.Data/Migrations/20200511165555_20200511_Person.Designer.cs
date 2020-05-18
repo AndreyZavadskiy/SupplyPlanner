@@ -10,8 +10,8 @@ using SP.Data;
 namespace SP.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20200511165555_202005111955")]
-    partial class _202005111955
+    [Migration("20200511165555_20200511_Person")]
+    partial class _20200511_Person
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

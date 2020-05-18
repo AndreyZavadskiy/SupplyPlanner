@@ -60,15 +60,15 @@
                     [10, 25, 50, 100, "Все"]
                 ],
                 ajax: {
-                    url: '/User/LoadData',
+                    url: '/User/LoadList',
                     type: 'POST',
                     datatype: 'json'
                 },
                 columns: [
                     { defaultContent: '' },
                     {
-                        render: function(data, type, full, meta) {
-                            return '<a href=""><img src="/images/pencil-square.svg"/></a>';
+                        render: function (data, type, full, meta) {
+                            return '<a href="/User/' + full.id + '"><img src="/images/pencil-square.svg"/></a>';
                         }
                     },
                     { data: 'code' },
