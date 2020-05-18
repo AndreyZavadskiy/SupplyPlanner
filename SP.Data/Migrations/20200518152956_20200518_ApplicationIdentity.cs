@@ -1,10 +1,9 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SP.Data.Migrations
 {
-    public partial class CreateIdentitySchema : Migration
+    public partial class _20200518_ApplicationIdentity : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -15,7 +14,8 @@ namespace SP.Data.Migrations
                     Id = table.Column<string>(nullable: false),
                     Name = table.Column<string>(maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(nullable: true)
+                    ConcurrencyStamp = table.Column<string>(nullable: true),
+                    FriendlyName = table.Column<string>(maxLength: 256, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -40,7 +40,9 @@ namespace SP.Data.Migrations
                     TwoFactorEnabled = table.Column<bool>(nullable: false),
                     LockoutEnd = table.Column<DateTimeOffset>(nullable: true),
                     LockoutEnabled = table.Column<bool>(nullable: false),
-                    AccessFailedCount = table.Column<int>(nullable: false)
+                    AccessFailedCount = table.Column<int>(nullable: false),
+                    IsActive = table.Column<bool>(nullable: false),
+                    RegistrationDate = table.Column<DateTime>(type: "date", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -48,11 +50,27 @@ namespace SP.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Person",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    AspNetUserId = table.Column<string>(maxLength: 450, nullable: false),
+                    LastName = table.Column<string>(maxLength: 50, nullable: false),
+                    FirstName = table.Column<string>(maxLength: 50, nullable: false),
+                    MiddleName = table.Column<string>(maxLength: 50, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Person", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     RoleId = table.Column<string>(nullable: false),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true)
@@ -73,7 +91,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(nullable: false),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true)
@@ -209,6 +227,9 @@ namespace SP.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Person");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

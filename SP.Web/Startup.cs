@@ -31,11 +31,11 @@ namespace SP.Web
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddRoles<ApplicationRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IDictionaryService, DictionaryService>();
-            services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddControllersWithViews();
             services.AddRazorPages();
         }
