@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using SP.Core.Model;
 using SP.Data;
+using SP.Service.Interfaces;
 using SP.Service.Models;
 
 namespace SP.Service.Services
@@ -37,7 +33,7 @@ namespace SP.Service.Services
                             (ur, r) => new
                             {
                                 UserId = ur.UserId,
-                                RoleName = r.Name
+                                RoleName = r.FriendlyName
                             }),
                     p => p.AspNetUserId,
                     r => r.UserId,
@@ -99,11 +95,24 @@ namespace SP.Service.Services
                 UserName = user.UserName,
                 Email = user.Email,
                 RegistrationDate = user.RegistrationDate,
-                Inactive = user.IsActive,
+                Inactive = !user.IsActive,
                 RoleId = userRole
             };
 
             return model;
+        }
+
+        public async Task<IEnumerable<DictionaryListItem<string>>> GetRolesAsync()
+        {
+            var list = await _context.Roles.AsNoTracking()
+                .Select(x => new DictionaryListItem<string>
+                {
+                    Id = x.Id,
+                    Name = x.FriendlyName
+                })
+                .ToArrayAsync();
+
+            return list;
         }
     }
 }

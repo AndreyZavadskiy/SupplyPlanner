@@ -11,6 +11,8 @@
     <Compile Remove="Migrations\20200511165555_20200511_Person.Designer.cs" />
     <Compile Remove="Migrations\20200518145806_ApplicationRole.cs" />
     <Compile Remove="Migrations\20200518145806_ApplicationRole.Designer.cs" />
+    <Compile Remove="Migrations\20200518162737_FK.cs" />
+    <Compile Remove="Migrations\20200518162737_FK.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

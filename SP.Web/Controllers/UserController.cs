@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SP.Data;
+using SP.Service.Interfaces;
 using SP.Service.Models;
 using SP.Service.Services;
 using SP.Web.Models;
@@ -54,7 +55,7 @@ namespace SP.Web.Controllers
                 return NotFound();
             }
 
-            var roleList = await _dictionaryService.GetRolesAsync();
+            var roleList = await _userService.GetRolesAsync();
             ViewBag.Roles = new SelectList(roleList, "Id", "Name");
 
             return View("User", user);

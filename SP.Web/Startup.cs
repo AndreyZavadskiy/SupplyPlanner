@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SP.Data;
+using SP.Service.Interfaces;
 using SP.Service.Services;
 
 namespace SP.Web
