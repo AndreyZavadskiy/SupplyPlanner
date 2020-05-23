@@ -9,9 +9,7 @@ namespace SP.Core.Model
     /*
      * Таблица Person и AspNetUsers взаимосвязаны только на уровне БД,
      * т.к. Person относится к Domain model проекта, AspNetUsers - подсистеме аутентификации ASP.Net Core.
-     * Для обеспечения целостности добавлена внешняя ссылка на таблице AspNetUsers.
-     * Для ускорения обратного поиска добавлен индекс по полю AspNetUserId.
-     * Реализовано путем ручной правки файла миграции 20200511165555_20200511_Person
+     * Для обеспечения целостности добавлена внешняя ссылка к таблице AspNetUsers.
      */
 
     /// <summary>
@@ -24,6 +22,11 @@ namespace SP.Core.Model
         /// Идентификатор персоны
         /// </summary>
         public int Id { get; set; }
+        /// <summary>
+        /// Код персоны
+        /// </summary>
+        [StringLength(20)]
+        public string Code { get; set; }
         /// <summary>
         /// ID пользователя ASP.Net
         /// </summary>

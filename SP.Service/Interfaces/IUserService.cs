@@ -10,6 +10,8 @@ namespace SP.Service.Interfaces
     
         Task<UserModel> GetUserAsync(int id);
 
+        Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveUserAsync(UserModel model);
+
         Task<IEnumerable<DictionaryListItem<string>>> GetRolesAsync();
     }
 }

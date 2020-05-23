@@ -13,30 +13,29 @@
                         <input type="checkbox" class="selectAll" />
                     </th>
                     <th></th>
-                    <th>Код</th>
-                    <th>Фамилия, имя, отчество</th>
-                    <th>Роли</th>
-                    <th>Территории</th>
+                    <th>Статус</th>
+                    <th class="exportable-column">Код</th>
+                    <th class="exportable-column">Фамилия, имя, отчество</th>
+                    <th class="exportable-column">Роли</th>
+                    <th class="exportable-column">Территории</th>
                 </tr>
             </thead>
         </table>
     </section>
     <section>
-        <div class="modal" id="UserForm" tabindex="-1" role="dialog">
+        <div class="modal" id="FilterPane" tabindex="-1" role="dialog">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Modal title</h5>
+                        <h5 class="modal-title">Фильтры</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <div class="modal-body">
-                        <p>Modal body text goes here.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
+                    <div class="modal-body filter-area">
+                        <p>
+                            <input type="checkbox" id="IncludeBlocked" /> включить заблокированных
+                        </p>
                     </div>
                 </div>
             </div>
@@ -54,6 +53,7 @@
                 language: {
                     url: '/lib/datatables/i18n/russian.json'
                 },
+                order: [[4, "asc"]],
                 stateSave: true,
                 lengthMenu: [
                     [10, 25, 50, 100, -1],
@@ -67,8 +67,19 @@
                 columns: [
                     { defaultContent: '' },
                     {
-                        render: function (data, type, full, meta) {
+                        render: function(data, type, full, meta) {
                             return '<a href="/User/' + full.id + '"><img src="/images/pencil-square.svg"/></a>';
+                        }
+                    },
+                    {
+                        data: null,
+                        render: {
+                            '_': 'active',
+                            'filter': 'active',
+                            'display': function(data, type, full, meta) {
+                                if (full.active === '1') return null;
+                                else return '<img src="/images/ban-solid-16.png" alt="blocked" title="Пользователь заблокирован" />';
+                            }
                         }
                     },
                     { data: 'code' },
@@ -83,29 +94,36 @@
                         orderable: false,
                         sorting: false,
                         className: 'select-checkbox',
-                        width: '1.5em'
+                        width: '1.5em',
+                        visible: false
                     },
                     {
                         targets: 1,
                         orderable: false,
                         sorting: false,
                         width: '1.5em'
+                    },
+                    {
+                        targets: 2,
+                        orderable: false,
+                        sorting: false,
+                        className: 'dt-center',
+                        width: '1em'
                     }
                 ],
-                dom: "<'row'<'col-sm-12 col-md-6 dt-action-group'B>>" +
-                    "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                    "<'row'<'col-sm-12'tr>>" +
-                    "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-                buttons: [
+                dom:
+                    "<'row'<'col-sm-12 col-md-6 dt-action-group'B>>" +
+                        "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                        "<'row'<'col-sm-12'tr>>" +
+                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                buttons:
+                [
                     {
                         text: 'Добавить',
                         titleAttr: "Создать нового пользователя",
                         className: 'dt-action-button',
                         action: function(e, dt, node, config) {
-                            $('#UserForm').modal({
-                                backdrop: false,
-                                keyboard: false
-                            });
+                            window.location.href = '/User/Create';
                         }
                     },
                     {
@@ -116,16 +134,28 @@
                         title: 'Список пользователей',
                         messageTop: 'Дата выгрузки ' + todayString,
                         exportOptions: {
-                            columns: [2, 3, 4, 5]
+                            columns: '.exportable-column',
+                            modifier: { search: 'applied' }
+                        }
+                    },
+                    {
+                        text: 'Фильтры',
+                        className: 'dt-action-button filter-button',
+                        action: function(e, dt, node, config) {
+                            $('#FilterPane').modal();
                         }
                     }
                 ],
-                select: {
+                select:
+                {
                     style: 'multi',
-                    selector: 'td:first-child'
+                    selector:
+                        'td:first-child'
                 }
             });
             var dt = $('#UserGrid').DataTable();
+            dt.columns(2).search('1').draw(false);
+            // select all checkbox
             $(".selectAll").on("click",
                 function(e) {
                     if ($(this).is(":checked")) {
@@ -133,6 +163,20 @@
                     } else {
                         dt.rows().deselect();
                     }
+                });
+            // filters
+            $('input:checkbox', $('div.filter-area')).on('change',
+                function () {
+                    var isEnabled = false;
+                    var searchString = '';
+                    if ($('#IncludeBlocked').is(':checked')) {
+                        isEnabled = true;
+                    } else {
+                        searchString = '1';
+                    }
+                    dt.columns(2).search(searchString).draw(false);
+                    if (isEnabled) $('.filter-button').addClass('filter-enabled');
+                    else $('.filter-button').removeClass('filter-enabled');
                 });
         });
     </script>

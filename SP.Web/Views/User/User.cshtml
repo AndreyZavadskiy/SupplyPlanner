@@ -2,79 +2,96 @@
 
 @{
     ViewData["Title"] = "User";
+    string actionMessageClass = TempData["ActionMessageClass"]?.ToString();
 }
 
 <h1>Карточка пользователя</h1>
 
 <form asp-action="Edit" method="post">
-    <div class="form-row row-no-gutters">
-        <div>
+    <div class="zero-gutters col-xl-9">
+        <input type="hidden" asp-for="Id" />
+        <div class="form-row zero-gutters">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         </div>
-    </div>
-    <div class="form-row row-no-gutters">
-        <div class="form-group row col-3">
-            <label asp-for="Id" class="control-label col-6"></label>
-            <input asp-for="Id" class="form-control col-6" readonly="readonly" />
-        </div>
-        <div class="form-group row col-3">
-            <label asp-for="RegistrationDate" class="control-label col-6"></label>
-            <input asp-for="RegistrationDate" class="form-control col-6" readonly="readonly" />
-        </div>
-    </div>
-    <div class="form-row row-no-gutters">
-        <div class="form-group row col-3">
-            <label asp-for="LastName" class="control-label col-6"></label>
-            <input asp-for="LastName" class="form-control col-6" />
-            <span asp-validation-for="LastName" class="text-danger"></span>
-        </div>
-        <div class="form-group row col-3">
-            <label asp-for="FirstName" class="control-label col-6"></label>
-            <input asp-for="FirstName" class="form-control col-6" />
-            <span asp-validation-for="FirstName" class="text-danger"></span>
-        </div>
-        <div class="form-group row col-3">
-            <label asp-for="MiddleName" class="control-label col-6"></label>
-            <input asp-for="MiddleName" class="form-control col-6" />
-            <span asp-validation-for="MiddleName" class="text-danger"></span>
-        </div>
-    </div>
-    <div class="form-row row-no-gutters">
-        <div class="form-group row col-3">
-            <label asp-for="UserName" class="control-label col-6"></label>
-            <input asp-for="UserName" class="form-control col-6" />
-            <span asp-validation-for="UserName" class="text-danger"></span>
-        </div>
-    </div>
-    <div class="form-row row-no-gutters">
-        <div class="form-group row col-6">
-            <label asp-for="Email" class="control-label col-3"></label>
-            <input asp-for="Email" class="form-control col-9" />
-            <span asp-validation-for="Email" class="text-danger"></span>
-        </div>
-    </div>
-    <div class="form-row row-no-gutters">
-        <div class="form-group row col-6">
-            <label asp-for="RoleId" class="control-label col-3"></label>
-            <select asp-for="RoleId" asp-items="ViewBag.Roles" class="col-9"></select>
-            <span asp-validation-for="Email" class="text-danger"></span>
-        </div>
-    </div>
-    <div class="form-row row-no-gutters">
-        <div class="form-group row row-no-gutters col-6">
-            <div class="form-group row col-3"></div>
-            <div class="form-group row form-check col-9">
-                <label class="form-check-label">
-                    <input asp-for="Inactive" /> @Html.DisplayNameFor(model => model.Inactive)
-                </label>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-4">
+                <label asp-for="Code" class="control-label col-6"></label>
+                <input asp-for="Code" class="form-control col-6" readonly="readonly"/>
+            </div>
+            <div class="form-group row col-4">
+                <label class="control-label col-6">@Html.DisplayNameFor(m => m.RegistrationDate)</label>
+                <input class="form-control col-6" readonly="readonly" value="@Html.DisplayFor(m => m.RegistrationDate)"/>
             </div>
         </div>
-    </div>
-    <div class="form-row row-no-gutters">
-        <div class="form-group row col-12">
-            <input type="submit" value="Сохранить и вернуться" class="btn btn-primary form-button" />
-            <button asp-action="Save" class="btn btn-success form-button">Сохранить</button>
-            <button asp-action="Index" class="btn btn-secondary form-button">Вернуться</button>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-4">
+                <label asp-for="LastName" class="control-label col-6"></label>
+                <input asp-for="LastName" class="form-control col-6"/>
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-4">
+                <label asp-for="FirstName" class="control-label col-6"></label>
+                <input asp-for="FirstName" class="form-control col-6"/>
+                <span asp-validation-for="FirstName" asp-validation-summary="ModelOnly" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-4">
+                <label asp-for="MiddleName" class="control-label col-6"></label>
+                <input asp-for="MiddleName" class="form-control col-6"/>
+                <span asp-validation-for="MiddleName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-4">
+                <label asp-for="UserName" class="control-label col-6"></label>
+                <input asp-for="UserName" class="form-control col-6"/>
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-8">
+                <label asp-for="Email" class="control-label col-3"></label>
+                <input asp-for="Email" class="form-control col-9"/>
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-8">
+                <label asp-for="RoleName" class="control-label col-3"></label>
+                <select asp-for="RoleName" asp-items="ViewBag.Roles" class="col-9"></select>
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row zero-gutters col-8">
+                <div class="form-group row col-3"></div>
+                <div class="form-group row form-check col-9">
+                    <label class="form-check-label">
+                        <input asp-for="Inactive"/> @Html.DisplayNameFor(model => model.Inactive)
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-row button-row">
+            <input type="submit" value="Сохранить и вернуться" class="btn btn-primary"/>
+            <button asp-action="Save" class="btn btn-success">Сохранить</button>
+            <button asp-action="Index" class="btn btn-secondary">Вернуться</button>
+        </div>
+        <div id="action-message" class="alert alert-row @actionMessageClass">
+            @Html.Raw(TempData["ActionMessage"])
         </div>
     </div>
 </form>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function() {
+            if ($("#action-message").length > 0) {
+                setTimeout(function() {
+                        $("#action-message").fadeOut(1000);
+                },
+                    3000);
+            }
+        });
+    </script>
+}

@@ -76,20 +76,24 @@ body {
     margin-bottom: 0.5rem;
 }
 
-
-.row-no-gutters {
+.zero-gutters {
     margin-right: 0;
     margin-left: 0;
     padding-right: 0;
     padding-left: 0;
 }
 
-.row-no-gutters > .col,
-.row-no-gutters > [class*="col-"] {
+.zero-gutters > .col,
+.zero-gutters > [class*="col-"] {
     margin-right: 0;
     margin-left: 0;
     padding-right: 0;
     padding-left: 0;
+}
+
+.form-group > span[class*='field-validation'] {
+    padding-right: 15px;
+    padding-left: 15px;
 }
 
 /*  DataTables  */
@@ -97,21 +101,50 @@ div.dt-action-group {
     margin-bottom: 1rem;
 }
 
-button.dt-action-button {
+.dt-action-button {
     margin-right: 1rem;
+}
+
+.dt-action-button.filter-enabled {
+    background-color: black;
 }
 
 table.dataTable tbody td.select-checkbox:before, table.dataTable tbody th.select-checkbox:before {
     margin-top: 0px !important;
 }
 
+.dtsp-panes {
+    background-color: whitesmoke;
+}
+
 /*  custom elements */
+h1 {
+    margin-bottom: 2rem;
+}
+
 input.selectAll {
     position: absolute;
     margin-left: 0.2em;
     top: 1.5em;
 }
 
-.form-button {
-    margin-right: 1em;
+.button-row {
+    margin-right: 0;
+    margin-left: 0;
+    margin-bottom: 1rem;
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.button-row > input {
+    margin-left: 15px;
+    margin-left: 15px;
+}
+.button-row > button {
+    margin-left: 15px;
+    margin-left: 15px;
+}
+
+.alert-row {
+    margin: 0px 0px 0px 15px;
 }

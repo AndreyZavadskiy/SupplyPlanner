@@ -16,6 +16,7 @@
   {
     "outputFileName": "wwwroot/bundles/dt.bundle.css",
     "inputFiles": [
+      "wwwroot/lib/datatables/css/jquery.dataTables.css",
       "wwwroot/lib/datatables/css/dataTables.bootstrap4.css",
       "wwwroot/lib/datatables/ext/buttons/css/buttons.bootstrap4.css",
       "wwwroot/lib/datatables/ext/fixedheader/css/fixedHeader.bootstrap4.css",

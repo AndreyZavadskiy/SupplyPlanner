@@ -8,7 +8,7 @@
         /// <summary>
         /// ID пользователя
         /// </summary>
-        public string Id { get; set; }
+        public int Id { get; set; }
         /// <summary>
         /// Код
         /// </summary>
@@ -25,5 +25,9 @@
         /// Описание территорий по своей зоне ответственности
         /// </summary>
         public string TerritoryDescription { get; set; }
+        /// <summary>
+        /// Является активным пользователем
+        /// </summary>
+        public string Active { get; set; }
     }
 }

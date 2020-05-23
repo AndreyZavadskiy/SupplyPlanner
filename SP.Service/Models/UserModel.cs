@@ -14,15 +14,20 @@ namespace SP.Service.Models
         /// </summary>
         public int Id { get; set; }
         /// <summary>
+        /// Код персоны
+        /// </summary>
+        [DisplayName("Код")]
+        public string Code { get; set; }
+        /// <summary>
         /// Фамилия
         /// </summary>
-        [Required]
+        [Required(ErrorMessage = "Поле Фамилия является обязательным")]
         [DisplayName("Фамилия")]
         public string LastName { get; set; }
         /// <summary>
         /// Имя
         /// </summary>
-        [Required]
+        [Required(ErrorMessage = "Поле Имя является обязательным")]
         [DisplayName("Имя")]
         public string FirstName { get; set; }
         /// <summary>
@@ -36,13 +41,20 @@ namespace SP.Service.Models
         /// <summary>
         /// Логин пользователя
         /// </summary>
-        [Required]
+        [Required(ErrorMessage = "Поле Логин является обязательным")]
         [DisplayName("Логин")]
         public string UserName { get; set; }
         /// <summary>
+        /// Пароль при создании нового пользователя
+        /// </summary>
+        [DisplayName("Пароль")]
+        [PasswordPropertyText]
+        public string Password { get; set; }
+        /// <summary>
         /// Email
         /// </summary>
-        [Required]
+        [Required(ErrorMessage = "Поле Email является обязательным")]
+        [EmailAddress]
         public string Email { get; set; }
 
         // from ApplicationUser
@@ -55,6 +67,7 @@ namespace SP.Service.Models
         /// <summary>
         /// Дата регистрации
         /// </summary>
+        [DataType(DataType.Date)]
         [DisplayName("Дата регистрации")]
         public DateTime RegistrationDate { get; set; }
 
@@ -63,8 +76,8 @@ namespace SP.Service.Models
         /// <summary>
         /// Роль пользователя (AspNetRole)
         /// </summary>
-        [Required]
+        [Required(ErrorMessage = "Поле Роль является обязательным")]
         [DisplayName("Роль пользователя")]
-        public string RoleId { get; set; }
+        public string RoleName { get; set; }
     }
 }

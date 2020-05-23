@@ -19,4 +19,8 @@
     <ProjectReference Include="..\SP.Service\SP.Service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\lib\datatables\ext\searchpanes\js\" />
+  </ItemGroup>
+
 </Project>
