@@ -27,5 +27,6 @@ namespace SP.Data
         }
 
         public DbSet<Person> Persons { get; set; }
+        public DbSet<Region> Regions { get; set; }
     }
 }

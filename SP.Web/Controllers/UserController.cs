@@ -7,23 +7,21 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SP.Data;
-using SP.Service.Interfaces;
 using SP.Service.Models;
 using SP.Service.Services;
-using SP.Web.Models;
 
 namespace SP.Web.Controllers
 {
     public class UserController : Controller
     {
         private readonly IUserService _userService;
-        private readonly IDictionaryService _dictionaryService;
+        private readonly IMasterService _masterService;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public UserController(IUserService userService, IDictionaryService dictionaryService, UserManager<ApplicationUser> userManager)
+        public UserController(IUserService userService, IMasterService masterService, UserManager<ApplicationUser> userManager)
         {
             _userService = userService;
-            _dictionaryService = dictionaryService;
+            _masterService = masterService;
             _userManager = userManager;
         }
 

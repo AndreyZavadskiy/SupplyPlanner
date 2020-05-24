@@ -20,7 +20,8 @@
       "wwwroot/lib/datatables/css/dataTables.bootstrap4.css",
       "wwwroot/lib/datatables/ext/buttons/css/buttons.bootstrap4.css",
       "wwwroot/lib/datatables/ext/fixedheader/css/fixedHeader.bootstrap4.css",
-      "wwwroot/lib/datatables/ext/select/css/select.bootstrap4.css"
+      "wwwroot/lib/datatables/ext/select/css/select.bootstrap4.css",
+      "wwwroot/lib/datatables/ext/rowgroup/css/rowGroup.bootstrap4.css"
     ]
   },
   {
@@ -35,7 +36,9 @@
       "wwwroot/lib/datatables/ext/buttons/js/buttons.html5.js",
       "wwwroot/lib/datatables/ext/buttons/js/buttons.print.js",
       "wwwroot/lib/datatables/ext/fixedheader/js/dataTables.fixedHeader.js",
-      "wwwroot/lib/datatables/ext/select/js/dataTables.select.js"
+      "wwwroot/lib/datatables/ext/select/js/dataTables.select.js",
+      "wwwroot/lib/datatables/ext/rowgroup/js/dataTables.rowGroup.js",
+      "wwwroot/lib/datatables/ext/rowgroup/js/rowGroup.bootstrap4.js"
     ],
     "minify": {
       "enabled": false,
@@ -55,7 +58,9 @@
       "wwwroot/lib/datatables/ext/buttons/js/buttons.html5.min.js",
       "wwwroot/lib/datatables/ext/buttons/js/buttons.print.min.js",
       "wwwroot/lib/datatables/ext/fixedheader/js/dataTables.fixedHeader.min.js",
-      "wwwroot/lib/datatables/ext/select/js/dataTables.select.min.js"
+      "wwwroot/lib/datatables/ext/select/js/dataTables.select.min.js",
+      "wwwroot/lib/datatables/ext/rowgroup/js/dataTables.rowGroup.min.js",
+      "wwwroot/lib/datatables/ext/rowgroup/js/rowGroup.bootstrap4.min.js"
     ],
     "minify": {
       "enabled": false,

@@ -2,32 +2,35 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SP.Core.Model;
 using SP.Data;
-using SP.Service.Interfaces;
 using SP.Service.Models;
 
 namespace SP.Service.Services
 {
+    public interface IUserService
+    {
+        Task<IEnumerable<UserListItem>> GetUserListAsync();
+        Task<UserModel> GetUserAsync(int id);
+        Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveUserAsync(UserModel model);
+        Task<IEnumerable<DictionaryListItem<string>>> GetRolesAsync();
+    }
+
     public class UserService : IUserService
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<ApplicationRole> _roleManager;
 
-        public UserService(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
+        public UserService(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;
-            _roleManager = roleManager;
         }
 
-        public async Task<IEnumerable<UserListData>> GetUserListAsync()
+        public async Task<IEnumerable<UserListItem>> GetUserListAsync()
         {
             // собираем данные из таблиц: Person, AspNetUser - AspNetUserRoles - AspNetRoles
             var persons = await _context.Persons.AsNoTracking()
@@ -78,7 +81,7 @@ namespace SP.Service.Services
                     x.MiddleName,
                     x.IsActive
                 })
-                .Select(z => new UserListData
+                .Select(z => new UserListItem
                 {
                     Id = z.Key.Id,
                     Code = string.IsNullOrWhiteSpace(z.Key.Code) ? z.Key.Id.ToString() : z.Key.Code,
@@ -189,7 +192,7 @@ namespace SP.Service.Services
                     await _context.SaveChangesAsync();
                     //_logger.LogInformation("User created a new account with password.");
 
-                    return (true, model.Id, null);
+                    return (true, person.Id, null);
                 }
                 catch (DbUpdateException ex)
                 {
@@ -246,6 +249,7 @@ namespace SP.Service.Services
                 // AspNetUser
                 appUser.UserName = model.UserName;
                 appUser.Email = model.Email;
+                appUser.IsActive = !model.Inactive;
                 var updateUserResult = await _userManager.UpdateAsync(appUser);
                 if (!updateUserResult.Succeeded)
                 {

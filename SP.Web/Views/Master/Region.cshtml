@@ -1,45 +1,48 @@
 ﻿@{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Region";
 }
 
-<h1>Пользователи</h1>
+<h1>Справочник регионов и территорий</h1>
 
-<div class="col-md-12">
-    <section class="container">
-        <table id="UserGrid" class="table table-striped table-bordered nowrap" width="100%" cellspacing="0">
-            <thead>
-                <tr>
-                    <th><input type="checkbox" class="selectAll" /></th>
-                    <th></th>
-                    <th>Статус</th>
-                    <th class="exportable-column">Код</th>
-                    <th class="exportable-column">Фамилия, имя, отчество</th>
-                    <th class="exportable-column">Роли</th>
-                    <th class="exportable-column">Территории</th>
-                </tr>
-            </thead>
-        </table>
-    </section>
-    <section>
-        <div class="modal" id="FilterModal" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Фильтры</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body filter-area">
-                        <p>
-                            <input type="checkbox" id="IncludeBlocked" /> включить заблокированных
-                        </p>
-                    </div>
-                </div>
+<section>
+    <div class="col-xl-9">
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label for="RegionList" class="control-label zero-gutters col-3">Регион</label>
+                <select id="RegionList" asp-items="ViewBag.Regions" class="col-9" onchange="setRegionFilter();"></select>
+            </div>
+            <div class="form-group row button-group-right col-6">
+                <button class="btn btn-secondary" onclick="createRegion();">Добавить</button>
+                <button class="btn btn-secondary" onclick="editRegion();">Изменить</button>
             </div>
         </div>
-    </section>
-</div>
+    </div>
+    
+    <div class="col-xl-9">
+        <hr class="section-separate"/>
+        <table id="TerritoryGrid" class="table table-striped table-bordered nowrap" width="100%" cellspacing="0">
+            <thead>
+            <tr>
+                <th><input type="checkbox" class="selectAll"/></th>
+                <th></th>
+                <th>Статус</th>
+                <th>ID региона</th>
+                <th class="exportable-column">Регион</th>
+                <th class="exportable-column">Территория</th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+    
+    <div class="modal" id="RegionModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div id="RegionModalContent"></div>
+            </div>
+        </div>
+    </div>
+
+</section>
 
 @section Scripts
 {
@@ -47,18 +50,21 @@
         $(document).ready(function() {
             var d = new Date();
             var todayString = ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
-            $('#UserGrid').DataTable({
+            $('#TerritoryGrid').DataTable({
                 language: {
                     url: '/lib/datatables/i18n/russian.json'
                 },
-                order: [[4, "asc"]],
+                orderFixed: [4, 'asc'],
+                rowGroup: {
+                    dataSrc: 'regionName'
+                },
                 stateSave: true,
                 lengthMenu: [
                     [10, 25, 50, 100, -1],
-                    [10, 25, 50, 100, "Все"]
+                    [10, 25, 50, 100, 'Все']
                 ],
                 ajax: {
-                    url: '/User/LoadList',
+                    url: '/Master/LoadTerritoryList',
                     type: 'POST',
                     datatype: 'json'
                 },
@@ -76,14 +82,13 @@
                             'filter': 'active',
                             'display': function(data, type, full, meta) {
                                 if (full.active === '1') return null;
-                                else return '<img src="/images/ban-solid-16.png" alt="blocked" title="Пользователь заблокирован" />';
+                                else return '<img src="/images/ban-solid-16.png" alt="blocked" title="Территория заблокирована" />';
                             }
                         }
                     },
-                    { data: 'code' },
-                    { data: 'fullName' },
-                    { data: 'roleDescription' },
-                    { data: 'territoryDescription' }
+                    { data: 'regionId' },
+                    { data: 'regionName' },
+                    { data: 'territoryName' }
                 ],
                 columnDefs: [
                     {
@@ -107,6 +112,10 @@
                         sorting: false,
                         className: 'dt-center',
                         width: '1em'
+                    },
+                    {
+                        targets: 3,
+                        visible: false
                     }
                 ],
                 dom:
@@ -133,14 +142,15 @@
                         messageTop: 'Дата выгрузки ' + todayString,
                         exportOptions: {
                             columns: '.exportable-column',
-                            modifier: { search: 'applied' }
+                            modifier: { search: 'applied' },
+                            grouped_array_index: [4]
                         }
                     },
                     {
                         text: 'Фильтры',
                         className: 'dt-action-button filter-button',
                         action: function(e, dt, node, config) {
-                            $('#FilterModal').modal();
+                            //$('#FilterPane').modal();
                         }
                     }
                 ],
@@ -151,8 +161,7 @@
                         'td:first-child'
                 }
             });
-            var dt = $('#UserGrid').DataTable();
-            dt.columns(2).search('1').draw(false);
+            var dt = $('#TerritoryGrid').DataTable();
             // select all checkbox
             $(".selectAll").on("click",
                 function(e) {
@@ -163,19 +172,57 @@
                     }
                 });
             // filters
-            $('input:checkbox', $('div.filter-area')).on('change',
-                function () {
-                    var isEnabled = false;
-                    var searchString = '';
-                    if ($('#IncludeBlocked').is(':checked')) {
-                        isEnabled = true;
-                    } else {
-                        searchString = '1';
-                    }
-                    dt.columns(2).search(searchString).draw(false);
-                    if (isEnabled) $('.filter-button').addClass('filter-enabled');
-                    else $('.filter-button').removeClass('filter-enabled');
-                });
+            setRegionFilter();
         });
+
+        function setRegionFilter() {
+            var dt = $('#TerritoryGrid').DataTable();
+            var searchString = $('#RegionList').val();
+            dt.columns(3).search(searchString).draw(false);
+        }
+
+        function createRegion() {
+            var url = '/Master/CreateRegion';
+            $.ajax({
+                type: "GET",
+                url: url,
+                success: function(data) {
+                    $('#RegionModalContent').html(data);
+                    $('#RegionModal').modal({
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                },
+                error: function() {
+                    alert('Ошибка открытия формы для создания региона');
+                }
+            });
+        }
+
+        function editRegion() {
+            var id = $('#RegionList').val();
+            if (id === '') {
+                alert('Выберите регион из списка');
+                return;
+            }
+            var url = '/Master/EditRegion';
+            $.ajax({
+                type: "GET",
+                url: url,
+                contentType: "application/json; charset=utf-8",
+                data: { "id": id },
+                datatype: "json",
+                success: function(data) {
+                    $('#RegionModalContent').html(data);
+                    $('#RegionModal').modal({
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                },
+                error: function() {
+                    alert('Ошибка открытия формы для создания региона');
+                }
+            });
+        }
     </script>
 }

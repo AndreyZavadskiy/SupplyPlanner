@@ -41,6 +41,15 @@ table.dataTable tbody td.select-checkbox:before, table.dataTable tbody th.select
     margin-top: 0px !important;
 }
 
+div.dataTables_wrapper div.dataTables_paginate {
+    float: left;
+}
+
+ul.pagination > li:first-child {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+
 .dtsp-panes {
     background-color: whitesmoke;
 }
@@ -50,6 +59,10 @@ h1 {
     margin-bottom: 2rem;
 }
 
+hr.section-separate {
+    margin: 1em 0 2em 0;
+}
+
 input.selectAll {
     position: absolute;
     margin-left: 0.2em;
@@ -57,6 +70,8 @@ input.selectAll {
 }
 
 .button-row {
+    display: flex;
+    justify-content: flex-start;
     margin-right: 0;
     margin-left: 0;
     margin-bottom: 1rem;
@@ -71,6 +86,15 @@ input.selectAll {
 .button-row > button {
     margin-left: 15px;
     margin-left: 15px;
+}
+
+.button-group-right {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.button-group-right > button {
+    margin-left: 1rem;
 }
 
 .alert-row {

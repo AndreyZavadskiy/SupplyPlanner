@@ -1,6 +1,4 @@
-using System;
-
-namespace SP.Web.Models
+namespace SP.Web.ViewModels
 {
     public class ErrorViewModel
     {

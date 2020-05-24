@@ -1,10 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using SP.Core.Model;
 
 namespace SP.Service.Models
 {
+    /// <summary>
+    /// Пользователь системы
+    /// </summary>
     public class UserModel
     {
         // from Person
@@ -21,13 +23,13 @@ namespace SP.Service.Models
         /// <summary>
         /// Фамилия
         /// </summary>
-        [Required(ErrorMessage = "Поле Фамилия является обязательным")]
+        [Required(ErrorMessage = "Поле Фамилия является обязательным.")]
         [DisplayName("Фамилия")]
         public string LastName { get; set; }
         /// <summary>
         /// Имя
         /// </summary>
-        [Required(ErrorMessage = "Поле Имя является обязательным")]
+        [Required(ErrorMessage = "Поле Имя является обязательным.")]
         [DisplayName("Имя")]
         public string FirstName { get; set; }
         /// <summary>
@@ -41,7 +43,7 @@ namespace SP.Service.Models
         /// <summary>
         /// Логин пользователя
         /// </summary>
-        [Required(ErrorMessage = "Поле Логин является обязательным")]
+        [Required(ErrorMessage = "Поле Логин является обязательным.")]
         [DisplayName("Логин")]
         public string UserName { get; set; }
         /// <summary>
@@ -53,7 +55,7 @@ namespace SP.Service.Models
         /// <summary>
         /// Email
         /// </summary>
-        [Required(ErrorMessage = "Поле Email является обязательным")]
+        [Required(ErrorMessage = "Поле Email является обязательным.")]
         [EmailAddress]
         public string Email { get; set; }
 
@@ -76,7 +78,7 @@ namespace SP.Service.Models
         /// <summary>
         /// Роль пользователя (AspNetRole)
         /// </summary>
-        [Required(ErrorMessage = "Поле Роль является обязательным")]
+        [Required(ErrorMessage = "Поле Роль является обязательным.")]
         [DisplayName("Роль пользователя")]
         public string RoleName { get; set; }
     }

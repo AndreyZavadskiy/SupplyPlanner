@@ -12,7 +12,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SP.Data;
-using SP.Service.Interfaces;
 using SP.Service.Services;
 
 namespace SP.Web
@@ -36,7 +35,7 @@ namespace SP.Web
                 .AddRoles<ApplicationRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IDictionaryService, DictionaryService>();
+            services.AddScoped<IMasterService, MasterService>();
             services.AddControllersWithViews();
             services.AddRazorPages();
         }

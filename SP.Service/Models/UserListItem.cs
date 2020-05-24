@@ -3,7 +3,7 @@
     /// <summary>
     /// Элемент списка пользователей
     /// </summary>
-    public class UserListData
+    public class UserListItem
     {
         /// <summary>
         /// ID пользователя
@@ -27,6 +27,7 @@
         public string TerritoryDescription { get; set; }
         /// <summary>
         /// Является активным пользователем
+        /// "1" - активный, "0" - заблокирован
         /// </summary>
         public string Active { get; set; }
     }
