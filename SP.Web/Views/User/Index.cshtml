@@ -152,7 +152,6 @@
                 }
             });
             var dt = $('#UserGrid').DataTable();
-            dt.columns(2).search('1').draw(false);
             // select all checkbox
             $(".selectAll").on("click",
                 function(e) {
@@ -163,6 +162,7 @@
                     }
                 });
             // filters
+            dt.columns(2).search('1').draw(false);
             $('input:checkbox', $('div.filter-area')).on('change',
                 function () {
                     var isEnabled = false;

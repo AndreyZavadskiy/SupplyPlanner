@@ -9,10 +9,14 @@ namespace SP.Service.Models
     public class RegionModel
     {
         /// <summary>
-        /// ID региона
+        /// ID региона/территории
         /// </summary>
         [DisplayName("ID")]
         public int Id { get; set; }
+        /// <summary>
+        /// ID вышестоящего элемента (регион)
+        /// </summary>
+        public int? ParentId { get; set; }
         /// <summary>
         /// Наименование
         /// </summary>

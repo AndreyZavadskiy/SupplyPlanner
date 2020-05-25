@@ -51,7 +51,9 @@ namespace SP.Service.Services
                 .Select(x => new DictionaryListItem
                 {
                     Id = x.Id,
-                    Name = x.Name
+                    Name = x.IsActive
+                        ? x.Name
+                        : $"{x.Name} (исключен)"
                 })
                 .ToArrayAsync();
 
@@ -69,6 +71,7 @@ namespace SP.Service.Services
             var regionModel = new RegionModel
             {
                 Id = region.Id,
+                ParentId = region.ParentId,
                 Name = region.Name,
                 Inactive = !region.IsActive
             };
@@ -97,6 +100,7 @@ namespace SP.Service.Services
             var region = new Region
             {
                 Name = model.Name,
+                ParentId = model.ParentId,
                 IsActive = !model.Inactive
             };
 
@@ -134,6 +138,7 @@ namespace SP.Service.Services
             try
             {
                 region.Name = model.Name;
+                region.ParentId = model.ParentId;
                 region.IsActive = !model.Inactive;
                 _context.Regions.Update(region);
                 await _context.SaveChangesAsync();
