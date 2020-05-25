@@ -29,7 +29,7 @@ namespace SP.Data
 
         // таблицы с данными
         public DbSet<Person> Persons { get; set; }
-        public DbSet<Region> Regions { get; set; }
+        public DbSet<RegionalStructure> RegionStructure { get; set; }
         // справочники
         public DbSet<CashboxLocation> CashboxLocations { get; set; }
         public DbSet<ClientRestroom> ClientRestrooms { get; set; }

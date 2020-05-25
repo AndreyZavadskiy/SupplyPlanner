@@ -13,6 +13,8 @@
     <Compile Remove="Migrations\20200518145806_ApplicationRole.Designer.cs" />
     <Compile Remove="Migrations\20200518162737_FK.cs" />
     <Compile Remove="Migrations\20200518162737_FK.Designer.cs" />
+    <Compile Remove="Migrations\20200525165849_20200525_RegionalStructure.cs" />
+    <Compile Remove="Migrations\20200525165849_20200525_RegionalStructure.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

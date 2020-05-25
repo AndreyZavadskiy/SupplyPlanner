@@ -6,8 +6,8 @@ namespace SP.Core.Model
     /// <summary>
     /// Регион/территория
     /// </summary>
-    [Table("Region")]
-    public class Region
+    [Table("RegionalStructure")]
+    public class RegionalStructure
     {
         /// <summary>
         /// Идентификатор региона или территории

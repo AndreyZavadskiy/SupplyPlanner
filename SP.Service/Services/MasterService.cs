@@ -46,7 +46,7 @@ namespace SP.Service.Services
 
         public async Task<IEnumerable<DictionaryListItem>> GetRegionListAsync()
         {
-            var list = await _context.Regions.AsNoTracking()
+            var list = await _context.RegionStructure.AsNoTracking()
                 .Where(x => x.ParentId == null)
                 .Select(x => new DictionaryListItem
                 {
@@ -62,7 +62,7 @@ namespace SP.Service.Services
 
         public async Task<RegionModel> GetRegionAsync(int id)
         {
-            var region = await _context.Regions.FindAsync(id);
+            var region = await _context.RegionStructure.FindAsync(id);
             if (region == null)
             {
                 return null;
@@ -81,7 +81,7 @@ namespace SP.Service.Services
 
         public async Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveRegionAsync(RegionModel model)
         {
-            bool hasRegionWithSameName = await _context.Regions.AnyAsync(x => x.Id != model.Id && x.Name == model.Name);
+            bool hasRegionWithSameName = await _context.RegionStructure.AnyAsync(x => x.Id != model.Id && x.Name == model.Name);
             if (hasRegionWithSameName)
             {
                 return (false, null, new[] {"Регион с таким наименованием уже существует. Нельзя создавать дубли."});
@@ -97,7 +97,7 @@ namespace SP.Service.Services
 
         private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> CreateRegionAsync(RegionModel model)
         {
-            var region = new Region
+            var region = new RegionalStructure
             {
                 Name = model.Name,
                 ParentId = model.ParentId,
@@ -107,7 +107,7 @@ namespace SP.Service.Services
             var errors = new List<string>();
             try
             {
-                _context.Regions.Add(region);
+                _context.RegionStructure.Add(region);
                 await _context.SaveChangesAsync();
 
                 return (true, region.Id, null);
@@ -128,7 +128,7 @@ namespace SP.Service.Services
 
         private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> UpdateRegionAsync(RegionModel model)
         {
-            var region = await _context.Regions.FindAsync(model.Id);
+            var region = await _context.RegionStructure.FindAsync(model.Id);
             if (region == null)
             {
                 return (false, model.Id, new[] { "Регион не найден в базе данных." });
@@ -140,7 +140,7 @@ namespace SP.Service.Services
                 region.Name = model.Name;
                 region.ParentId = model.ParentId;
                 region.IsActive = !model.Inactive;
-                _context.Regions.Update(region);
+                _context.RegionStructure.Update(region);
                 await _context.SaveChangesAsync();
 
                 return (true, model.Id, null);
@@ -161,10 +161,10 @@ namespace SP.Service.Services
 
         public async Task<IEnumerable<TerritoryListItem>> GetTerritoryListAsync()
         {
-            var list = await _context.Regions.AsNoTracking()
+            var list = await _context.RegionStructure.AsNoTracking()
                 .Where(r => r.ParentId == null)
                 .Join(
-                    _context.Regions.AsNoTracking(),
+                    _context.RegionStructure.AsNoTracking(),
                     r => r.Id,
                     t => t.ParentId,
                     (r, t) => new TerritoryListItem

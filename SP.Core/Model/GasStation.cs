@@ -49,7 +49,7 @@ namespace SP.Core.Model
         #region Navigation properties
 
         [ForeignKey("TerritoryId")]
-        public Region Territory { get; set; }
+        public RegionalStructure Territory { get; set; }
         [ForeignKey("SettlememtId")]
         public Settlement Settlement { get; set; }
         [ForeignKey("StationLocationId")]
