@@ -1,0 +1,224 @@
+﻿@{
+    ViewData["Title"] = "Station List";
+}
+
+<h1>Справочник АЗС</h1>
+
+<section>
+    <div class="col-xl-9">
+        <div class="zero-gutters">
+            <div class="form-group row col-6">
+                <label for="RegionList" class="control-label zero-gutters col-3">Регион</label>
+                <select id="RegionList" asp-items="ViewBag.Regions" class="col-9" onchange="changeRegion();"></select>
+            </div>
+            <div class="form-group row col-6">
+                <label for="TerritoryList" class="control-label zero-gutters col-3">Территория</label>
+                <select id="TerritoryList" class="col-9" onchange="changeTerritory();"></select>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-12">
+        <hr class="section-separate" />
+        <table id="StationGrid" class="table table-striped table-bordered nowrap" width="100%" cellspacing="0">
+            <thead>
+                <tr>
+                    <th class="hidden-column"><input type="checkbox" class="selectAll" /></th>
+                    <th></th>
+                    <th class="hidden-column">ID региона</th>
+                    <th class="hidden-column">ID территории</th>
+                    <th class="hidden-column exportable-column">Регион</th>
+                    <th class="hidden-column exportable-column">Территория</th>
+                    <th class="exportable-column">Номер</th>
+                    <th class="exportable-column">Населенный пункт</th>
+                    <th class="exportable-column">Статус</th>
+                    <th class="exportable-column">Местоположение</th>
+                    <th class="exportable-column">Кластер (уровень сервиса)</th>
+                    <th class="exportable-column">Формат операторной</th>
+                    <th class="exportable-column">Система управления</th>
+                    <th class="exportable-column">Режим работы торгового зала</th>
+                    <th class="exportable-column">Санузел для клиентов</th>
+                    <th class="exportable-column">Расчетно-кассовый узел</th>
+                    <th class="exportable-column">Размер торгового зала</th>
+                    <th class="exportable-column">Количество касс</th>
+                    <th class="exportable-column">Количество персонала в сутки</th>
+                    <th class="exportable-column">Количество ТРК</th>
+                    <th class="exportable-column">Количество сан.комнат для клиентов</th>
+                    <th class="exportable-column">Площадь торгового зала</th>
+                    <th class="exportable-column">Среднее количество чеков в сутки</th>
+                    <th class="exportable-column">Выручка в месяц</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</section>
+<section>
+    <div class="modal" id="FilterModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Фильтры</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body filter-area">
+                    <p>
+                        <input type="checkbox" id="IncludeBlocked" /> включить заблокированных
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function () {
+            changeRegion();
+        });
+
+        function initializeDataTable() {
+            var d = new Date();
+            var todayString = ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
+            $('#StationGrid').DataTable({
+                language: {
+                    url: '/lib/datatables/i18n/russian.json'
+                },
+                //orderFixed: [[4, 'asc'], [5, 'asc']],
+                //stateSave: true,
+                lengthMenu: [
+                    [10, 25, 50, 100, -1],
+                    [10, 25, 50, 100, 'Все']
+                ],
+                scrollX: true,
+                scrollCollapse: true,
+                fixedColumns: {
+                    leftColumns: 7
+                },
+                ajax: {
+                    url: '/Station/LoadList',
+                    type: 'POST',
+                    data: function (d) {
+                        d.region = $('#RegionList').val();
+                        d.terr = $('#TerritoryList').val();
+                    },
+                    datatype: 'json'
+                },
+                columns:
+                    [
+                        { defaultContent: '' },
+                        {
+                            render: function (data, type, full, meta) {
+                                return '<a href="#" onclick="editTerritory(' + full.id + ');"><img src="/images/pencil-square.svg"/></a>';
+                            }
+                        },
+                        { data: 'regionId' },
+                        { data: 'territoryId' },
+                        { data: 'regionName' },
+                        { data: 'territoryName' },
+                        { data: 'stationNumber' },
+                        { data: 'stationStatusName' },
+                        { data: 'settlementName' },
+                        { data: 'stationLocationName' },
+                        { data: 'serviceLevelName' },
+                        { data: 'operatorRoomFormatName' },
+                        { data: 'managementSystemName' },
+                        { data: 'tradingHallOperatingModeName' },
+                        { data: 'clientRestroomName' },
+                        { data: 'cashboxLocationName' },
+                        { data: 'tradingHallSizeName' },
+                        { data: 'cashboxTotal' },
+                        { data: 'personnelPerDay' },
+                        { data: 'fuelDispenserTotal' },
+                        { data: 'clientRestroomTotal' },
+                        { data: 'tradingHallArea' },
+                        { data: 'chequePerDay' },
+                        { data: 'revenueAvg' }
+                    ],
+                columnDefs:
+                    [
+                        {
+                            targets: 'hidden-column',
+                            visible: false
+                        }
+                    ],
+                dom:
+                    "<'row'<'col-sm-12 col-md-6 dt-action-group'B>>" +
+                    "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                    "<'row'<'col-sm-12'tr>>" +
+                    "<'row'<'col-sm-12 col-md-6'i>>" +
+                    "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
+                buttons:
+                    [
+                        {
+                            text: 'Добавить',
+                            titleAttr: "Создать новую территорию в регионе",
+                            className: 'dt-action-button',
+                            action: function (e, dt, node, config) {
+                                createTerritory();
+                            }
+                        },
+                        {
+                            text: 'Excel',
+                            titleAttr: "Выгрузить таблицу в Excel",
+                            className: 'dt-action-button',
+                            extend: 'excel',
+                            title: 'Список пользователей',
+                            messageTop: 'Дата выгрузки ' + todayString,
+                            exportOptions: {
+                                columns: '.exportable-column',
+                                modifier: { search: 'applied' },
+                                grouped_array_index: [4]
+                            }
+                        },
+                        {
+                            text: 'Фильтры',
+                            className: 'dt-action-button filter-button',
+                            action: function (e, dt, node, config) {
+                                $('#FilterModal').modal();
+                            }
+                        }
+                    ]
+            });
+        }
+
+        function changeRegion() {
+            var id = $('#RegionList').val();
+            var control = $('#TerritoryList');
+            control.empty();
+            if (id === '') {
+                control.trigger('change');
+                return;
+            }
+
+            var url = '/Master/LoadTerritories';
+            var requestData = { parent: id };
+            $.get(url,
+                requestData,
+                function (data) {
+                    $.each(data,
+                        function (index, element) {
+                            control.append($('<option>',
+                                {
+                                    value: element.id,
+                                    text: element.name
+                                }));
+                        });
+                    control.trigger('change');
+                });
+        }
+
+        function changeTerritory() {
+            debugger;
+            if ($.fn.DataTable.isDataTable('#StationGrid')) {
+                $('#StationGrid').DataTable().ajax.reload();
+            } else {
+                initializeDataTable();
+            }
+
+            history.replaceState(null, '', '/Station?region=' + $('#RegionList').val() + '&terr=' + $('#TerritoryList').val());
+        }
+    </script>
+}

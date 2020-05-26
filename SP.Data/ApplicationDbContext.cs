@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SP.Core.Master;
 using SP.Core.Model;
 
@@ -7,6 +8,15 @@ namespace SP.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
     {
+        public static readonly ILoggerFactory ApplicationDbLoggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder.AddDebug();
+            // или так с более детальной настройкой
+            //builder.AddFilter((category, level) => category == DbLoggerCategory.Database.Command.Name
+            //            && level == LogLevel.Information)
+            //       .AddConsole();
+        });
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
@@ -30,6 +40,8 @@ namespace SP.Data
         // таблицы с данными
         public DbSet<Person> Persons { get; set; }
         public DbSet<RegionalStructure> RegionStructure { get; set; }
+        public DbSet<GasStation> GasStations { get; set; }
+
         // справочники
         public DbSet<CashboxLocation> CashboxLocations { get; set; }
         public DbSet<ClientRestroom> ClientRestrooms { get; set; }

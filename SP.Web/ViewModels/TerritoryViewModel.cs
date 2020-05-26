@@ -14,10 +14,10 @@ namespace SP.Web.ViewModels
         /// <summary>
         /// Регион
         /// </summary>
-        public RegionModel Region { get; set; }
+        public RegionalStructureModel RegionalStructure { get; set; }
         /// <summary>
         /// Территория
         /// </summary>
-        public RegionModel Territory { get; set; }
+        public RegionalStructureModel Territory { get; set; }
     }
 }

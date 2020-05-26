@@ -29,13 +29,16 @@ namespace SP.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
+                {
+                    options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+                    options.UseLoggerFactory(ApplicationDbContext.ApplicationDbLoggerFactory);
+                });
             services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddRoles<ApplicationRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IMasterService, MasterService>();
+            services.AddScoped<IGasStationService, GasStationService>();
             services.AddControllersWithViews();
             services.AddRazorPages();
         }

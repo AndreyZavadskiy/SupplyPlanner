@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using SP.Service.Models;
 using SP.Service.Services;
 using SP.Web.ViewModels;
@@ -26,7 +27,7 @@ namespace SP.Web.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Region()
         {
-            var regions = await _masterService.GetRegionListAsync();
+            var regions = await _masterService.SelectRegionAsync();
             var list = new SelectList(regions, "Id", "Name").ToList();
             list.Insert(0, new SelectListItem("-- ВСЕ --", ""));
 
@@ -35,19 +36,35 @@ namespace SP.Web.Controllers
             return View("Region");
         }
 
-        public async Task<IActionResult> LoadRegionList()
+        /// <summary>
+        /// Получить простой список регионов
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IActionResult> LoadRegionsAsync()
         {
-            var regions = await _masterService.GetRegionListAsync();
+            var regions = await _masterService.SelectRegionAsync();
 
             return Json(regions);
         }
 
         /// <summary>
-        /// Получить список территорий
+        /// Получить простой список территорий
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> LoadTerritoriesAsync(int parent)
+        {
+            var territories = await _masterService.SelectTerritoryAsync(parent);
+
+            return Json(territories);
+        }
+
+        /// <summary>
+        /// Получить список регионов-территорий
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> LoadTerritoryList()
+        public async Task<IActionResult> LoadTerritoryListAsync()
         {
             var territories = await _masterService.GetTerritoryListAsync();
 
@@ -60,7 +77,7 @@ namespace SP.Web.Controllers
         /// <returns></returns>
         public IActionResult CreateRegion()
         {
-            var model = new RegionModel();
+            var model = new RegionalStructureModel();
 
             return View("_RegionEdit", model);
         }
@@ -72,7 +89,7 @@ namespace SP.Web.Controllers
         /// <returns></returns>
         public async Task<IActionResult> EditRegionAsync(int id)
         {
-            var model = await _masterService.GetRegionAsync(id);
+            var model = await _masterService.GetRegionalStructureItemAsync(id);
             if (model == null)
             {
                 // TODO: вывести сообщение об ошибке
@@ -88,7 +105,7 @@ namespace SP.Web.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> EditRegionAsync([FromForm] RegionModel model)
+        public async Task<IActionResult> EditRegionAsync([FromForm] RegionalStructureModel model)
         {
             string errorMessage;
             if (!ModelState.IsValid)
@@ -113,7 +130,7 @@ namespace SP.Web.Controllers
 
         public async Task<IActionResult> CreateTerritoryAsync(int parent)
         {
-            var parentRegion = await _masterService.GetRegionAsync(parent);
+            var parentRegion = await _masterService.GetRegionalStructureItemAsync(parent);
             if (parentRegion == null)
             {
                 // TODO: вывести сообщение об ошибке
@@ -122,8 +139,8 @@ namespace SP.Web.Controllers
             
             var model = new TerritoryViewModel
             {
-                Region = parentRegion,
-                Territory = new RegionModel
+                RegionalStructure = parentRegion,
+                Territory = new RegionalStructureModel
                 {
                     ParentId = parent
                 }
@@ -134,16 +151,16 @@ namespace SP.Web.Controllers
 
         public async Task<IActionResult> EditTerritoryAsync(int id)
         {
-            var territory = await _masterService.GetRegionAsync(id);
+            var territory = await _masterService.GetRegionalStructureItemAsync(id);
             if (territory == null || territory.ParentId == null)
             {
                 // TODO: вывести сообщение об ошибке
                 return null;
             }
-            var region = await _masterService.GetRegionAsync(territory.ParentId.Value);
+            var region = await _masterService.GetRegionalStructureItemAsync(territory.ParentId.Value);
             var model = new TerritoryViewModel
             {
-                Region = region,
+                RegionalStructure = region,
                 Territory = territory
             };
 

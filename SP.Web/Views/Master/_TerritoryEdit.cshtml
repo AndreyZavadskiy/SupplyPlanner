@@ -11,12 +11,12 @@
         </button>
     </div>
     <div class="modal-body">
-        <input asp-for="Region.Id" type="hidden" />
+        <input asp-for="RegionalStructure.Id" type="hidden" />
         <input asp-for="Territory.Id" type="hidden" />
         <input asp-for="Territory.ParentId" type="hidden" />
         <div class="form-group">
-            <label asp-for="Region.Name" class="control-label">Наименование региона</label>
-            <input asp-for="Region.Name" class="form-control" readonly="readonly" />
+            <label asp-for="RegionalStructure.Name" class="control-label">Наименование региона</label>
+            <input asp-for="RegionalStructure.Name" class="form-control" readonly="readonly" />
         </div>
         <div class="form-group">
             <label asp-for="Territory.Name" class="control-label">Наименование территории</label>

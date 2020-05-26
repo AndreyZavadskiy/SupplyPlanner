@@ -20,6 +20,7 @@ namespace SP.Core.Model
         public string StationNumber { get; set; }
         public int TerritoryId { get; set; }
         public int SettlementId { get; set; }
+        [StringLength(200)]
         public string Address { get; set; }
         public int StationLocationId { get; set; }
         public int StationStatusId { get; set; }
@@ -34,8 +35,10 @@ namespace SP.Core.Model
         public int PersonnelPerDay { get; set; }
         public int FuelDispenserTotal { get; set; }
         public int ClientRestroomTotal { get; set; }
+        [Column(TypeName = "decimal(8,2)")]
         public decimal TradingHallArea { get; set; }
         public int ChequePerDay { get; set; }
+        [Column(TypeName = "decimal(12,2)")]
         public decimal RevenueAvg { get; set; }
         public bool HasSibilla { get; set; }
         public bool HasBakery { get; set; }

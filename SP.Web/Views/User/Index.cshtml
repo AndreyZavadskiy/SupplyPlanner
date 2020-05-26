@@ -9,7 +9,7 @@
         <table id="UserGrid" class="table table-striped table-bordered nowrap" width="100%" cellspacing="0">
             <thead>
                 <tr>
-                    <th><input type="checkbox" class="selectAll" /></th>
+                    <th class="hidden-column"><input type="checkbox" class="selectAll" /></th>
                     <th></th>
                     <th>Статус</th>
                     <th class="exportable-column">Код</th>
@@ -44,7 +44,7 @@
 @section Scripts
 {
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             var d = new Date();
             var todayString = ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
             $('#UserGrid').DataTable({
@@ -65,7 +65,7 @@
                 columns: [
                     { defaultContent: '' },
                     {
-                        render: function(data, type, full, meta) {
+                        render: function (data, type, full, meta) {
                             return '<a href="/User/' + full.id + '"><img src="/images/pencil-square.svg"/></a>';
                         }
                     },
@@ -74,7 +74,7 @@
                         render: {
                             '_': 'active',
                             'filter': 'active',
-                            'display': function(data, type, full, meta) {
+                            'display': function (data, type, full, meta) {
                                 if (full.active === '1') return null;
                                 else return '<img src="/images/ban-solid-16.png" alt="blocked" title="Пользователь заблокирован" />';
                             }
@@ -87,13 +87,16 @@
                 ],
                 columnDefs: [
                     {
+                        targets: 'hidden-column',
+                        visible: false
+                    },
+                    {
                         targets: 0,
                         data: null,
                         orderable: false,
                         sorting: false,
                         className: 'select-checkbox',
-                        width: '1.5em',
-                        visible: false
+                        width: '1.5em'
                     },
                     {
                         targets: 1,
@@ -111,50 +114,50 @@
                 ],
                 dom:
                     "<'row'<'col-sm-12 col-md-6 dt-action-group'B>>" +
-                        "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                        "<'row'<'col-sm-12'tr>>" +
-                        "<'row'<'col-sm-12 col-md-6'i>>" +
-                        "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
-                buttons: [
-                    {
-                        text: 'Добавить',
-                        titleAttr: "Создать нового пользователя",
-                        className: 'dt-action-button',
-                        action: function(e, dt, node, config) {
-                            window.location.href = '/User/Create';
+                    "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                    "<'row'<'col-sm-12'tr>>" +
+                    "<'row'<'col-sm-12 col-md-6'i>>" +
+                    "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
+                buttons:
+                    [
+                        {
+                            text: 'Добавить',
+                            titleAttr: "Создать нового пользователя",
+                            className: 'dt-action-button',
+                            action: function (e, dt, node, config) {
+                                window.location.href = '/User/Create';
+                            }
+                        },
+                        {
+                            text: 'Excel',
+                            titleAttr: "Выгрузить таблицу в Excel",
+                            className: 'dt-action-button',
+                            extend: 'excel',
+                            title: 'Список пользователей',
+                            messageTop: 'Дата выгрузки ' + todayString,
+                            exportOptions: {
+                                columns: '.exportable-column',
+                                modifier: { search: 'applied' }
+                            }
+                        },
+                        {
+                            text: 'Фильтры',
+                            className: 'dt-action-button filter-button',
+                            action: function (e, dt, node, config) {
+                                $('#FilterModal').modal();
+                            }
                         }
-                    },
-                    {
-                        text: 'Excel',
-                        titleAttr: "Выгрузить таблицу в Excel",
-                        className: 'dt-action-button',
-                        extend: 'excel',
-                        title: 'Список пользователей',
-                        messageTop: 'Дата выгрузки ' + todayString,
-                        exportOptions: {
-                            columns: '.exportable-column',
-                            modifier: { search: 'applied' }
-                        }
-                    },
-                    {
-                        text: 'Фильтры',
-                        className: 'dt-action-button filter-button',
-                        action: function(e, dt, node, config) {
-                            $('#FilterModal').modal();
-                        }
-                    }
-                ],
+                    ],
                 select:
                 {
                     style: 'multi',
-                    selector:
-                        'td:first-child'
+                    selector: 'td:first-child'
                 }
             });
             var dt = $('#UserGrid').DataTable();
             // select all checkbox
             $(".selectAll").on("click",
-                function(e) {
+                function (e) {
                     if ($(this).is(":checked")) {
                         dt.rows().select();
                     } else {

@@ -1,4 +1,4 @@
-﻿@model SP.Service.Models.RegionModel
+﻿@model SP.Service.Models.RegionalStructureModel
 @{
     Layout = null;
 }
@@ -43,8 +43,7 @@
             var dt = $('#TerritoryGrid').DataTable();
             if (id === '0') {
                 // create
-                $('#RegionList')
-                    .append($('<option>',
+                $('#RegionList').append($('<option>',
                     {
                         value: data,
                         text: name

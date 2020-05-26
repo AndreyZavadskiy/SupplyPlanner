@@ -15,9 +15,10 @@ namespace SP.Service.Services
         Task<IEnumerable<DictionaryListItem>> GetDictionaryListAsync<T>()
             where T : DictionaryListItem;
 
-        Task<IEnumerable<DictionaryListItem>> GetRegionListAsync();
-        Task<RegionModel> GetRegionAsync(int id);
-        Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveRegionAsync(RegionModel model);
+        Task<RegionalStructureModel> GetRegionalStructureItemAsync(int id);
+        Task<IEnumerable<DictionaryListItem>> SelectRegionAsync();
+        Task<IEnumerable<DictionaryListItem>> SelectTerritoryAsync(int parent);
+        Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveRegionAsync(RegionalStructureModel model);
         Task<IEnumerable<TerritoryListItem>> GetTerritoryListAsync();
     }
 
@@ -44,7 +45,26 @@ namespace SP.Service.Services
             return list;
         }
 
-        public async Task<IEnumerable<DictionaryListItem>> GetRegionListAsync()
+        public async Task<RegionalStructureModel> GetRegionalStructureItemAsync(int id)
+        {
+            var region = await _context.RegionStructure.FindAsync(id);
+            if (region == null)
+            {
+                return null;
+            }
+
+            var regionModel = new RegionalStructureModel
+            {
+                Id = region.Id,
+                ParentId = region.ParentId,
+                Name = region.Name,
+                Inactive = !region.IsActive
+            };
+
+            return regionModel;
+        }
+
+        public async Task<IEnumerable<DictionaryListItem>> SelectRegionAsync()
         {
             var list = await _context.RegionStructure.AsNoTracking()
                 .Where(x => x.ParentId == null)
@@ -60,26 +80,23 @@ namespace SP.Service.Services
             return list;
         }
 
-        public async Task<RegionModel> GetRegionAsync(int id)
+        public async Task<IEnumerable<DictionaryListItem>> SelectTerritoryAsync(int parent)
         {
-            var region = await _context.RegionStructure.FindAsync(id);
-            if (region == null)
-            {
-                return null;
-            }
+            var list = await _context.RegionStructure.AsNoTracking()
+                .Where(x => x.ParentId == parent)
+                .Select(x => new DictionaryListItem
+                {
+                    Id = x.Id,
+                    Name = x.IsActive
+                        ? x.Name
+                        : $"{x.Name} (исключен)"
+                })
+                .ToArrayAsync();
 
-            var regionModel = new RegionModel
-            {
-                Id = region.Id,
-                ParentId = region.ParentId,
-                Name = region.Name,
-                Inactive = !region.IsActive
-            };
-
-            return regionModel;
+            return list;
         }
 
-        public async Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveRegionAsync(RegionModel model)
+        public async Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveRegionAsync(RegionalStructureModel model)
         {
             bool hasRegionWithSameName = await _context.RegionStructure.AnyAsync(x => x.Id != model.Id && x.Name == model.Name);
             if (hasRegionWithSameName)
@@ -95,7 +112,7 @@ namespace SP.Service.Services
             return await UpdateRegionAsync(model);
         }
 
-        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> CreateRegionAsync(RegionModel model)
+        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> CreateRegionAsync(RegionalStructureModel model)
         {
             var region = new RegionalStructure
             {
@@ -126,7 +143,7 @@ namespace SP.Service.Services
             return (false, null, errors);
         }
 
-        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> UpdateRegionAsync(RegionModel model)
+        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> UpdateRegionAsync(RegionalStructureModel model)
         {
             var region = await _context.RegionStructure.FindAsync(model.Id);
             if (region == null)
