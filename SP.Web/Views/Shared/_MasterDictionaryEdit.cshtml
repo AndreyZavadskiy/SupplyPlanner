@@ -1,11 +1,11 @@
-﻿@model SP.Service.Models.RegionalStructureModel
+﻿@model SP.Service.Models.DictionaryModel
 @{
     Layout = null;
 }
 
-<form id="EditRegionForm">
+<form id="EditForm">
     <div class="modal-header">
-        <h5 class="modal-title">Регион</h5>
+        <h5 class="modal-title">@ViewData["Title"]</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
         </button>
@@ -21,7 +21,7 @@
                 <input class="form-check-input" asp-for="Inactive" /> @Html.DisplayNameFor(model => model.Inactive)
             </label>
         </div>
-        <div id="EditRegionAlert" class="text-danger"></div>
+        <div id="EditAlert" class="text-danger"></div>
     </div>
     <div class="modal-footer form-row button-row">
         <button type="button" class="btn btn-primary" onclick="postForm();">Сохранить и закрыть</button>
@@ -31,31 +31,15 @@
 
 <script>
     function postForm() {
-        var url = '/Master/EditRegion';
-        var postData = $('#EditRegionForm').serialize();
+        var url = '/@ViewData["ClassName"]/Edit';
+        var postData = $('#EditForm').serialize();
         $.post(url, postData, function (data) {
             if (isNaN(data)) {
-                $('#EditRegionAlert').html(data);
+                $('#EditAlert').html(data);
                 return;
             }
-            var id = $('#Id').val();
-            var name = $('#Name').val();
-            var dt = $('#TerritoryGrid').DataTable();
-            if (id === '0') {
-                // create
-                $('#RegionList').append($('<option>',
-                    {
-                        value: data,
-                        text: name
-                        }))
-                    .val(data)
-                    .trigger('change');
-            } else {
-                // edit
-                $('#RegionList option[value="' + id + '"]').text(name);
-                dt.ajax.reload(null, false);
-            }
-            $('#RegionModal').modal('hide');
+            $('#DictionaryGrid').DataTable().ajax.reload(null, false);
+            $('#DictionaryModal').modal('hide');
         });
     }
 </script>

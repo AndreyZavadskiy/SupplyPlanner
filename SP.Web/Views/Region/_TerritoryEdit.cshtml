@@ -37,7 +37,7 @@
 
 <script>
     function postForm() {
-        var url = '/Master/EditTerritory';
+        var url = '/Region/EditTerritory';
         var postData = $('#EditTerritoryForm').serialize();
         $.post(url, postData, function (data) {
             if (isNaN(data)) {

@@ -9,7 +9,7 @@
         <div class="zero-gutters">
             <div class="form-group row col-6">
                 <label for="RegionList" class="control-label zero-gutters col-3">Регион</label>
-                <select id="RegionList" asp-items="ViewBag.Regions" class="col-9" onchange="changeRegion();"></select>
+                <select id="RegionList" asp-items="ViewBag.RegionList" class="col-9" onchange="changeRegion();"></select>
             </div>
             <div class="form-group row col-6">
                 <label for="TerritoryList" class="control-label zero-gutters col-3">Территория</label>
@@ -33,20 +33,28 @@
                     <th class="exportable-column">Населенный пункт</th>
                     <th class="exportable-column">Статус</th>
                     <th class="exportable-column">Местоположение</th>
-                    <th class="exportable-column">Кластер (уровень сервиса)</th>
-                    <th class="exportable-column">Формат операторной</th>
-                    <th class="exportable-column">Система управления</th>
-                    <th class="exportable-column">Режим работы торгового зала</th>
-                    <th class="exportable-column">Санузел для клиентов</th>
-                    <th class="exportable-column">Расчетно-кассовый узел</th>
-                    <th class="exportable-column">Размер торгового зала</th>
-                    <th class="exportable-column">Количество касс</th>
-                    <th class="exportable-column">Количество персонала в сутки</th>
-                    <th class="exportable-column">Количество ТРК</th>
-                    <th class="exportable-column">Количество сан.комнат для клиентов</th>
-                    <th class="exportable-column">Площадь торгового зала</th>
-                    <th class="exportable-column">Среднее количество чеков в сутки</th>
+                    <th class="exportable-column">Кластер <br/>(уровень сервиса)</th>
+                    <th class="exportable-column">Формат <br/>операторной</th>
+                    <th class="exportable-column">Система <br/>управления</th>
+                    <th class="exportable-column">Режим работы <br/>торгового зала</th>
+                    <th class="exportable-column">Санузел для <br/>клиентов</th>
+                    <th class="exportable-column">Расчетно-<br/>кассовый узел</th>
+                    <th class="exportable-column">Размер <br/>торгового зала</th>
+                    <th class="exportable-column">Кол-во <br/>касс</th>
+                    <th class="exportable-column">Кол-во персонала <br/>в сутки</th>
+                    <th class="exportable-column">Кол-во ТРК</th>
+                    <th class="exportable-column">Кол-во сан.комнат <br/>для клиентов</th>
+                    <th class="exportable-column">Площадь <br/>торгового зала</th>
+                    <th class="exportable-column">Среднее кол-во <br/>чеков в сутки</th>
                     <th class="exportable-column">Выручка в месяц</th>
+                    <th class="exportable-column">Сибилла</th>
+                    <th class="exportable-column">Выпечка</th>
+                    <th class="exportable-column">Торты</th>
+                    <th class="exportable-column">Фри</th>
+                    <th class="exportable-column">Мармит</th>
+                    <th class="exportable-column">Кухня</th>
+                    <th class="exportable-column">Кол-во <br/>кофемашин</th>
+                    <th class="exportable-column">Кол-во посудомоечных <br/>машин</th>
                 </tr>
             </thead>
         </table>
@@ -107,111 +115,149 @@
                     datatype: 'json'
                 },
                 columns:
-                    [
-                        { defaultContent: '' },
-                        {
-                            render: function (data, type, full, meta) {
-                                return '<a href="#" onclick="editTerritory(' + full.id + ');"><img src="/images/pencil-square.svg"/></a>';
-                            }
-                        },
-                        { data: 'regionId' },
-                        { data: 'territoryId' },
-                        { data: 'regionName' },
-                        { data: 'territoryName' },
-                        { data: 'stationNumber' },
-                        { data: 'stationStatusName' },
-                        { data: 'settlementName' },
-                        { data: 'stationLocationName' },
-                        { data: 'serviceLevelName' },
-                        { data: 'operatorRoomFormatName' },
-                        { data: 'managementSystemName' },
-                        { data: 'tradingHallOperatingModeName' },
-                        { data: 'clientRestroomName' },
-                        { data: 'cashboxLocationName' },
-                        { data: 'tradingHallSizeName' },
-                        { data: 'cashboxTotal' },
-                        { data: 'personnelPerDay' },
-                        { data: 'fuelDispenserTotal' },
-                        { data: 'clientRestroomTotal' },
-                        { data: 'tradingHallArea' },
-                        { data: 'chequePerDay' },
-                        { data: 'revenueAvg' }
-                    ],
-                columnDefs:
-                    [
-                        {
-                            targets: 'hidden-column',
-                            visible: false
+                [
+                    { defaultContent: '' },
+                    {
+                        render: function (data, type, full, meta) {
+                            return '<a href="/Station/' + full.id + '"><img src="/images/pencil-square.svg"/></a>';
                         }
-                    ],
+                    },
+                    { data: 'regionId' },
+                    { data: 'territoryId' },
+                    { data: 'regionName' },
+                    { data: 'territoryName' },
+                    { data: 'stationNumber' },
+                    { data: 'stationStatusName' },
+                    { data: 'settlementName' },
+                    { data: 'stationLocationName' },
+                    { data: 'serviceLevelName' },
+                    { data: 'operatorRoomFormatName' },
+                    { data: 'managementSystemName' },
+                    { data: 'tradingHallOperatingModeName' },
+                    { data: 'clientRestroomName' },
+                    { data: 'cashboxLocationName' },
+                    { data: 'tradingHallSizeName' },
+                    { data: 'cashboxTotal' },
+                    { data: 'personnelPerDay' },
+                    { data: 'fuelDispenserTotal' },
+                    { data: 'clientRestroomTotal' },
+                    { data: 'tradingHallArea' },
+                    { data: 'chequePerDay' },
+                    { data: 'revenueAvg' },
+                    {
+                        render: function (data, type, full, meta) {
+                            return full.hasSibilla ? 'есть' : '';
+                        }
+                    },
+                    {
+                        render: function (data, type, full, meta) {
+                            return full.hasBakery ? 'есть' : '';
+                        }
+                    },
+                    {
+                        render: function (data, type, full, meta) {
+                            return full.hasCakes ? 'есть' : '';
+                        }
+                    },
+                    {
+                        render: function (data, type, full, meta) {
+                            return full.hasFrenchFry ? 'есть' : '';
+                        }
+                    },
+                    {
+                        render: function (data, type, full, meta) {
+                            return full.hasMarmite ? 'есть' : '';
+                        }
+                    },
+                    {
+                        render: function (data, type, full, meta) {
+                            return full.hasKitchen ? 'есть' : '';
+                        }
+                    },
+                    { data: 'coffeeMachineTotal' },
+                    { data: 'dishWashingMachineTotal' }
+                ],
+                columnDefs:
+                [
+                    {
+                        targets: 'hidden-column',
+                        visible: false
+                    }
+                ],
                 dom:
                     "<'row'<'col-sm-12 col-md-6 dt-action-group'B>>" +
-                    "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                    "<'row'<'col-sm-12'tr>>" +
-                    "<'row'<'col-sm-12 col-md-6'i>>" +
-                    "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
+                        "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                        "<'row'<'col-sm-12'tr>>" +
+                        "<'row'<'col-sm-12 col-md-6'i>>" +
+                        "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
                 buttons:
-                    [
-                        {
-                            text: 'Добавить',
-                            titleAttr: "Создать новую территорию в регионе",
-                            className: 'dt-action-button',
-                            action: function (e, dt, node, config) {
-                                createTerritory();
-                            }
-                        },
-                        {
-                            text: 'Excel',
-                            titleAttr: "Выгрузить таблицу в Excel",
-                            className: 'dt-action-button',
-                            extend: 'excel',
-                            title: 'Список пользователей',
-                            messageTop: 'Дата выгрузки ' + todayString,
-                            exportOptions: {
-                                columns: '.exportable-column',
-                                modifier: { search: 'applied' },
-                                grouped_array_index: [4]
-                            }
-                        },
-                        {
-                            text: 'Фильтры',
-                            className: 'dt-action-button filter-button',
-                            action: function (e, dt, node, config) {
-                                $('#FilterModal').modal();
-                            }
+                [
+                    {
+                        text: 'Добавить',
+                        titleAttr: "Создать новую территорию в регионе",
+                        className: 'dt-action-button',
+                        action: function (e, dt, node, config) {
+                            createGasStation();
                         }
-                    ]
+                    },
+                    {
+                        text: 'Excel',
+                        titleAttr: "Выгрузить таблицу в Excel",
+                        className: 'dt-action-button',
+                        extend: 'excel',
+                        title: 'Список АЗС',
+                        messageTop: 'Дата выгрузки ' + todayString,
+                        exportOptions: {
+                            columns: '.exportable-column',
+                            modifier: { search: 'applied' },
+                            grouped_array_index: [4, 5]
+                        }
+                    },
+                    {
+                        text: 'Фильтры',
+                        className: 'dt-action-button filter-button',
+                        action: function (e, dt, node, config) {
+                            $('#FilterModal').modal();
+                        }
+                    }
+                ]
             });
         }
 
         function changeRegion() {
-            var id = $('#RegionList').val();
-            var control = $('#TerritoryList');
-            control.empty();
-            if (id === '') {
-                control.trigger('change');
-                return;
+            var region = '@ViewData["SelectedRegion"]';
+            var regionList = $('#RegionList');
+            var terrList = $('#TerritoryList');
+            if (region === '') {
+                regionList.prop('selectedIndex', 0);
+                region = regionList.val();
             }
-
-            var url = '/Master/LoadTerritories';
-            var requestData = { parent: id };
+            terrList.empty();
+            var url = '/Region/LoadTerritories';
+            var requestData = { parent: region };
             $.get(url,
                 requestData,
                 function (data) {
                     $.each(data,
                         function (index, element) {
-                            control.append($('<option>',
+                            terrList.append($('<option>',
                                 {
                                     value: element.id,
                                     text: element.name
                                 }));
                         });
-                    control.trigger('change');
+
+                    var terr = '@ViewData["SelectedTerritory"]';
+                    if (terr === '') {
+                        terrList.prop('selectedIndex', 0);
+                    } else {
+                        terrList.val(terr);
+                    }
+                    terrList.trigger('change');
                 });
         }
 
         function changeTerritory() {
-            debugger;
             if ($.fn.DataTable.isDataTable('#StationGrid')) {
                 $('#StationGrid').DataTable().ajax.reload();
             } else {
@@ -219,6 +265,10 @@
             }
 
             history.replaceState(null, '', '/Station?region=' + $('#RegionList').val() + '&terr=' + $('#TerritoryList').val());
+        }
+
+        function createGasStation() {
+            window.location = '/Station/Create?region=' + $('#RegionList').val() + '&terr=' + $('#TerritoryList').val();
         }
     </script>
 }

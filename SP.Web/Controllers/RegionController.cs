@@ -12,11 +12,11 @@ using SP.Web.ViewModels;
 
 namespace SP.Web.Controllers
 {
-    public class MasterController : Controller
+    public class RegionController : Controller
     {
         private readonly IMasterService _masterService;
 
-        public MasterController(IMasterService masterService)
+        public RegionController(IMasterService masterService)
         {
             _masterService = masterService;
         }
@@ -31,7 +31,7 @@ namespace SP.Web.Controllers
             var list = new SelectList(regions, "Id", "Name").ToList();
             list.Insert(0, new SelectListItem("-- ВСЕ --", ""));
 
-            ViewData["Regions"] = list;
+            ViewData["RegionList"] = list;
 
             return View("Region");
         }
@@ -136,7 +136,7 @@ namespace SP.Web.Controllers
                 // TODO: вывести сообщение об ошибке
                 return null;
             }
-            
+
             var model = new TerritoryViewModel
             {
                 RegionalStructure = parentRegion,

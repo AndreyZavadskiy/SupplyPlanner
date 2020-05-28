@@ -1,0 +1,249 @@
+﻿@model SP.Service.Models.GasStationModel
+
+@{
+    ViewData["Title"] = "User";
+    string actionMessageClass = TempData["ActionMessageClass"]?.ToString();
+}
+
+<h1>Карточка пользователя</h1>
+
+<form asp-action="Edit" method="post">
+    <div class="zero-gutters col-xl-9">
+        <input type="hidden" asp-for="Id" />
+        <div id="action-message" class="alert alert-row @actionMessageClass">
+            @Html.Raw(TempData["ActionMessage"])
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-8">
+                <label asp-for="RegionId" class="control-label col-3"></label>
+                <select asp-for="RegionId" asp-items="ViewBag.RegionList" class="col-9"></select>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-8">
+                <label asp-for="TerritoryId" class="control-label col-3"></label>
+                <select asp-for="TerritoryId" asp-items="ViewBag.TerritoryList" class="col-9"></select>
+                <span asp-validation-for="TerritoryId" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-4">
+                <label asp-for="Code" class="control-label col-6"></label>
+                <input asp-for="Code" class="form-control col-6" readonly="readonly" />
+                <span asp-validation-for="Code" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-4">
+                <label asp-for="CodeKSSS" class="control-label col-6"></label>
+                <input asp-for="CodeKSSS" class="form-control col-6" />
+                <span asp-validation-for="CodeKSSS" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-4">
+                <label asp-for="CodeSAP" class="control-label col-6"></label>
+                <input asp-for="CodeSAP" class="form-control col-6" />
+                <span asp-validation-for="CodeSAP" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-4">
+                <label asp-for="StationNumber" class="control-label col-6"></label>
+                <input asp-for="StationNumber" class="form-control col-6" />
+                <span asp-validation-for="StationNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-8">
+                <label asp-for="SettlementId" class="control-label col-3"></label>
+                <select asp-for="SettlementId" asp-items="ViewBag.SettlementList" class="col-9"></select>
+                <span asp-validation-for="SettlementId" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-12">
+                <label asp-for="Address" class="control-label col-2"></label>
+                <input asp-for="Address" class="form-control col-10" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="StationStatusId" class="control-label col-4"></label>
+                <select asp-for="StationStatusId" asp-items="ViewBag.StationStatusList" class="col-8"></select>
+                <span asp-validation-for="StationStatusId" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="StationLocationId" class="control-label col-4">Место-<br />расположение</label>
+                <select asp-for="StationLocationId" asp-items="ViewBag.StationLocationList" class="col-8"></select>
+                <span asp-validation-for="StationLocationId" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="ServiceLevelId" class="control-label col-4"></label>
+                <select asp-for="ServiceLevelId" asp-items="ViewBag.ServiceLevelList" class="col-8"></select>
+                <span asp-validation-for="ServiceLevelId" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="OperatorRoomFormatId" class="control-label col-4"></label>
+                <select asp-for="OperatorRoomFormatId" asp-items="ViewBag.OperatorRoomFormatList" class="col-8"></select>
+                <span asp-validation-for="OperatorRoomFormatId" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="ManagementSystemId" class="control-label col-4"></label>
+                <select asp-for="ManagementSystemId" asp-items="ViewBag.ManagementSystemList" class="col-8"></select>
+                <span asp-validation-for="ManagementSystemId" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="TradingHallOperatingModeId" class="control-label col-4"></label>
+                <select asp-for="TradingHallOperatingModeId" asp-items="ViewBag.TradingHallOperatingModeList" class="col-8"></select>
+                <span asp-validation-for="TradingHallOperatingModeId" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="PersonnelPerDay" class="control-label col-4"></label>
+                <input asp-for="PersonnelPerDay" class="form-control col-4" />
+                <span asp-validation-for="PersonnelPerDay" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="FuelDispenserTotal" class="control-label col-4"></label>
+                <input asp-for="FuelDispenserTotal" class="form-control col-4" />
+                <span asp-validation-for="FuelDispenserTotal" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="CashboxTotal" class="control-label col-4"></label>
+                <input asp-for="CashboxTotal" class="form-control col-4" />
+                <span asp-validation-for="CashboxTotal" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="CashboxLocationId" class="control-label col-4"></label>
+                <select asp-for="CashboxLocationId" asp-items="ViewBag.CashboxLocationList" class="col-8"></select>
+                <span asp-validation-for="CashboxLocationId" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="TradingHallSizeId" class="control-label col-4"></label>
+                <select asp-for="TradingHallSizeId" asp-items="ViewBag.TradingHallSizeList" class="col-8"></select>
+                <span asp-validation-for="TradingHallSizeId" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="TradingHallArea" class="control-label col-4"></label>
+                <input asp-for="TradingHallArea" class="form-control col-4" />
+                <span asp-validation-for="TradingHallArea" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="ChequePerDay" class="control-label col-4"></label>
+                <input asp-for="ChequePerDay" class="form-control col-4" />
+                <span asp-validation-for="ChequePerDay" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="RevenueAvg" class="control-label col-4"></label>
+                <input asp-for="RevenueAvg" class="form-control col-4" />
+                <span asp-validation-for="RevenueAvg" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="ClientRestroomId" class="control-label col-4"></label>
+                <select asp-for="ClientRestroomId" asp-items="ViewBag.ClientRestroomList" class="col-8"></select>
+                <span asp-validation-for="ClientRestroomId" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="ClientRestroomTotal" class="control-label col-4"></label>
+                <input asp-for="ClientRestroomTotal" class="form-control col-4" />
+                <span asp-validation-for="ClientRestroomTotal" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row zero-gutters col-6">
+                <div class="form-group row col-4"></div>
+                <div class="form-group row form-check col-8">
+                    <label class="form-check-label">
+                        <input asp-for="HasJointRestroomEntrance" /> @Html.DisplayNameFor(model => model.HasJointRestroomEntrance)
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row zero-gutters col-6">
+                <div class="form-group row col-4"></div>
+                <div class="form-group row form-check col-8">
+                    <label class="form-check-label">
+                        <input asp-for="HasSibilla" /> @Html.DisplayNameFor(model => model.HasSibilla)
+                    </label>
+                </div>
+            </div>
+            <div class="form-group row zero-gutters col-6">
+                <div class="form-group row col-4"></div>
+                <div class="form-group row form-check col-8">
+                    <label class="form-check-label">
+                        <input asp-for="HasBakery" /> @Html.DisplayNameFor(model => model.HasBakery)
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row zero-gutters col-6">
+                <div class="form-group row col-4"></div>
+                <div class="form-group row form-check col-8">
+                    <label class="form-check-label">
+                        <input asp-for="HasCakes" /> @Html.DisplayNameFor(model => model.HasCakes)
+                    </label>
+                </div>
+            </div>
+            <div class="form-group row zero-gutters col-6">
+                <div class="form-group row col-4"></div>
+                <div class="form-group row form-check col-8">
+                    <label class="form-check-label">
+                        <input asp-for="HasFrenchFry" /> @Html.DisplayNameFor(model => model.HasFrenchFry)
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row zero-gutters col-6">
+                <div class="form-group row col-4"></div>
+                <div class="form-group row form-check col-8">
+                    <label class="form-check-label">
+                        <input asp-for="HasMarmite" /> @Html.DisplayNameFor(model => model.HasMarmite)
+                    </label>
+                </div>
+            </div>
+            <div class="form-group row zero-gutters col-6">
+                <div class="form-group row col-4"></div>
+                <div class="form-group row form-check col-8">
+                    <label class="form-check-label">
+                        <input asp-for="HasKitchen" /> @Html.DisplayNameFor(model => model.HasKitchen)
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="CoffeeMachineTotal" class="control-label col-4"></label>
+                <input asp-for="CoffeeMachineTotal" class="form-control col-4" />
+                <span asp-validation-for="CoffeeMachineTotal" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="DishWashingMachineTotal" class="control-label col-4"></label>
+                <input asp-for="DishWashingMachineTotal" class="form-control col-4" />
+                <span asp-validation-for="DishWashingMachineTotal" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row button-row">
+            <input type="submit" value="Сохранить и вернуться" class="btn btn-primary" />
+            <button asp-action="Save" class="btn btn-success">Сохранить</button>
+            <button asp-action="Index" class="btn btn-secondary">Вернуться</button>
+        </div>
+    </div>
+</form>
+
+@section Scripts
+{
+}

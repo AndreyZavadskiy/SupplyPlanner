@@ -9,7 +9,7 @@
         <div class="form-row zero-gutters">
             <div class="form-group row col-6">
                 <label for="RegionList" class="control-label zero-gutters col-3">Регион</label>
-                <select id="RegionList" asp-items="ViewBag.Regions" class="col-9" onchange="setRegionFilter();"></select>
+                <select id="RegionList" asp-items="ViewBag.RegionList" class="col-9" onchange="setRegionFilter();"></select>
             </div>
             <div class="form-group row button-group-right col-6">
                 <button class="btn btn-secondary" onclick="createRegion();">Добавить</button>
@@ -91,7 +91,7 @@
                     [10, 25, 50, 100, 'Все']
                 ],
                 ajax: {
-                    url: '/Master/LoadTerritoryList',
+                    url: '/Region/LoadTerritoryList',
                     type: 'POST',
                     datatype: 'json'
                 },
@@ -226,7 +226,7 @@
         }
 
         function createRegion() {
-            var url = '/Master/CreateRegion';
+            var url = '/Region/CreateRegion';
             $.ajax({
                 type: "GET",
                 url: url,
@@ -249,7 +249,7 @@
                 alert('Выберите регион из списка');
                 return;
             }
-            var url = '/Master/EditRegion';
+            var url = '/Region/EditRegion';
             $.ajax({
                 type: "GET",
                 url: url,
@@ -275,7 +275,7 @@
                 alert('Выберите регион из списка');
                 return;
             }
-            var url = '/Master/CreateTerritory';
+            var url = '/Region/CreateTerritory';
             $.ajax({
                 type: "GET",
                 url: url,
@@ -296,7 +296,7 @@
         }
 
         function editTerritory(id) {
-            var url = '/Master/EditTerritory';
+            var url = '/Region/EditTerritory';
             $.ajax({
                 type: "GET",
                 url: url,

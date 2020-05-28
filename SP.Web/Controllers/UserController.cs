@@ -75,7 +75,7 @@ namespace SP.Web.Controllers
         private async Task<IActionResult> PrepareUserViewAsync(UserModel user)
         {
             var roleList = await _userService.GetRolesAsync();
-            ViewData["Roles"] = new SelectList(roleList, "Id", "Name");
+            ViewData["RoleList"] = new SelectList(roleList, "Id", "Name");
 
             return View("User", user);
         }
@@ -99,10 +99,10 @@ namespace SP.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> SaveAsync([FromForm] UserModel model)
         {
-            return await SaveUser(model, id: model.Id);
+            return await SaveUser(model);
         }
 
-        private async Task<IActionResult> SaveUser(UserModel model, string actionName = null, int? id = null)
+        private async Task<IActionResult> SaveUser(UserModel model, string actionName = null)
         {
             if (!ModelState.IsValid)
             {
@@ -112,27 +112,23 @@ namespace SP.Web.Controllers
             }
 
             var result = await _userService.SaveUserAsync(model);
-            if (result.Success)
-            {
-                id = result.Id;
-                TempData["ActionMessage"] = "Запись сохранена в базе данных.";
-                TempData["ActionMessageClass"] = "alert-info";
-            }
-            else
+            if (!result.Success)
             {
                 string errorMessage = string.Join("<br/>", result.Errors);
                 TempData["ActionMessage"] = $"Ошибки при сохранении записи:<br/>{errorMessage}";
                 TempData["ActionMessageClass"] = "alert-danger";
+                return await PrepareUserViewAsync(model);
             }
 
-            await _userService.SaveUserAsync(model);
-
-            if (id == null)
+            if (!string.IsNullOrWhiteSpace(actionName))
             {
                 return RedirectToAction(actionName);
             }
 
-            return Redirect($"/User/{id}");
+            TempData["ActionMessage"] = "Запись сохранена в базе данных.";
+            TempData["ActionMessageClass"] = "alert-info";
+
+            return Redirect($"/User/{result.Id}");
         }
     }
 }

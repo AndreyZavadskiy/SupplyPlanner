@@ -142,7 +142,7 @@ namespace SP.Service.Services
                 return await InsertUserAsync(model);
             }
 
-            return await UpdateUserAsync(model);
+            return await UpdateUserAsync(dbPerson, model);
         }
 
         private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> InsertUserAsync(UserModel model)
@@ -221,14 +221,8 @@ namespace SP.Service.Services
             return (false, null, errors);
         }
 
-        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> UpdateUserAsync(UserModel model)
+        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> UpdateUserAsync(Person person, UserModel model)
         {
-            var person = await _context.Persons.FindAsync(model.Id);
-            if (person == null)
-            {
-                return (false, model.Id, new[] {"Пользователь не найден в базе данных."});
-            }
-
             var appUser = await _userManager.FindByIdAsync(person.AspNetUserId);
             if (appUser == null)
             {

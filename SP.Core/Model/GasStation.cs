@@ -13,6 +13,8 @@ namespace SP.Core.Model
     public class GasStation
     {
         public int Id { get; set; }
+        [StringLength(20)]
+        public string Code { get; set; }
         public int CodeKSSS { get; set; }
         [StringLength(20)]
         public string CodeSAP { get; set; }
@@ -40,6 +42,7 @@ namespace SP.Core.Model
         public int ChequePerDay { get; set; }
         [Column(TypeName = "decimal(12,2)")]
         public decimal RevenueAvg { get; set; }
+        public bool HasJointRestroomEntrance { get; set; }
         public bool HasSibilla { get; set; }
         public bool HasBakery { get; set; }
         public bool HasCakes { get; set; }

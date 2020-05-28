@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using SP.Core.Master;
 using SP.Core.Model;
 using SP.Data;
 using SP.Service.Models;
@@ -13,7 +14,13 @@ namespace SP.Service.Services
     public interface IMasterService
     {
         Task<IEnumerable<DictionaryListItem>> GetDictionaryListAsync<T>()
-            where T : DictionaryListItem;
+            where T : DictionaryItem;
+
+        Task<DictionaryModel> GetDictionaryModelAsync<T>(int id)
+            where T : DictionaryItem;
+
+        Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveDictionaryAsync<T>(DictionaryModel model)
+            where T : DictionaryItem, new();
 
         Task<RegionalStructureModel> GetRegionalStructureItemAsync(int id);
         Task<IEnumerable<DictionaryListItem>> SelectRegionAsync();
@@ -31,19 +38,88 @@ namespace SP.Service.Services
             _context = context;
         }
 
+        #region Общие справочники
+
         public async Task<IEnumerable<DictionaryListItem>> GetDictionaryListAsync<T>()
-            where T : DictionaryListItem
+            where T : DictionaryItem
         {
             var list = await _context.Set<T>().AsNoTracking()
                 .Select(x => new DictionaryListItem
                 {
                     Id = x.Id,
-                    Name = x.Name
+                    Name = x.Name,
+                    Active = x.IsActive ? "1" : "0"
                 })
                 .ToArrayAsync();
 
             return list;
         }
+
+        public async Task<DictionaryModel> GetDictionaryModelAsync<T>(int id)
+            where T : DictionaryItem
+        {
+            var item = await _context.Set<T>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            if (item == null)
+            {
+                return null;
+            }
+
+            var result = new DictionaryModel
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Inactive = !item.IsActive
+            };
+
+            return result;
+        }
+
+        public async Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveDictionaryAsync<T>(DictionaryModel model)
+            where T : DictionaryItem, new()
+        {
+            var dbItem = await _context.Set<T>().FirstOrDefaultAsync(x => x.Id == model.Id);
+
+            if (dbItem == null)
+            {
+                T newItem = new T
+                {
+                    Id = model.Id,
+                    Name = model.Name,
+                    IsActive = !model.Inactive
+                };
+                await _context.Set<T>().AddAsync(newItem);
+            }
+            else
+            {
+                dbItem.Name = model.Name;
+                dbItem.IsActive = !model.Inactive;
+                _context.Set<T>().Update(dbItem);
+            }
+
+            var errors = new List<string>();
+            try
+            {
+                await _context.SaveChangesAsync();
+
+                return (true, model.Id, null);
+            }
+            catch (DbUpdateException ex)
+            {
+                Debug.WriteLine(ex);
+                errors.Add("Невозможно сохранить изменения в базе данных. Если ошибка повторится, обратитесь в тех.поддержку.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                errors.Add("Ошибка изменения записи справочника в системе.");
+            }
+
+            return (false, null, errors);
+        }
+
+        #endregion
+
+        #region Регионы и территории
 
         public async Task<RegionalStructureModel> GetRegionalStructureItemAsync(int id)
         {
@@ -101,7 +177,7 @@ namespace SP.Service.Services
             bool hasRegionWithSameName = await _context.RegionStructure.AnyAsync(x => x.Id != model.Id && x.Name == model.Name);
             if (hasRegionWithSameName)
             {
-                return (false, null, new[] {"Регион с таким наименованием уже существует. Нельзя создавать дубли."});
+                return (false, null, new[] { "Регион с таким наименованием уже существует. Нельзя создавать дубли." });
             }
 
             if (model.Id == 0)
@@ -196,5 +272,7 @@ namespace SP.Service.Services
 
             return list;
         }
+
+        #endregion
     }
 }
