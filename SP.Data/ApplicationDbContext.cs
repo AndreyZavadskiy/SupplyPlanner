@@ -41,6 +41,11 @@ namespace SP.Data
         public DbSet<Person> Persons { get; set; }
         public DbSet<RegionalStructure> RegionStructure { get; set; }
         public DbSet<GasStation> GasStations { get; set; }
+        public DbSet<NomenclatureGroup> NomenclatureGroups { get; set; }
+        public DbSet<Nomenclature> Nomenclatures { get; set; }
+        public DbSet<StageInventory> StageInventories { get; set; }
+        public DbSet<Inventory> Inventories { get; set; }
+        public DbSet<Requirement> Requirements { get; set; }
 
         // справочники
         public DbSet<CashboxLocation> CashboxLocations { get; set; }
@@ -52,6 +57,6 @@ namespace SP.Data
         public DbSet<StationStatus> StationStatuses { get; set; }
         public DbSet<TradingHallOperatingMode> TradingHallOperatingModes { get; set; }
         public DbSet<TradingHallSize> TradingHallSizes { get; set; }
-
+        public DbSet<MeasureUnit> MeasureUnits { get; set; }
     }
 }

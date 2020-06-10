@@ -53,6 +53,12 @@ namespace SP.Service.Models
         [PasswordPropertyText]
         public string Password { get; set; }
         /// <summary>
+        /// Повтор пароля
+        /// </summary>
+        [DisplayName("Повтор пароля")]
+        [PasswordPropertyText]
+        public string PasswordRepeat { get; set; }
+        /// <summary>
         /// Email
         /// </summary>
         [Required(ErrorMessage = "Поле Email является обязательным.")]

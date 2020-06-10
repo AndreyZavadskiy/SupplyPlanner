@@ -3,10 +3,10 @@
 namespace SP.Core.Master
 {
     /// <summary>
-    /// Населенный пункт
+    /// 123456789
     /// </summary>
-    [Table("Settlement", Schema = "dic")]
-    public class Settlement : DictionaryItem
+    [Table("MeasureUnit", Schema = "dic")]
+    public class MeasureUnit : DictionaryItem
     {
     }
 }

@@ -52,6 +52,8 @@ namespace SP.Web.Controllers
                 RegistrationDate = DateTime.Now
             };
 
+            ViewData["IsCreating"] = true;
+
             return await PrepareUserViewAsync(newUser);
         }
 
@@ -104,10 +106,27 @@ namespace SP.Web.Controllers
 
         private async Task<IActionResult> SaveUser(UserModel model, string actionName = null)
         {
+            if (model.Id == 0)
+            {
+                if (string.IsNullOrWhiteSpace(model.Password))
+                {
+                    ModelState.AddModelError("Password", "Не задан пароль пользователя");
+                }
+                else if (model.Password != model.PasswordRepeat)
+                {
+                    ModelState.AddModelError("Password", "Пароли не совпадают");
+                }
+            }
+
             if (!ModelState.IsValid)
             {
                 TempData["ActionMessage"] = "Проверьте правильность заполнения полей.";
                 TempData["ActionMessageClass"] = "alert-danger";
+                if (model.Id == 0)
+                {
+                    ViewData["IsCreating"] = true;
+                }
+
                 return await PrepareUserViewAsync(model);
             }
 
