@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SP.Data;
+using SP.Service.Background;
 using SP.Service.Services;
 
 namespace SP.Web
@@ -36,6 +37,7 @@ namespace SP.Web
             services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddRoles<ApplicationRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddSingleton<IBackgroundCoordinator, BackgroundCoordinator>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IMasterService, MasterService>();
             services.AddScoped<IGasStationService, GasStationService>();

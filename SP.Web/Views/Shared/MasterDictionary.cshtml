@@ -44,7 +44,7 @@
                 ajax: {
                     url: '/@ViewData["ClassName"]/LoadList',
                     type: 'POST',
-                    datatype: 'json'
+                    dataType: 'json'
                 },
                 columns: [
                     { defaultContent: '' },
@@ -162,7 +162,7 @@
                 url: url,
                 contentType: "application/json; charset=utf-8",
                 data: { "id": id },
-                datatype: "json",
+                dataType: "json",
                 success: function (data) {
                     $('#DictionaryModalContent').html(data);
                     $('#DictionaryModal').modal({

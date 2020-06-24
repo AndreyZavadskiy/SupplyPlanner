@@ -8,8 +8,8 @@
 <h1>Карточка пользователя</h1>
 
 <form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
     <div class="zero-gutters col-xl-9">
-        <input type="hidden" asp-for="Id" />
         <div id="action-message" class="alert alert-row @actionMessageClass">
             @Html.Raw(TempData["ActionMessage"])
         </div>

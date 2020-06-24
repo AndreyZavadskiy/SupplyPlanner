@@ -93,7 +93,7 @@
                 ajax: {
                     url: '/Region/LoadTerritoryList',
                     type: 'POST',
-                    datatype: 'json'
+                    dataType: 'json'
                 },
                 columns: [
                     { defaultContent: '' },
@@ -255,7 +255,7 @@
                 url: url,
                 contentType: "application/json; charset=utf-8",
                 data: { "id": id },
-                datatype: "json",
+                dataType: "json",
                 success: function (data) {
                     $('#RegionModalContent').html(data);
                     $('#RegionModal').modal({
@@ -281,7 +281,7 @@
                 url: url,
                 contentType: "application/json; charset=utf-8",
                 data: { "parent": parent },
-                datatype: "json",
+                dataType: "json",
                 success: function (data) {
                     $('#TerritoryModalContent').html(data);
                     $('#TerritoryModal').modal({
@@ -302,7 +302,7 @@
                 url: url,
                 contentType: "application/json; charset=utf-8",
                 data: { "id": id },
-                datatype: "json",
+                dataType: "json",
                 success: function (data) {
                     $('#TerritoryModalContent').html(data);
                     $('#TerritoryModal').modal({

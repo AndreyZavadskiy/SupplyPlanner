@@ -42,7 +42,7 @@ namespace SP.Web.Controllers
             return Json(new { data = userList });
         }
 
-        [Route("User/Create")]
+        [Route("[controller]/Create")]
         public async Task<IActionResult> CreateAsync()
         {
             var newUser = new UserModel
@@ -62,7 +62,7 @@ namespace SP.Web.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [Route("User/{id}")]
+        [Route("[controller]/{id}")]
         public async Task<IActionResult> GetAsync(int id)
         {
             var user = await _userService.GetUserAsync(id);

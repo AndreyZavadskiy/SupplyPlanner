@@ -1,0 +1,138 @@
+﻿@model SP.Web.ViewModels.UploadInventoryViewModel
+
+@{
+    ViewData["Title"] = "LoadInventory";
+    string actionMessageClass = TempData["ActionMessageClass"]?.ToString();
+}
+
+<h1>Загрузка остатков ТМЦ</h1>
+
+<form method="post" enctype="multipart/form-data">
+    <div class="zero-gutters col-xl-9">
+        <div id="action-message" class="alert alert-row @actionMessageClass">
+            @Html.Raw(TempData["ActionMessage"])
+        </div>
+        <div class="form-row row-no-gutters">
+            <div>
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-4">
+                <label asp-for="ProcessingDate" class="control-label col-6"></label>
+                <input asp-for="ProcessingDate" type="date" class="form-control col-6" />
+                <span asp-validation-for="ProcessingDate" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-8">
+                <label asp-for="Files" class="control-label col-3"></label>
+                <input asp-for="Files" type="file" multiple class="form-control-file col-9" />
+                <span asp-validation-for="Files" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row button-row">
+            <button id="submit" class="btn btn-primary">Выполнить</button>
+            <button asp-action="Merge" class="btn btn-success">Перейти на следующий шаг</button>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-4">
+                <label asp-for="ProcessingLog" class="control-label col-6"></label>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-12">
+                <textarea asp-for="ProcessingLog" readonly="readonly" class="form-control log-textarea"></textarea>
+            </div>
+        </div>
+    </div>
+</form>
+
+<input id="serviceKey" type="hidden"/>
+
+<div class="modal js-loading-bar" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Загрузка ТМЦ</h5>
+            </div>
+            <div class="modal-body">
+                <div class="progress-step"></div>
+                <div class="progress" style="height: 20px;">
+                    <div class="progress-bar" role="progressbar"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        var intervalId;
+        $(document).ready(function () {
+            $('#submit').on('click', function (evt) {
+                evt.preventDefault();
+                //debugger;
+                var hasErrors = false;
+                if ($('#ProcessingDate').val() === '') {
+                    $('#ProcessingDate + span').text('Поле Дата обработки обязательно для заполнения.');
+                    hasErrors = true;
+                }
+                if ($('#Files').val() === '') {
+                    $('#Files + span').text('Не выбран файл для загрузки.');
+                    hasErrors = true;
+                }
+                //if (hasErrors) return;
+
+                $.ajax({
+                    url: '',
+                    data: new FormData(document.forms[0]),
+                    contentType: false,
+                    processData: false,
+                    type: 'post',
+                    success: function (data) {
+                        //debugger;
+                        $('#Files').val('');
+                        $('input + span').text('');
+                        $('#serviceKey').val(data.key);
+                        $('.modal-footer').hide();
+                        $('.js-loading-bar').modal('show');
+                        intervalId = setInterval(function () {
+                            updateProgress();
+                        }, 1000);
+                    }
+                });
+            });
+
+            $('.js-loading-bar').modal({
+                backdrop: 'static',
+                show: false
+            });
+        });
+
+        function updateProgress() {
+            var keyValue = $('#serviceKey').val();
+            $.ajax({
+                url: 'PeekUploadStatus',
+                data: 'key=' + keyValue,
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                processData: false,
+                type: 'get',
+                success: function (data) {
+                    $('.progress-step').text(data.step);
+                    $('.progress-bar').width(data.progress + '%');
+                    $('.progress-bar').text(data.progress.toFixed(0) + '%');
+                    if (data.status > 2) {
+                        clearInterval(intervalId);
+                        $('.modal-footer').show();
+                    }
+                }
+            });
+        }
+    </script>
+}

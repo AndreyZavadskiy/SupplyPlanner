@@ -106,6 +106,12 @@ body {
     padding-left: 15px;
 }
 
+.form-group > .form-control-file {
+    background-color: whitesmoke;
+    padding-right: 0;
+    padding-left: 0; 
+}
+
 /*  DataTables  */
 div.dt-action-group {
     margin-bottom: 1rem;
@@ -226,4 +232,14 @@ input.selectAll {
 
 .alert-row {
     margin: 0px 0px 15px 15px;
+}
+
+.log-textarea {
+    min-height: 10rem;
+    max-height: 30rem;
+    padding: 0;
+}
+
+.progress-step {
+    margin: 10px 0px 10px 0px;
 }
