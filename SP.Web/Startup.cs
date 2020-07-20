@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SP.Data;
 using SP.Service.Background;
+using SP.Service.Excel;
 using SP.Service.Services;
 
 namespace SP.Web
@@ -41,6 +42,9 @@ namespace SP.Web
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IMasterService, MasterService>();
             services.AddScoped<IGasStationService, GasStationService>();
+            services.AddScoped<IInventoryService, InventoryService>();
+            services.AddTransient<IInventoryUploadService, InventoryUploadService>();
+            services.AddTransient<IExcelParser, ExcelParser>();
             services.AddControllersWithViews();
             services.AddRazorPages();
         }

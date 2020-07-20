@@ -17,7 +17,7 @@ namespace SP.Core.Model
         /// </summary>
         public int Id { get; set; }
         /// <summary>
-        /// Код
+        /// Код ТМЦ
         /// </summary>
         [StringLength(20)]
         public string Code { get; set; }
@@ -29,12 +29,21 @@ namespace SP.Core.Model
         /// <summary>
         /// ID АЗС
         /// </summary>
-        public int GasStationId { get; set; }
+        public int? GasStationId { get; set; }
+        /// <summary>
+        /// Код SAP R/3
+        /// </summary>
+        [StringLength(20)]
+        public string GasStationCodeSAP { get; set; }
         /// <summary>
         /// Количество
         /// </summary>
         [Column(TypeName = "decimal(19,4)")]
         public decimal Quantity { get; set; }
+        /// <summary>
+        /// ID единицы измерения
+        /// </summary>
+        public int MeasureUnitId { get; set; }
         /// <summary>
         /// Дата актуализации
         /// </summary>

@@ -15,6 +15,7 @@ namespace SP.Service.Services
     public interface IGasStationService
     {
         Task<IEnumerable<GasStationListItem>> GetGasStationListAsync(int? territoryId);
+        Task<IEnumerable<GasStationIdentification>> GetGasStationIdentificationListAsync();
         Task<GasStationModel> GetGasStationAsync(int id);
         Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveGasStationAsync(GasStationModel model);
     }
@@ -86,6 +87,19 @@ namespace SP.Service.Services
                 .ToArrayAsync();
 
             return stations;
+        }
+
+        public async Task<IEnumerable<GasStationIdentification>> GetGasStationIdentificationListAsync()
+        {
+            var list = await _context.GasStations.AsNoTracking()
+                .Select(x => new GasStationIdentification
+                {
+                    Id = x.Id,
+                    CodeSAP = x.CodeSAP
+                })
+                .ToArrayAsync();
+
+            return list;
         }
 
         public async Task<GasStationModel> GetGasStationAsync(int id)

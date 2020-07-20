@@ -14,7 +14,7 @@ namespace SP.Service.Models
         [Required(ErrorMessage = "Поле является обязательным")]
         public int Id { get; set; }
         /// <summary>
-        /// Код персоны
+        /// Код АЗС
         /// </summary>
         [DisplayName("Код")]
         public string Code { get; set; }

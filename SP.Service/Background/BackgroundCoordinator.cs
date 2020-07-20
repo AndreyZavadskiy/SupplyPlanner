@@ -6,8 +6,8 @@ namespace SP.Service.Background
 {
     public interface IBackgroundCoordinator
     {
-        void AddOrUpdate(BackgroundServiceData data);
-        BackgroundServiceData Get(Guid key);
+        void AddOrUpdate(BackgroundServiceProgress progress);
+        BackgroundServiceProgress Get(Guid key);
         bool Remove(Guid key);
         (BackgroundServiceStatus Status, string Step, decimal Progress) GetProgress(Guid key);
     }
@@ -17,15 +17,15 @@ namespace SP.Service.Background
     /// </summary>
     public class BackgroundCoordinator : IBackgroundCoordinator
     {
-        private readonly ConcurrentDictionary<Guid, BackgroundServiceData> _services = new ConcurrentDictionary<Guid, BackgroundServiceData>();
+        private readonly ConcurrentDictionary<Guid, BackgroundServiceProgress> _services = new ConcurrentDictionary<Guid, BackgroundServiceProgress>();
 
-        public void AddOrUpdate(BackgroundServiceData data)
+        public void AddOrUpdate(BackgroundServiceProgress progress)
         {
-            Debug.WriteLine(data.Progress);
-            _services.AddOrUpdate(data.Key, data, (key, oldData) => data);
+            Debug.WriteLine(progress.Progress);
+            _services.AddOrUpdate(progress.Key, progress, (key, oldData) => progress);
         }
 
-        public BackgroundServiceData Get(Guid key)
+        public BackgroundServiceProgress Get(Guid key)
         {
             if (_services.TryGetValue(key, out var data))
             {
@@ -44,7 +44,7 @@ namespace SP.Service.Background
         {
             if (!_services.TryGetValue(key, out var data))
             {
-                return (BackgroundServiceStatus.NotFound, null, -1);
+                return (BackgroundServiceStatus.NotFound, null, 0);
             }
 
             return (data.Status, data.Step, data.Progress);

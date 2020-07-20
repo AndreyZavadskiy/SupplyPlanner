@@ -1,28 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
+using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using SP.Service.Background;
+using SP.Service.DTO;
 using SP.Web.ViewModels;
 
 namespace SP.Web.Controllers
 {
     public class InventoryController : Controller
     {
-        private readonly IBackgroundCoordinator _coordinator;
-
-        public InventoryController(IBackgroundCoordinator coordinator)
-        {
-            _coordinator = coordinator;
-        }
-
         /// <summary>
         /// Отобразить форму для загрузки остатков ТМЦ
         /// </summary>
@@ -41,10 +31,12 @@ namespace SP.Web.Controllers
         /// Запустить загрузку остатков ТМЦ
         /// </summary>
         /// <param name="model"></param>
+        /// <param name="service"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("[controller]/Upload")]
-        public async Task<IActionResult> UploadAsync([FromForm]UploadInventoryViewModel model)
+        public async Task<IActionResult> UploadAsync([FromForm]UploadInventoryViewModel model,
+            [FromServices] IBackgroundCoordinator coordinator)
         {
             if (model.Files == null)
             {
@@ -52,10 +44,10 @@ namespace SP.Web.Controllers
             }
 
             // записываем во временные файлы на сервере
-            var paths = new Dictionary<string, string>();
+            var uploadedFiles = new List<UploadedFile>();
             foreach (var formFile in model.Files)
             {
-                if (formFile.Length == 0)
+                if (formFile.Length == 0 || !CheckExcelFile(formFile.FileName))
                 {
                     continue;
                 }
@@ -66,25 +58,28 @@ namespace SP.Web.Controllers
                     await formFile.CopyToAsync(stream);
                 }
 
-                paths.Add(formFile.FileName, filePath);
+                uploadedFiles.Add(new UploadedFile
+                {
+                    FileName = formFile.FileName,
+                    FileInfo = new FileInfo(filePath)
+                });
             }
-            // запускаем обработку
+
             Guid serviceKey = Guid.NewGuid();
-            var service = new InventoryUploadService(serviceKey, paths, _coordinator);
-            Task.Run(() => service.Run());
+            StartBackgroundUpload(coordinator, serviceKey, uploadedFiles);
 
             return Json(new { Key = serviceKey });
         }
 
-        public IActionResult PeekUploadStatus(Guid key)
+        public IActionResult PeekUploadStatus(Guid key, [FromServices] IBackgroundCoordinator coordinator)
         {
-            var data = _coordinator.GetProgress(key);
+            var data = coordinator.GetProgress(key);
 
             if (data.Status == BackgroundServiceStatus.NotFound)
             {
                 return Json(new
                 {
-                    status = -1,
+                    status = 0,
                     step = "Загрузка ТМЦ уже выполнена либо указан неправильный идентификатор загрузки.",
                     progress = 0
                 });
@@ -95,6 +90,32 @@ namespace SP.Web.Controllers
                 status = data.Status,
                 step = data.Step,
                 progress = data.Progress
+            });
+        }
+
+        private bool CheckExcelFile(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return false;
+            }
+
+            string fileExtension = Path.GetExtension(fileName);
+            switch (fileExtension.ToLower())
+            {
+                case ".xlsx":
+                    return true;
+            }
+
+            return false;
+        }
+
+        private void StartBackgroundUpload(IBackgroundCoordinator coordinator, Guid serviceKey, List<UploadedFile> files)
+        {
+            Task.Run(() =>
+            {
+                var service = new InventoryUploadService(coordinator);
+                service.Run(serviceKey, files);
             });
         }
     }

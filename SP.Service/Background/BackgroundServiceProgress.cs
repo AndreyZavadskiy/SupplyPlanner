@@ -5,7 +5,7 @@ namespace SP.Service.Background
     /// <summary>
     /// Информация о выполнении фоновой службы
     /// </summary>
-    public class BackgroundServiceData
+    public class BackgroundServiceProgress
     {
         /// <summary>
         /// Гуид записи о выполнении фоновой службы
