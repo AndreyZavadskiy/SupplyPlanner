@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,7 +40,7 @@ namespace SP.Service.Services
                 return (true, null);
             }
 
-            // TODO сделать сравнение с существующими записями
+            // TODO: сделать сравнение с существующими записями
 
             //var existingStageInventories = _context.StageInventories
             //    .Join(data.Where(d => d.GasStationId.HasValue),
@@ -63,17 +64,28 @@ namespace SP.Service.Services
             //    .ToArray();
 
             var rowsToInsert = data
+                .Where(d => d.GasStationId.HasValue && d.MeasureUnitId.HasValue)
                 .Select(x => new StageInventory
                 {
                     Code = x.InventoryCode,
                     Name = x.InventoryName,
                     GasStationId = x.GasStationId.Value,
+                    MeasureUnitId = 0,//x.MeasureUnitId.Value,
                     Quantity = x.Quantity,
                     LastUpdate = DateTime.Now
                 })
                 .ToArray();
 
-            await _context.BulkInsertAsync<StageInventory>(rowsToInsert);
+            int currentRow = 0;
+            while (currentRow < rowsToInsert.Length)
+            {
+                var portion = rowsToInsert
+                    .Skip(currentRow)
+                    .Take(100);
+                await _context.StageInventories.AddRangeAsync(portion);
+                await _context.SaveChangesAsync();
+                currentRow += 100;
+            }
 
             return (true, null);
         }

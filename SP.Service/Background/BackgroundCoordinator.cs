@@ -9,7 +9,7 @@ namespace SP.Service.Background
         void AddOrUpdate(BackgroundServiceProgress progress);
         BackgroundServiceProgress Get(Guid key);
         bool Remove(Guid key);
-        (BackgroundServiceStatus Status, string Step, decimal Progress) GetProgress(Guid key);
+        (BackgroundServiceStatus Status, string Step, decimal Progress, string Log) GetProgress(Guid key);
     }
 
     /// <summary>
@@ -40,14 +40,14 @@ namespace SP.Service.Background
             return _services.TryRemove(key, out var data);
         }
 
-        public (BackgroundServiceStatus Status, string Step, decimal Progress) GetProgress(Guid key)
+        public (BackgroundServiceStatus Status, string Step, decimal Progress, string Log) GetProgress(Guid key)
         {
             if (!_services.TryGetValue(key, out var data))
             {
-                return (BackgroundServiceStatus.NotFound, null, 0);
+                return (BackgroundServiceStatus.NotFound, null, 0, null);
             }
 
-            return (data.Status, data.Step, data.Progress);
+            return (data.Status, data.Step, data.Progress, data.Log);
         }
     }
 }

@@ -129,6 +129,7 @@
                     $('.progress-bar').text(data.progress.toFixed(0) + '%');
                     if (data.status > 2) {
                         clearInterval(intervalId);
+                        $('.log-textarea').val(data.log);
                         $('.modal-footer').show();
                     }
                 }

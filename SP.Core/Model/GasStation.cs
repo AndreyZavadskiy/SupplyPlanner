@@ -8,6 +8,7 @@ namespace SP.Core.Model
     /// <summary>
     /// АЗС
     /// </summary>
+    [Table("GasStation")]
     public class GasStation
     {
         /// <summary>

@@ -68,7 +68,7 @@ namespace SP.Service.Excel
                 return false;
             }
 
-            // TODO написать проверку уникальности определений
+            // TODO: написать проверку уникальности определений
             // внутреннее имя, заголовок, индекс по умолчанию
 
             return true;
@@ -95,7 +95,7 @@ namespace SP.Service.Excel
 
             bool hasMissingColumn = colDefs.Any(x => x.ColumnIndex == null);
             
-            // TODO написать поиск в других колонках по названию
+            // TODO: написать поиск в других колонках по названию
 
             return !hasMissingColumn;
         }
@@ -114,7 +114,7 @@ namespace SP.Service.Excel
                 return false;
             }
 
-            // TODO удалить все двойные пробелы
+            // TODO: удалить все двойные пробелы
             actual = actual.Trim();
 
             switch (comparisonMode)

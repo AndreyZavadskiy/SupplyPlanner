@@ -89,7 +89,8 @@ namespace SP.Web.Controllers
             {
                 status = data.Status,
                 step = data.Step,
-                progress = data.Progress
+                progress = data.Progress,
+                log = data.Log
             });
         }
 
@@ -112,10 +113,10 @@ namespace SP.Web.Controllers
 
         private void StartBackgroundUpload(IBackgroundCoordinator coordinator, Guid serviceKey, List<UploadedFile> files)
         {
-            Task.Run(() =>
+            Task.Run(async () => 
             {
                 var service = new InventoryUploadService(coordinator);
-                service.Run(serviceKey, files);
+                await service.RunAsync(serviceKey, files);
             });
         }
     }

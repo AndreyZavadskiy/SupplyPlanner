@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using OfficeOpenXml.FormulaParsing.Utilities;
@@ -19,7 +20,7 @@ namespace SP.Service.Background
 {
     public interface IInventoryUploadService
     {
-        bool Run(Guid serviceKey, List<UploadedFile> files);
+        Task<bool> RunAsync(Guid serviceKey, List<UploadedFile> files);
     }
 
     public class InventoryUploadService : IInventoryUploadService
@@ -49,6 +50,7 @@ namespace SP.Service.Background
             var options = optionsBuilder
                 .UseSqlServer("Server=(local);Database=SupplyPlanner;Trusted_Connection=True;MultipleActiveResultSets=true")
                 .UseLoggerFactory(ApplicationDbContext.ApplicationDbLoggerFactory)
+                .EnableDetailedErrors()
                 .EnableSensitiveDataLogging()
                 .Options;
             _context = new ApplicationDbContext(options);
@@ -57,7 +59,7 @@ namespace SP.Service.Background
             _inventoryService = new InventoryService(_context);
         }
 
-        public bool Run(Guid serviceKey, List<UploadedFile> files)
+        public async Task<bool> RunAsync(Guid serviceKey, List<UploadedFile> files)
         {
             // регистрируем в координаторе
             var data = new BackgroundServiceProgress
@@ -108,7 +110,7 @@ namespace SP.Service.Background
 
                             int lastRow = ws.Dimension.End.Row;
                             parsedData = new List<ParsedInventory>(lastRow - headerRow);
-
+                            // извлекаем данные из листа Excel и сохраняем в списке
                             for (int r = headerRow + 1; r <= lastRow; r++)
                             {
                                 var parsedRowData = _parser.ParseDataRow(ws, wsColumns, r);
@@ -137,10 +139,9 @@ namespace SP.Service.Background
                                 }
                             }
 
-                            // стыковка справочника АЗС и единиц измерения
-                            var stations = _stationService.GetGasStationIdentificationListAsync().Result.ToArray();
-                            var measureUnits = _masterService.GetDictionaryListAsync<MeasureUnit>().Result.ToArray();
-
+                            var stations = await _stationService.GetGasStationIdentificationListAsync();
+                            var measureUnits = await _masterService.GetDictionaryListAsync<MeasureUnit>();
+                            // стыковка справочника АЗС
                             var dataWithStationId = parsedData
                                 .GroupJoin(stations,
                                     d => d.StationCodeSAP,
@@ -164,9 +165,26 @@ namespace SP.Service.Background
                                     })
                                 .ToArray();
 
+                            var emptyStations = dataWithStationId
+                                .Where(x => x.GasStationId == null)
+                                .Select(x => new {x.StationCodeSAP, x.StationPetronicsName})
+                                .Distinct()
+                                .OrderBy(z => z.StationCodeSAP);
+
+                            if (emptyStations.Any())
+                            {
+                                processingLog.AppendLine("Обнаружены АЗС, которые отсутствуют в справочнике:");
+                                foreach (var st in emptyStations)
+                                {
+                                    processingLog.AppendLine($"{st.StationCodeSAP} {st.StationPetronicsName}");
+                                }
+                                processingLog.AppendLine("Вышеуказанные АЗС пропущены. Добавьте их в справочник и выполните загрузку остатков заново.");
+                            }
+
+                            // стыковка справочника единиц измерения
                             var inventoryData = dataWithStationId
                                 .GroupJoin(measureUnits,
-                                    d => d.StationCodeSAP,
+                                    d => d.MeasureUnitName,
                                     m => m.Name,
                                     (d, m) => new
                                     {
@@ -188,30 +206,63 @@ namespace SP.Service.Background
                                     })
                                 .ToArray();
 
-                            // пакетное сохранение в БД
-                            _inventoryService.PurgeStageInventoryAsync();
-                            _inventoryService.SaveStageInventoryAsync(inventoryData);
+                            var emptyMeasureUnits = inventoryData
+                                .Where(x => x.MeasureUnitId == null)
+                                .Select(x => x.MeasureUnitName)
+                                .Distinct();
+
+                            if (emptyMeasureUnits.Any())
+                            {
+                                processingLog.AppendLine("Обнаружены единицы измерения, которые отсутствуют в справочнике:");
+                                processingLog.AppendLine(string.Join(", ", emptyMeasureUnits));
+                                processingLog.AppendLine("ТМЦ с вышеуказанным единицами измерения пропущены. Добавьте их в справочник и выполните загрузку остатков заново.");
+                            }
+
+                            if (inventoryData.Any(x => x.GasStationId != null && x.MeasureUnitId != null))
+                            {
+                                // пакетное сохранение в БД
+                                processingLog.AppendLine("Удаляем предыдущие остатки ТМЦ.");
+                                await _inventoryService.PurgeStageInventoryAsync();
+                                processingLog.AppendLine("Выполняем сохранение остатков ТМЦ.");
+                                await _inventoryService.SaveStageInventoryAsync(inventoryData);
+                            }
+                            else
+                            {
+                                processingLog.AppendLine("Отсутствуют данные для загрузки остатков ТМЦ.");
+                            }
                         }
                     }
 
                 }
                 catch (Exception ex)
                 {
-                    Debugger.Break();
+                    processingLog.AppendLine("Ошибка загрузки остатков ТМЦ. Проверьте лог приложения.");
+
+                    var badFinalProgress = new BackgroundServiceProgress
+                    {
+                        Key = serviceKey,
+                        Status = BackgroundServiceStatus.Faulted,
+                        Step = "Ошибка выполнения",
+                        Progress = 100,
+                        Log = processingLog.ToString()
+                    };
+                    _coordinator.AddOrUpdate(badFinalProgress);
+
+                    return false;
                 }
 
                 fileCount++;
             }
 
-            var finalProgress = new BackgroundServiceProgress
+            var successFinalProgress = new BackgroundServiceProgress
             {
                 Key = serviceKey,
                 Status = BackgroundServiceStatus.RanToCompletion,
                 Step = "Загрузка завершена",
                 Progress = 100,
-                Log = "Finished"
+                Log = processingLog.ToString()
             };
-            _coordinator.AddOrUpdate(finalProgress);
+            _coordinator.AddOrUpdate(successFinalProgress);
 
             return true;
         }
