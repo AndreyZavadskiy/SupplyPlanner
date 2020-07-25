@@ -27,6 +27,8 @@ namespace SP.Service.Services
         Task<IEnumerable<DictionaryListItem>> SelectTerritoryAsync(int parent);
         Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveRegionAsync(RegionalStructureModel model);
         Task<IEnumerable<TerritoryListItem>> GetTerritoryListAsync();
+
+        Task<Person> GetPersonAsync(string aspNetUserId);
     }
 
     public class MasterService : IMasterService
@@ -274,5 +276,17 @@ namespace SP.Service.Services
         }
 
         #endregion
+
+        public async Task<Person> GetPersonAsync(string aspNetUserId)
+        {
+            var person = await _context.Persons
+                .FirstOrDefaultAsync(x => x.AspNetUserId == aspNetUserId);
+            if (person == null)
+            {
+                throw new ApplicationException($"Не найден пользователь с id {aspNetUserId}");
+            }
+
+            return person;
+        }
     }
 }

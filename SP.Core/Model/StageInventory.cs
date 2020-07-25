@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 using SP.Core.Master;
 
 namespace SP.Core.Model
@@ -44,6 +42,10 @@ namespace SP.Core.Model
         /// Дата актуализации
         /// </summary>
         public DateTime LastUpdate { get; set; }
+        /// <summary>
+        /// ID персоны - пользователя
+        /// </summary>
+        public int PersonId { get; set; }
 
         #region Navigation properties
 
@@ -57,6 +59,11 @@ namespace SP.Core.Model
         /// </summary>
         [ForeignKey("MeasureUnitId")]
         public MeasureUnit MeasureUnit { get; set; }
+        /// <summary>
+        /// Пользователь
+        /// </summary>
+        [ForeignKey("PersonId")]
+        public Person Person { get; set; }
 
         #endregion
     }

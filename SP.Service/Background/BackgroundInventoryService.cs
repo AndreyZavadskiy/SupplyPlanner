@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
-using OfficeOpenXml.FormulaParsing.Utilities;
 using SP.Core.Master;
+using SP.Core.Model;
 using SP.Data;
 using SP.Service.DTO;
 using SP.Service.Excel;
@@ -18,12 +15,13 @@ using SP.Service.Services;
 
 namespace SP.Service.Background
 {
-    public interface IInventoryUploadService
+    public interface IBackgroundInventoryService
     {
-        Task<bool> RunAsync(Guid serviceKey, List<UploadedFile> files);
+        Task<bool> UploadAsync(Guid serviceKey, List<UploadedFile> files, string aspNetUserId);
+        Task<bool> AutoMergeAsync(Guid serviceKey, string aspNetUserId);
     }
 
-    public class InventoryUploadService : IInventoryUploadService
+    public class BackgroundInventoryService : IBackgroundInventoryService
     {
         private readonly IBackgroundCoordinator _coordinator;
         private readonly IExcelParser _parser;
@@ -32,7 +30,7 @@ namespace SP.Service.Background
         private readonly IInventoryService _inventoryService;
         private readonly ApplicationDbContext _context;
 
-        public InventoryUploadService(IBackgroundCoordinator coordinator, IExcelParser parser, 
+        public BackgroundInventoryService(IBackgroundCoordinator coordinator, IExcelParser parser, 
             IMasterService masterService, IGasStationService stationService, IInventoryService inventoryService)
         {
             _coordinator = coordinator;
@@ -42,7 +40,7 @@ namespace SP.Service.Background
             _inventoryService = inventoryService;
         }
 
-        public InventoryUploadService(IBackgroundCoordinator coordinator)
+        public BackgroundInventoryService(IBackgroundCoordinator coordinator)
         {
             _coordinator = coordinator;
             _parser = new ExcelParser();
@@ -56,20 +54,28 @@ namespace SP.Service.Background
             _context = new ApplicationDbContext(options);
             _masterService = new MasterService(_context);
             _stationService = new GasStationService(_context);
-            _inventoryService = new InventoryService(_context);
+            _inventoryService = new InventoryService(coordinator, _context);
         }
 
-        public async Task<bool> RunAsync(Guid serviceKey, List<UploadedFile> files)
+        /// <summary>
+        /// Загрузить ТМЦ из файлов
+        /// </summary>
+        /// <param name="serviceKey"></param>
+        /// <param name="files"></param>
+        /// <returns></returns>
+        public async Task<bool> UploadAsync(Guid serviceKey, List<UploadedFile> files, string aspNetUserId)
         {
             // регистрируем в координаторе
-            var data = new BackgroundServiceProgress
+            var progressIndicator = new BackgroundServiceProgress
             {
                 Key = serviceKey,
                 Status = BackgroundServiceStatus.Created,
                 Progress = 0
             };
             
-            _coordinator.AddOrUpdate(data);
+            _coordinator.AddOrUpdate(progressIndicator);
+
+            var person = await _masterService.GetPersonAsync(aspNetUserId);
 
             int totalFiles = files.Count;
             int fileCount = 1;
@@ -142,7 +148,7 @@ namespace SP.Service.Background
                             var stations = await _stationService.GetGasStationIdentificationListAsync();
                             var measureUnits = await _masterService.GetDictionaryListAsync<MeasureUnit>();
                             // стыковка справочника АЗС
-                            var dataWithStationId = parsedData
+                            var dataWithStation = parsedData
                                 .GroupJoin(stations,
                                     d => d.StationCodeSAP,
                                     s => s.CodeSAP,
@@ -165,7 +171,7 @@ namespace SP.Service.Background
                                     })
                                 .ToArray();
 
-                            var emptyStations = dataWithStationId
+                            var emptyStations = dataWithStation
                                 .Where(x => x.GasStationId == null)
                                 .Select(x => new {x.StationCodeSAP, x.StationPetronicsName})
                                 .Distinct()
@@ -176,13 +182,13 @@ namespace SP.Service.Background
                                 processingLog.AppendLine("Обнаружены АЗС, которые отсутствуют в справочнике:");
                                 foreach (var st in emptyStations)
                                 {
-                                    processingLog.AppendLine($"{st.StationCodeSAP} {st.StationPetronicsName}");
+                                    processingLog.AppendLine($"Код: {st.StationCodeSAP}, Наименование: {st.StationPetronicsName}");
                                 }
                                 processingLog.AppendLine("Вышеуказанные АЗС пропущены. Добавьте их в справочник и выполните загрузку остатков заново.");
                             }
 
                             // стыковка справочника единиц измерения
-                            var inventoryData = dataWithStationId
+                            var dataWithMeasureUnits = dataWithStation
                                 .GroupJoin(measureUnits,
                                     d => d.MeasureUnitName,
                                     m => m.Name,
@@ -206,7 +212,7 @@ namespace SP.Service.Background
                                     })
                                 .ToArray();
 
-                            var emptyMeasureUnits = inventoryData
+                            var emptyMeasureUnits = dataWithMeasureUnits
                                 .Where(x => x.MeasureUnitId == null)
                                 .Select(x => x.MeasureUnitName)
                                 .Distinct();
@@ -218,13 +224,28 @@ namespace SP.Service.Background
                                 processingLog.AppendLine("ТМЦ с вышеуказанным единицами измерения пропущены. Добавьте их в справочник и выполните загрузку остатков заново.");
                             }
 
-                            if (inventoryData.Any(x => x.GasStationId != null && x.MeasureUnitId != null))
+                            var inventoryData = dataWithMeasureUnits
+                                .Where(x => x.GasStationId.HasValue && x.MeasureUnitId.HasValue)
+                                .Select(x => new StageInventory
+                                {
+                                    Code = x.InventoryCode,
+                                    Name = x.InventoryName,
+                                    GasStationId = x.GasStationId.Value,
+                                    MeasureUnitId = x.MeasureUnitId.Value,
+                                    Quantity = x.Quantity,
+                                    LastUpdate = DateTime.Now,
+                                    PersonId = person.Id
+                                })
+                                .ToArray();
+
+                            if (inventoryData.Any())
                             {
                                 // пакетное сохранение в БД
                                 processingLog.AppendLine("Удаляем предыдущие остатки ТМЦ.");
-                                await _inventoryService.PurgeStageInventoryAsync();
+                                await _inventoryService.PurgeStageInventoryAsync(person.Id);
                                 processingLog.AppendLine("Выполняем сохранение остатков ТМЦ.");
-                                await _inventoryService.SaveStageInventoryAsync(inventoryData);
+                                await _inventoryService.SaveStageInventoryAsync(inventoryData, serviceKey, person.Id);
+                                processingLog.AppendLine($"Сохранено {inventoryData.Length} записей.");
                             }
                             else
                             {
@@ -316,6 +337,11 @@ namespace SP.Service.Background
             };
 
             return list;
+        }
+
+        public async Task<bool> AutoMergeAsync(Guid serviceKey, string aspNetUserId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

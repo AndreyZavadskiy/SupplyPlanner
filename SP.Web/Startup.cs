@@ -43,7 +43,7 @@ namespace SP.Web
             services.AddScoped<IMasterService, MasterService>();
             services.AddScoped<IGasStationService, GasStationService>();
             services.AddScoped<IInventoryService, InventoryService>();
-            services.AddTransient<IInventoryUploadService, InventoryUploadService>();
+            services.AddTransient<IBackgroundInventoryService, BackgroundInventoryService>();
             services.AddTransient<IExcelParser, ExcelParser>();
             services.AddControllersWithViews();
             services.AddRazorPages();

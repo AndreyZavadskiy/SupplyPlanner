@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
+using SP.Core.Master;
 
 namespace SP.Core.Model
 {
     /// <summary>
-    /// ТМЦ, состыкованные с Номенклатурой
+    /// Остатки ТМЦ
     /// </summary>
     [Table("Inventory")]
     public class Inventory
@@ -26,15 +25,19 @@ namespace SP.Core.Model
         [StringLength(100)]
         public string Name { get; set; }
         /// <summary>
+        /// ID АЗС
+        /// </summary>
+        public int GasStationId { get; set; }
+        /// <summary>
+        /// ID единицы измерения
+        /// </summary>
+        public int MeasureUnitId { get; set; }
+        /// <summary>
         /// ID Номенклатуры
         /// null может быть в случае, если соответствение Номенклатуре еще не установлено,
         /// либо оно не вообще не будет задано (IsBlocked = true)
         /// </summary>
         public int? NomenclatureId { get; set; }
-        /// <summary>
-        /// ID АЗС
-        /// </summary>
-        public int GasStationId { get; set; }
         /// <summary>
         /// Количество
         /// </summary>
@@ -53,15 +56,20 @@ namespace SP.Core.Model
         #region Navigation properties
 
         /// <summary>
-        /// Номенклатура
-        /// </summary>
-        [ForeignKey("NomenclatureId")]
-        public Nomenclature Nomenclature { get; set; }
-        /// <summary>
         /// АЗС
         /// </summary>
         [ForeignKey("GasStationId")]
         public GasStation GasStation { get; set; }
+        /// <summary>
+        /// Единица измерения
+        /// </summary>
+        [ForeignKey("MeasureUnitId")]
+        public MeasureUnit MeasureUnit { get; set; }
+        /// <summary>
+        /// Номенклатура
+        /// </summary>
+        [ForeignKey("NomenclatureId")]
+        public Nomenclature Nomenclature { get; set; }
 
         #endregion
     }

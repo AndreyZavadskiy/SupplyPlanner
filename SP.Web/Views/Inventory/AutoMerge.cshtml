@@ -1,13 +1,13 @@
-﻿@model SP.Web.ViewModels.UploadInventoryViewModel
+﻿@model SP.Web.ViewModels.AutoMergeInventoryViewModel
 
 @{
-    ViewData["Title"] = "UploadInventory";
+    ViewData["Title"] = "AutoMergeInventory";
     string actionMessageClass = TempData["ActionMessageClass"]?.ToString();
 }
 
-<h1>Загрузка остатков ТМЦ</h1>
+<h1>Автоматическое объединение ТМЦ в Номенклатуру</h1>
 
-<form id="MainForm" method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data">
     <div class="zero-gutters col-xl-9">
         <div id="action-message" class="alert alert-row @actionMessageClass">
             @Html.Raw(TempData["ActionMessage"])
@@ -24,16 +24,9 @@
                 <span asp-validation-for="ProcessingDate" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-row zero-gutters">
-            <div class="form-group row col-8">
-                <label asp-for="Files" class="control-label col-3"></label>
-                <input asp-for="Files" type="file" multiple class="form-control-file col-9" />
-                <span asp-validation-for="Files" class="text-danger"></span>
-            </div>
-        </div>
         <div class="form-row button-row">
             <button id="submit" class="btn btn-primary">Выполнить</button>
-            <button asp-action="AutoMerge" class="btn btn-success">Перейти на следующий шаг</button>
+            <button asp-action="ManualMerge" class="btn btn-success">Перейти на следующий шаг</button>
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-4">
@@ -82,21 +75,16 @@
                     $('#ProcessingDate + span').text('Поле Дата обработки обязательно для заполнения.');
                     hasErrors = true;
                 }
-                if ($('#Files').val() === '') {
-                    $('#Files + span').text('Не выбран файл для загрузки.');
-                    hasErrors = true;
-                }
                 //if (hasErrors) return;
 
                 $.ajax({
                     url: '',
-                    data: new FormData(document.forms['MainForm']),
+                    data: new FormData(document.forms[0]),
                     contentType: false,
                     processData: false,
                     type: 'post',
                     success: function (data) {
                         //debugger;
-                        $('#Files').val('');
                         $('input + span').text('');
                         $('#serviceKey').val(data.key);
                         $('.modal-footer').hide();

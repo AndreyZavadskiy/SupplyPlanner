@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using SP.Data;
 using SP.Service.Background;
 using SP.Service.DTO;
 using SP.Web.ViewModels;
@@ -13,6 +15,13 @@ namespace SP.Web.Controllers
 {
     public class InventoryController : Controller
     {
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public InventoryController(UserManager<ApplicationUser> userManager)
+        {
+            _userManager = userManager;
+        }
+
         /// <summary>
         /// Отобразить форму для загрузки остатков ТМЦ
         /// </summary>
@@ -31,7 +40,7 @@ namespace SP.Web.Controllers
         /// Запустить загрузку остатков ТМЦ
         /// </summary>
         /// <param name="model"></param>
-        /// <param name="service"></param>
+        /// <param name="coordinator"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("[controller]/Upload")]
@@ -66,12 +75,45 @@ namespace SP.Web.Controllers
             }
 
             Guid serviceKey = Guid.NewGuid();
-            StartBackgroundUpload(coordinator, serviceKey, uploadedFiles);
+            var user = await _userManager.GetUserAsync(User);
+            StartBackgroundUpload(coordinator, serviceKey, uploadedFiles, user.Id);
 
             return Json(new { Key = serviceKey });
         }
 
-        public IActionResult PeekUploadStatus(Guid key, [FromServices] IBackgroundCoordinator coordinator)
+        /// <summary>
+        /// Отобразить форму для автоматического объединения ТМЦ с Номенклатурой
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult AutoMerge()
+        {
+            var model = new AutoMergeInventoryViewModel
+            {
+                ProcessingDate = DateTime.Now
+            };
+
+            return View("AutoMerge", model);
+        }
+
+        [HttpPost]
+        [Route("[controller]/AutoMerge")]
+        public async Task<IActionResult> AutoMergeAsync([FromForm] AutoMergeInventoryViewModel model,
+            [FromServices] IBackgroundCoordinator coordinator)
+        {
+            Guid serviceKey = Guid.NewGuid();
+            var user = await _userManager.GetUserAsync(User);
+            StartBackgroundAutoMerge(coordinator, serviceKey, user.Id);
+
+            return Json(new { Key = serviceKey });
+        }
+
+        /// <summary>
+        /// Получить статус выполнения задания
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="coordinator"></param>
+        /// <returns></returns>
+        public IActionResult PeekStatus(Guid key, [FromServices] IBackgroundCoordinator coordinator)
         {
             var data = coordinator.GetProgress(key);
 
@@ -111,12 +153,21 @@ namespace SP.Web.Controllers
             return false;
         }
 
-        private void StartBackgroundUpload(IBackgroundCoordinator coordinator, Guid serviceKey, List<UploadedFile> files)
+        private void StartBackgroundUpload(IBackgroundCoordinator coordinator, Guid serviceKey, List<UploadedFile> files, string aspNetUserId)
         {
             Task.Run(async () => 
             {
-                var service = new InventoryUploadService(coordinator);
-                await service.RunAsync(serviceKey, files);
+                var service = new BackgroundInventoryService(coordinator);
+                await service.UploadAsync(serviceKey, files, aspNetUserId);
+            });
+        }
+
+        private void StartBackgroundAutoMerge(IBackgroundCoordinator coordinator, Guid serviceKey, string aspNetUserId)
+        {
+            Task.Run(async () =>
+            {
+                var service = new BackgroundInventoryService(coordinator);
+                await service.AutoMergeAsync(serviceKey, aspNetUserId);
             });
         }
     }
