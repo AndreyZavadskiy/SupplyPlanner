@@ -1,0 +1,62 @@
+﻿@{
+    Layout = null;
+}
+
+<div>
+    <table id="NomenclatureGrid" class="table table-striped table-bordered nowrap" width="100%" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Код</th>
+                <th>Наименование</th>
+                <th>Код Петроникса</th>
+                <th>Наименование Петроникса</th>
+                <th>Ед.изм.</th>
+                <th>СПИ</th>
+                <th>Группа</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#NomenclatureGrid').DataTable({
+            language: {
+                url: '/lib/datatables/i18n/russian.json'
+            },
+            scrollX: true,
+            select: {
+                style: 'single'
+            },
+            lengthMenu: [
+                [10, 25],
+                [10, 25]
+            ],
+            ajax: {
+                url: '/Nomenclature/LoadList',
+                type: 'POST',
+                dataType: 'json'
+            },
+            columns: [
+                { data: 'code' },
+                { data: 'name' },
+                { data: 'petronicsCode' },
+                { data: 'petronicsName' },
+                { data: 'measureUnitName' },
+                { data: 'usefulLife' },
+                { data: 'nomenclatureGroupName' }
+            ],
+            columnDefs: [
+                {
+                    targets: 'hidden-column',
+                    visible: false
+                }
+            ],
+            dom:
+                "<'row'<'col-sm-12 col-md-6 dt-action-group'>>" +
+                "<'row'<'col-sm-12 col-md-6'i><'col-sm-12 col-md-6'f>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-12 col-md-6 left-pagination'p>>"
+        });
+    });
+</script>

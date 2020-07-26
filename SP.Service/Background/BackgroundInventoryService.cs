@@ -341,7 +341,106 @@ namespace SP.Service.Background
 
         public async Task<bool> AutoMergeAsync(Guid serviceKey, string aspNetUserId)
         {
-            throw new NotImplementedException();
+            // регистрируем в координаторе
+            var progressIndicator = new BackgroundServiceProgress
+            {
+                Key = serviceKey,
+                Status = BackgroundServiceStatus.Created,
+                Step = "Автообъединение ТМЦ с Номенклатурой",
+                Progress = 0
+            };
+
+            _coordinator.AddOrUpdate(progressIndicator);
+
+            var person = await _masterService.GetPersonAsync(aspNetUserId);
+            StringBuilder processingLog = new StringBuilder();
+
+            var data = await _context.Inventories
+                .Where(x => !x.IsBlocked && !x.NomenclatureId.HasValue)
+                .ToArrayAsync();
+            int totalRows = data.Length;
+
+            processingLog.AppendLine($"Найдено {totalRows} записей для автоматического объединения.");
+
+            if (totalRows == 0)
+            {
+                processingLog.AppendLine("Выполнение завершено.");
+                var successNothingProgress = new BackgroundServiceProgress
+                {
+                    Key = serviceKey,
+                    Status = BackgroundServiceStatus.RanToCompletion,
+                    Step = "Загрузка завершена",
+                    Progress = 100,
+                    Log = processingLog.ToString()
+                };
+                _coordinator.AddOrUpdate(successNothingProgress);
+
+                return true;
+            }
+
+            int currentRow = 0,
+                linkedRows = 0;
+            while (true)
+            {
+                var portion = data
+                    .Skip(currentRow)
+                    .Take(100)
+                    .ToArray();
+                if (portion.Length == 0)
+                {
+                    break;
+                }
+
+                // проверка по коду и наименованию в Номенклатуре
+                var linkedInventories = _context.Nomenclatures.AsEnumerable()
+                    .Join(portion,
+                        n => n.PetronicsCode,
+                        p => p.Code, 
+                        (n, p) => new
+                        {
+                            Inventory = p,
+                            NomenclatureId = n.Id,
+                            PetronicsName = n.PetronicsName
+                        }
+                    )
+                    .Where(z => z.Inventory.Name == z.PetronicsName)
+                    .ToArray();
+
+                foreach (var rec in linkedInventories)
+                {
+                    var dbRecord = rec.Inventory;
+                    dbRecord.NomenclatureId = rec.NomenclatureId;
+                    _context.Inventories.Attach(dbRecord);
+                    _context.Entry(dbRecord).Property(r => r.NomenclatureId).IsModified = true;
+                }
+
+                // TODO проверка по коду Петроникса в Номенклатуре
+                // TODO проверка по наименованию в Номенклатуре
+                // TODO проверка по коду и наименованию в ТМЦ, если есть аналогичная привязка и наименования в ТМЦ и Номенклатуре различаются
+
+                await _context.SaveChangesAsync();
+
+                linkedRows += linkedInventories.Length;
+
+                currentRow += 100;
+                progressIndicator.Progress = currentRow / totalRows;
+                _coordinator.AddOrUpdate(progressIndicator);
+            }
+
+            processingLog.AppendLine($"Обработано {totalRows} записей ТМЦ.");
+            processingLog.AppendLine($"Состыковано {linkedRows} записей ТМЦ с Номенклатурой.");
+
+            var successFinalProgress = new BackgroundServiceProgress
+            {
+                Key = serviceKey,
+                Status = BackgroundServiceStatus.RanToCompletion,
+                Step = "Загрузка завершена",
+                Progress = 100,
+                Log = processingLog.ToString()
+            };
+            _coordinator.AddOrUpdate(successFinalProgress);
+
+            return true;
         }
     }
 }

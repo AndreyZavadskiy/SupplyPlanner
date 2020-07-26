@@ -10,7 +10,7 @@ namespace SP.Web.ViewModels
     /// Автоматическое объединение ТМЦ с Номенклатурой
     /// </summary>
     [Serializable]
-    public class AutoMergeInventoryViewModel
+    public class MergeInventoryViewModel
     {
         /// <summary>
         /// Дата обработки
@@ -21,7 +21,7 @@ namespace SP.Web.ViewModels
         /// <summary>
         /// Лог обработки
         /// </summary>
-        [DisplayName("Журнал загрузки")]
+        [DisplayName("Журнал выполнения")]
         public string ProcessingLog { get; set; }
     }
 }

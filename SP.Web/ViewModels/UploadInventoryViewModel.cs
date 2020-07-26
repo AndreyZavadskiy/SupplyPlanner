@@ -28,7 +28,7 @@ namespace SP.Web.ViewModels
         /// <summary>
         /// Лог обработки
         /// </summary>
-        [DisplayName("Журнал загрузки")]
+        [DisplayName("Журнал выполнения")]
         public string ProcessingLog { get; set; }
     }
 }

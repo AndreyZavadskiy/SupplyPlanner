@@ -1,22 +1,13 @@
-﻿@model SP.Web.ViewModels.AutoMergeInventoryViewModel
+﻿@model SP.Web.ViewModels.MergeInventoryViewModel
 
 @{
     ViewData["Title"] = "AutoMergeInventory";
-    string actionMessageClass = TempData["ActionMessageClass"]?.ToString();
 }
 
 <h1>Автоматическое объединение ТМЦ в Номенклатуру</h1>
 
 <form method="post" enctype="multipart/form-data">
     <div class="zero-gutters col-xl-9">
-        <div id="action-message" class="alert alert-row @actionMessageClass">
-            @Html.Raw(TempData["ActionMessage"])
-        </div>
-        <div class="form-row row-no-gutters">
-            <div>
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            </div>
-        </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-4">
                 <label asp-for="ProcessingDate" class="control-label col-6"></label>
@@ -26,11 +17,12 @@
         </div>
         <div class="form-row button-row">
             <button id="submit" class="btn btn-primary">Выполнить</button>
-            <button asp-action="ManualMerge" class="btn btn-success">Перейти на следующий шаг</button>
+            <a href='@Url.Action("ManualMerge", "Inventory")' class="btn btn-success">Перейти на следующий шаг</a>
+            <a href='@Url.Action("AutoMerge", "Inventory")' class="btn btn-secondary">Вернуться назад</a>
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-4">
-                <label asp-for="ProcessingLog" class="control-label col-6"></label>
+                <label asp-for="ProcessingLog" class="control-label col-12"></label>
             </div>
         </div>
         <div class="form-row zero-gutters">
@@ -41,7 +33,7 @@
     </div>
 </form>
 
-<input id="serviceKey" type="hidden"/>
+<input id="serviceKey" type="hidden" />
 
 <div class="modal js-loading-bar" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">

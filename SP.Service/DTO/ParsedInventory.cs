@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SP.Service.DTO
+﻿namespace SP.Service.DTO
 {
     /// <summary>
     /// Распарсенные данные о ТМЦ

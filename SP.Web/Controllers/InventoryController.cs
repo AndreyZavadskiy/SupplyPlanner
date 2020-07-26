@@ -9,16 +9,19 @@ using Microsoft.Extensions.DependencyInjection;
 using SP.Data;
 using SP.Service.Background;
 using SP.Service.DTO;
+using SP.Service.Services;
 using SP.Web.ViewModels;
 
 namespace SP.Web.Controllers
 {
     public class InventoryController : Controller
     {
+        private readonly IInventoryService _inventoryService;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public InventoryController(UserManager<ApplicationUser> userManager)
+        public InventoryController(IInventoryService inventoryService, UserManager<ApplicationUser> userManager)
         {
+            _inventoryService = inventoryService;
             _userManager = userManager;
         }
 
@@ -87,7 +90,7 @@ namespace SP.Web.Controllers
         /// <returns></returns>
         public IActionResult AutoMerge()
         {
-            var model = new AutoMergeInventoryViewModel
+            var model = new MergeInventoryViewModel
             {
                 ProcessingDate = DateTime.Now
             };
@@ -97,7 +100,7 @@ namespace SP.Web.Controllers
 
         [HttpPost]
         [Route("[controller]/AutoMerge")]
-        public async Task<IActionResult> AutoMergeAsync([FromForm] AutoMergeInventoryViewModel model,
+        public async Task<IActionResult> AutoMergeAsync([FromForm] MergeInventoryViewModel model,
             [FromServices] IBackgroundCoordinator coordinator)
         {
             Guid serviceKey = Guid.NewGuid();
@@ -105,6 +108,37 @@ namespace SP.Web.Controllers
             StartBackgroundAutoMerge(coordinator, serviceKey, user.Id);
 
             return Json(new { Key = serviceKey });
+        }
+
+        /// <summary>
+        /// Отобразить форму для ручного объединения ТМЦ с Номенклатурой
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult ManualMerge()
+        {
+            var model = new MergeInventoryViewModel
+            {
+                ProcessingDate = DateTime.Now
+            };
+
+            return View("ManualMerge", model);
+        }
+
+        /// <summary>
+        /// Получить список ТМЦ для ручного объединения с Номенклатурой
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<IActionResult> LoadMergeListAsync()
+        {
+            var inventoryList = await _inventoryService.GetListForManualMerge();
+
+            return Json(new { data = inventoryList });
+        }
+
+        public IActionResult LinkNomenclature(int id)
+        {
+            return View("_SelectNomenclature");
         }
 
         /// <summary>

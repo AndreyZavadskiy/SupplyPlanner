@@ -4,9 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
+using SP.Core.Master;
 using SP.Core.Model;
 using SP.Data;
 using SP.Service.Background;
+using SP.Service.DTO;
+using SP.Service.Models;
 
 namespace SP.Service.Services
 {
@@ -14,6 +17,8 @@ namespace SP.Service.Services
     {
         Task<bool> PurgeStageInventoryAsync(int personId);
         Task<(bool Success, IEnumerable<string> Errors)> SaveStageInventoryAsync(StageInventory[] data, Guid? serviceKey, int personId);
+        Task<IEnumerable<MergingInventory>> GetListForManualMerge();
+        Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync();
     }
 
     public class InventoryService : IInventoryService
@@ -44,8 +49,8 @@ namespace SP.Service.Services
 
             int currentRow = 0,
                 totalRows = data.Length;
-            string stepMessageTemplate = "Сохранение остатков ТМЦ в базу данных: {0} из " + totalRows;
-            UpdateProgress(serviceKey, stepMessageTemplate, currentRow);
+            string stepMessage = "Сохранение остатков ТМЦ в базу данных";
+            UpdateProgress(serviceKey, stepMessage, 0);
 
             // сохраняем в stage
             while (true)
@@ -62,7 +67,7 @@ namespace SP.Service.Services
                 await _context.StageInventories.AddRangeAsync(portion);
                 await _context.SaveChangesAsync();
                 currentRow += 100;
-                UpdateProgress(serviceKey, stepMessageTemplate, currentRow / 2);
+                UpdateProgress(serviceKey, stepMessage, 50.0m * currentRow / totalRows);
             }
 
             // переносим в основную таблицу
@@ -81,11 +86,72 @@ namespace SP.Service.Services
 
                 await UpdateInventory(portion);
                 currentRow += 100;
-                UpdateProgress(serviceKey, stepMessageTemplate, data.Length + currentRow / 2);
+                UpdateProgress(serviceKey, stepMessage, 50.0m + 50.0m * currentRow / totalRows);
             }
 
 
             return (true, null);
+        }
+
+        public async Task<IEnumerable<MergingInventory>> GetListForManualMerge()
+        {
+            var mergingList = await _context.Inventories
+                .Where(i => !i.NomenclatureId.HasValue && !i.IsBlocked)
+                .Join(_context.MeasureUnits,
+                    i => i.MeasureUnitId,
+                    m => m.Id,
+                    (i, m) => new
+                    {
+                        Inventory = i,
+                        MeasureUnitName = m.Name
+                    })
+                .Join(_context.GasStations,
+                    i => i.Inventory.GasStationId,
+                    s => s.Id,
+                    (i, s) => new
+                    {
+                        Inventory = i.Inventory,
+                        MeasureUnitName = i.MeasureUnitName,
+                        StationNumber = s.StationNumber
+                    })
+                .Select(x => new MergingInventory
+                    {
+                        Id = x.Inventory.Id,
+                        InventoryCode = x.Inventory.Code,
+                        InventoryName = x.Inventory.Name,
+                        MeasureUnitId = x.Inventory.MeasureUnitId,
+                        MeasureUnitName = x.MeasureUnitName,
+                        GasStationId = x.Inventory.GasStationId,
+                        StationNumber = x.StationNumber,
+                        NomenclatureId = null,
+                        NomenclatureCode = null,
+                        NomenclatureName = null,
+                        Active = x.Inventory.IsBlocked ? "0" : "1"
+                    })
+                .ToArrayAsync();
+
+            return mergingList;
+        }
+
+        public async Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync()
+        {
+            var list = await _context.Nomenclatures
+                .Include(x => x.MeasureUnit)
+                .Include(x => x.NomenclatureGroup)
+                .Select(x => new NomenclatureListItem
+                {
+                    Id = x.Id,
+                    Code = x.Code ?? x.Id.ToString(),
+                    Name = x.Name,
+                    PetronicsCode = x.PetronicsCode,
+                    PetronicsName = x.PetronicsName,
+                    MeasureUnitName = x.MeasureUnit.Name,
+                    NomenclatureGroupName = x.NomenclatureGroup.Name,
+                    UsefulLife = x.UsefulLife
+                })
+                .ToArrayAsync();
+
+            return list;
         }
 
         private async Task UpdateInventory(IEnumerable<StageInventory> data)
@@ -131,7 +197,7 @@ namespace SP.Service.Services
             await _context.SaveChangesAsync();
         }
 
-        private void UpdateProgress(Guid? serviceKey, string template, int currentRow)
+        private void UpdateProgress(Guid? serviceKey, string stepMessage, decimal progress)
         {
             if (_coordinator == null || serviceKey == null)
             {
@@ -142,8 +208,8 @@ namespace SP.Service.Services
             {
                 Key = serviceKey.Value,
                 Status = BackgroundServiceStatus.Running,
-                Step = string.Format(template, currentRow),
-                Progress = 0,
+                Step = stepMessage,
+                Progress = progress,
                 Log = null
             };
             _coordinator.AddOrUpdate(savingProgress);

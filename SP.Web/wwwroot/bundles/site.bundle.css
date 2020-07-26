@@ -220,6 +220,10 @@ input.selectAll {
     margin-left: 15px;
     margin-left: 15px;
 }
+.button-row > a {
+    margin-left: 15px;
+    margin-left: 15px;
+}
 
 .button-group-right {
     display: flex;
