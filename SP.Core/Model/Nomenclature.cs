@@ -47,6 +47,10 @@ namespace SP.Core.Model
         /// Срок полезного использования, месяцев
         /// </summary>
         public int UsefulLife { get; set; }
+        /// <summary>
+        /// Является активной (подлежит заказу)
+        /// </summary>
+        public bool IsActive { get; set; }
 
         #region Navigation properties
 

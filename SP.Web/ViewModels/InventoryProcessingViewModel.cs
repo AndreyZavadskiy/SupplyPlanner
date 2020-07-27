@@ -10,7 +10,7 @@ namespace SP.Web.ViewModels
     /// Автоматическое объединение ТМЦ с Номенклатурой
     /// </summary>
     [Serializable]
-    public class MergeInventoryViewModel
+    public class InventoryProcessingViewModel
     {
         /// <summary>
         /// Дата обработки

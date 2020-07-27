@@ -91,7 +91,7 @@ namespace SP.Web.Controllers
         /// <returns></returns>
         public IActionResult AutoMerge()
         {
-            var model = new MergeInventoryViewModel
+            var model = new InventoryProcessingViewModel
             {
                 ProcessingDate = DateTime.Now
             };
@@ -101,7 +101,7 @@ namespace SP.Web.Controllers
 
         [HttpPost]
         [Route("[controller]/AutoMerge")]
-        public async Task<IActionResult> AutoMergeAsync([FromForm] MergeInventoryViewModel model,
+        public async Task<IActionResult> AutoMergeAsync([FromForm] InventoryProcessingViewModel model,
             [FromServices] IBackgroundCoordinator coordinator)
         {
             Guid serviceKey = Guid.NewGuid();
@@ -117,7 +117,7 @@ namespace SP.Web.Controllers
         /// <returns></returns>
         public IActionResult ManualMerge()
         {
-            var model = new MergeInventoryViewModel
+            var model = new InventoryProcessingViewModel
             {
                 ProcessingDate = DateTime.Now
             };
@@ -173,6 +173,31 @@ namespace SP.Web.Controllers
             int updated = await _inventoryService.BlockInventoryAsync(model.Inventories);
 
             return Json(new { updated });
+        }
+
+        /// <summary>
+        /// Отобразить форму для расчета остатков ТМЦ
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult CalcBalance()
+        {
+            var model = new InventoryProcessingViewModel
+            {
+                ProcessingDate = DateTime.Now
+            };
+
+            return View("CalcBalance", model);
+        }
+
+        [HttpPost]
+        [Route("[controller]/CalcBalance")]
+        public async Task<IActionResult> CalcBalanceAsync([FromServices] IBackgroundCoordinator coordinator)
+        {
+            Guid serviceKey = Guid.NewGuid();
+            var user = await _userManager.GetUserAsync(User);
+            StartBackgroundBalanceCalculation(coordinator, serviceKey, user.Id);
+
+            return Json(new { Key = serviceKey });
         }
 
         /// <summary>
@@ -236,6 +261,14 @@ namespace SP.Web.Controllers
             {
                 var service = new BackgroundInventoryService(coordinator);
                 await service.AutoMergeAsync(serviceKey, aspNetUserId);
+            });
+        }
+        private void StartBackgroundBalanceCalculation(IBackgroundCoordinator coordinator, Guid serviceKey, string aspNetUserId)
+        {
+            Task.Run(async () =>
+            {
+                var service = new BackgroundInventoryService(coordinator);
+                await service.CalculateBalanceAsync(serviceKey, aspNetUserId);
             });
         }
     }

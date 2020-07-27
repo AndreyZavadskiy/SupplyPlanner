@@ -1,10 +1,10 @@
 ﻿@model SP.Web.ViewModels.InventoryProcessingViewModel
 
 @{
-    ViewData["Title"] = "AutoMergeInventory";
+    ViewData["Title"] = "CalcBalance";
 }
 
-<h1>Автоматическое объединение ТМЦ в Номенклатуру</h1>
+<h1>Расчет остатков ТМЦ</h1>
 
 <form method="post" enctype="multipart/form-data">
     <div class="zero-gutters col-xl-9">
@@ -17,8 +17,8 @@
         </div>
         <div class="form-row button-row">
             <button id="submit" class="btn btn-primary">Выполнить</button>
-            <a href='@Url.Action("ManualMerge", "Inventory")' class="btn btn-success">Перейти на следующий шаг</a>
-            <a href='@Url.Action("AutoMerge", "Inventory")' class="btn btn-secondary">Вернуться назад</a>
+            <a href='@Url.Action("Index", "Inventory")' class="btn btn-success">Перейти на следующий шаг</a>
+            <a href='@Url.Action("ManualMerge", "Inventory")' class="btn btn-secondary">Вернуться назад</a>
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-4">
@@ -39,7 +39,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Загрузка ТМЦ</h5>
+                <h5 class="modal-title">Расчет остатков ТМЦ</h5>
             </div>
             <div class="modal-body">
                 <div class="progress-step"></div>

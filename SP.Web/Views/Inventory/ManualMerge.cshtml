@@ -1,4 +1,4 @@
-﻿@model SP.Web.ViewModels.MergeInventoryViewModel
+﻿@model SP.Web.ViewModels.InventoryProcessingViewModel
 @{
     ViewData["Title"] = "ManualMergeInventory";
 }
@@ -13,7 +13,7 @@
             </div>
         </div>
         <div class="form-row button-row">
-            <a href='@Url.Action("AutoMerge", "Inventory")' class="btn btn-success">Перейти на следующий шаг</a>
+            <a href='@Url.Action("CalcBalance", "Inventory")' class="btn btn-success">Перейти на следующий шаг</a>
             <a href='@Url.Action("Upload", "Inventory")' class="btn btn-secondary">Вернуться назад</a>
         </div>
     </div>
@@ -230,6 +230,7 @@
         // открыть форму выбора Номенклатуры
         function linkSingleInventory(id) {
             selectedInventories = [id];
+            loadNomenclatureModal();
         }
 
         function loadNomenclatureModal() {

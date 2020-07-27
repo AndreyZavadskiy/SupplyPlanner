@@ -19,6 +19,7 @@ namespace SP.Service.Background
     {
         Task<bool> UploadAsync(Guid serviceKey, List<UploadedFile> files, string aspNetUserId);
         Task<bool> AutoMergeAsync(Guid serviceKey, string aspNetUserId);
+        Task<bool> CalculateBalanceAsync(Guid serviceKey, string aspNetUserId);
     }
 
     public class BackgroundInventoryService : IBackgroundInventoryService
@@ -339,6 +340,12 @@ namespace SP.Service.Background
             return list;
         }
 
+        /// <summary>
+        ///  Выполнить автоматическое объединение ТМЦ с Номенклатурой
+        /// </summary>
+        /// <param name="serviceKey"></param>
+        /// <param name="aspNetUserId"></param>
+        /// <returns></returns>
         public async Task<bool> AutoMergeAsync(Guid serviceKey, string aspNetUserId)
         {
             // регистрируем в координаторе
@@ -442,5 +449,22 @@ namespace SP.Service.Background
 
             return true;
         }
+
+        public async Task<bool> CalculateBalanceAsync(Guid serviceKey, string aspNetUserId)
+        {
+            // регистрируем в координаторе
+            var progressIndicator = new BackgroundServiceProgress
+            {
+                Key = serviceKey,
+                Status = BackgroundServiceStatus.Created,
+                Progress = 0
+            };
+
+            _coordinator.AddOrUpdate(progressIndicator);
+
+            var person = await _masterService.GetPersonAsync(aspNetUserId);
+
+            return true;
+        } 
     }
 }
