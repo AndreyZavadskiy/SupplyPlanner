@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
@@ -136,9 +137,42 @@ namespace SP.Web.Controllers
             return Json(new { data = inventoryList });
         }
 
-        public IActionResult LinkNomenclature(int id)
+        /// <summary>
+        /// Отобразить форму для выбора Номенклатуры
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public IActionResult NomenclatureForm(int id)
         {
             return View("_SelectNomenclature");
+        }
+
+        [HttpPost]
+        [Route("[controller]/LinkNomenclature")]
+        public async Task<IActionResult> LinkNomenclatureAsync([FromBody] InventoryLinkViewModel model)
+        {
+            if (model == null || model.Inventories == null || model.Inventories.Length == 0)
+            {
+                return Json(new { updated = 0 });
+            }
+
+            int updated = await _inventoryService.LinkInventoryToNomenclatureAsync(model.Inventories, model.Nomenclature);
+
+            return Json(new { updated });
+        }
+
+        [HttpPost]
+        [Route("[controller]/BlockInventory")]
+        public async Task<IActionResult> BlockInventoryAsync([FromBody] InventoryLinkViewModel model)
+        {
+            if (model == null || model.Inventories.Length == 0)
+            {
+                return Json(new { updated = 0 });
+            }
+
+            int updated = await _inventoryService.BlockInventoryAsync(model.Inventories);
+
+            return Json(new { updated });
         }
 
         /// <summary>
@@ -189,7 +223,7 @@ namespace SP.Web.Controllers
 
         private void StartBackgroundUpload(IBackgroundCoordinator coordinator, Guid serviceKey, List<UploadedFile> files, string aspNetUserId)
         {
-            Task.Run(async () => 
+            Task.Run(async () =>
             {
                 var service = new BackgroundInventoryService(coordinator);
                 await service.UploadAsync(serviceKey, files, aspNetUserId);

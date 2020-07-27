@@ -19,6 +19,8 @@ namespace SP.Service.Services
         Task<(bool Success, IEnumerable<string> Errors)> SaveStageInventoryAsync(StageInventory[] data, Guid? serviceKey, int personId);
         Task<IEnumerable<MergingInventory>> GetListForManualMerge();
         Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync();
+        Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId);
+        Task<int> BlockInventoryAsync(int[] inventoryIdList);
     }
 
     public class InventoryService : IInventoryService
@@ -96,38 +98,23 @@ namespace SP.Service.Services
         public async Task<IEnumerable<MergingInventory>> GetListForManualMerge()
         {
             var mergingList = await _context.Inventories
-                .Where(i => !i.NomenclatureId.HasValue && !i.IsBlocked)
-                .Join(_context.MeasureUnits,
-                    i => i.MeasureUnitId,
-                    m => m.Id,
-                    (i, m) => new
-                    {
-                        Inventory = i,
-                        MeasureUnitName = m.Name
-                    })
-                .Join(_context.GasStations,
-                    i => i.Inventory.GasStationId,
-                    s => s.Id,
-                    (i, s) => new
-                    {
-                        Inventory = i.Inventory,
-                        MeasureUnitName = i.MeasureUnitName,
-                        StationNumber = s.StationNumber
-                    })
+                .Include(x => x.MeasureUnit)
+                .Include(x => x.GasStation)
+                .Where(x => !x.NomenclatureId.HasValue && !x.IsBlocked)
                 .Select(x => new MergingInventory
-                    {
-                        Id = x.Inventory.Id,
-                        InventoryCode = x.Inventory.Code,
-                        InventoryName = x.Inventory.Name,
-                        MeasureUnitId = x.Inventory.MeasureUnitId,
-                        MeasureUnitName = x.MeasureUnitName,
-                        GasStationId = x.Inventory.GasStationId,
-                        StationNumber = x.StationNumber,
-                        NomenclatureId = null,
-                        NomenclatureCode = null,
-                        NomenclatureName = null,
-                        Active = x.Inventory.IsBlocked ? "0" : "1"
-                    })
+                {
+                    Id = x.Id,
+                    InventoryCode = x.Code,
+                    InventoryName = x.Name,
+                    MeasureUnitId = x.MeasureUnitId,
+                    MeasureUnitName = x.MeasureUnit.Name,
+                    GasStationId = x.GasStationId,
+                    StationNumber = x.GasStation.StationNumber,
+                    NomenclatureId = null,
+                    NomenclatureCode = null,
+                    NomenclatureName = null,
+                    Active = x.IsBlocked ? "0" : "1"
+                })
                 .ToArrayAsync();
 
             return mergingList;
@@ -154,13 +141,39 @@ namespace SP.Service.Services
             return list;
         }
 
+        public async Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId)
+        {
+            int updated = await _context.Inventories
+                .Where(x => inventoryIdList.Contains(x.Id))
+                .BatchUpdateAsync(x => new Inventory
+                {
+                    NomenclatureId = nomenclatureId,
+                    IsBlocked = false
+                });
+
+            return updated;
+        }
+
+        public async Task<int> BlockInventoryAsync(int[] inventoryIdList)
+        {
+            int updated = await _context.Inventories
+                .Where(x => inventoryIdList.Contains(x.Id))
+                .BatchUpdateAsync(x => new Inventory
+                {
+                    NomenclatureId = null,
+                    IsBlocked = true
+                });
+
+            return updated;
+        }
+
         private async Task UpdateInventory(IEnumerable<StageInventory> data)
         {
             // обновляем существующие записи
             var existingRecords = _context.Inventories.AsEnumerable()
                 .Join(data,
-                    i => new {i.GasStationId, i.Code},
-                    d => new {d.GasStationId, d.Code},
+                    i => new { i.GasStationId, i.Code },
+                    d => new { d.GasStationId, d.Code },
                     (i, d) => new
                     {
                         Inventory = i,

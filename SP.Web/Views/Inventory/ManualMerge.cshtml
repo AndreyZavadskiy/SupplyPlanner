@@ -1,11 +1,8 @@
 ﻿@model SP.Web.ViewModels.MergeInventoryViewModel
-
 @{
     ViewData["Title"] = "ManualMergeInventory";
 }
-
 <h1>Ручное объединение ТМЦ в Номенклатуру</h1>
-
 <form method="post" enctype="multipart/form-data">
     <div class="zero-gutters col-xl-9">
         <div class="form-row zero-gutters">
@@ -21,7 +18,6 @@
         </div>
     </div>
 </form>
-
 <div class="col-md-12" style="padding: 0;">
     <section class="container">
         <table id="InventoryGrid" class="table table-striped table-bordered nowrap" width="100%" cellspacing="0">
@@ -60,9 +56,7 @@
         </div>
     </section>
 </div>
-
 <input id="serviceKey" type="hidden" />
-
 <div class="modal js-loading-bar" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -81,7 +75,6 @@
         </div>
     </div>
 </div>
-
 <div id="NomenclatureModal" class="modal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -92,23 +85,28 @@
                 <div id="NomenclatureModalContent"></div>
             </div>
             <div class="modal-footer">
+                <button id="btnLinkNomenclature" class="btn btn-success" onclick="linkSelectedNomenclature();">Привязать</button>
                 <button class="btn btn-primary" data-dismiss="modal">Закрыть</button>
             </div>
         </div>
     </div>
 </div>
 
-
 @section Scripts
 {
     <script>
-        var intervalId;
-        $(document).ready(function () {
+        var selectedInventories;
+        $(document).ready(function() {
             var d = new Date();
             var todayString = ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
             $('#InventoryGrid').DataTable({
                 language: {
                     url: '/lib/datatables/i18n/russian.json'
+                },
+                rowId: 'id',
+                select: {
+                    style: 'multi',
+                    selector: 'td:first-child'
                 },
                 order: [[2, "asc"]],
                 stateSave: true,
@@ -124,8 +122,8 @@
                 columns: [
                     { defaultContent: '' },
                     {
-                        render: function (data, type, full, meta) {
-                            return '<a href="#" onclick="linkInventory(' + full.id + ');" title="Привязать"><img src="/images/link.svg"/></a>';
+                        render: function(data, type, full, meta) {
+                            return '<a onclick="linkSingleInventory(' + full.id + ');" title="Привязать"><img src="/images/link.svg"/></a>';
                         }
                     },
                     {
@@ -133,7 +131,7 @@
                         render: {
                             '_': 'active',
                             'filter': 'active',
-                            'display': function (data, type, full, meta) {
+                            'display': function(data, type, full, meta) {
                                 if (full.active === '1') return null;
                                 else return '<img src="/images/ban-solid-16.png" alt="blocked" title="ТМЦ не объединена в Номенклатуру и исключена из рассмотрения" />';
                             }
@@ -175,76 +173,156 @@
                 ],
                 dom:
                     "<'row'<'col-sm-12 col-md-6 dt-action-group'B>>" +
-                    "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                    "<'row'<'col-sm-12'tr>>" +
-                    "<'row'<'col-sm-12 col-md-6'i>>" +
-                    "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
+                        "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                        "<'row'<'col-sm-12'tr>>" +
+                        "<'row'<'col-sm-12 col-md-6'i>>" +
+                        "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
                 buttons:
-                    [
-                        {
-                            text: 'Привязать отмеченные',
-                            titleAttr: "Привязать отмеченные записи к Номенклатуре",
-                            className: 'dt-action-button',
-                            action: function (e, dt, node, config) {
-                                window.location.href = '/Inventory/Link';
-                            }
-                        },
-                        {
-                            text: 'Исключить отмеченные',
-                            titleAttr: "Не привязывать отмеченные записи к Номенклатуре и исключить из дальнейшего рассмотрения",
-                            className: 'dt-action-button',
-                            action: function (e, dt, node, config) {
-                                window.location.href = '/User/Create';
-                            }
-                        },
-                        {
-                            text: 'Excel',
-                            titleAttr: "Выгрузить таблицу в Excel",
-                            className: 'dt-action-button',
-                            extend: 'excel',
-                            title: 'Объединение ТМЦ в Номенклатуру',
-                            messageTop: 'Дата выгрузки ' + todayString,
-                            exportOptions: {
-                                columns: '.exportable-column',
-                                modifier: { search: 'applied' }
-                            }
+                [
+                    {
+                        text: 'Привязать отмеченные',
+                        titleAttr: "Привязать отмеченные записи к Номенклатуре",
+                        className: 'dt-action-button',
+                        action: function(e, dt, node, config) {
+                            selectedInventories = dt.rows({ selected: true }).data().pluck('id').toArray();
+                            loadNomenclatureModal();
                         }
-                    ]
+                    },
+                    {
+                        text: 'Исключить отмеченные',
+                        titleAttr: "Не привязывать отмеченные записи к Номенклатуре и исключить из дальнейшего рассмотрения",
+                        className: 'dt-action-button',
+                        action: function(e, dt, node, config) {
+                            selectedInventories = dt.rows({ selected: true }).data().pluck('id').toArray();
+                            blockSelectedInventories();
+                        }
+                    },
+                    {
+                        text: 'Excel',
+                        titleAttr: "Выгрузить таблицу в Excel",
+                        className: 'dt-action-button',
+                        extend: 'excel',
+                        title: 'Объединение ТМЦ в Номенклатуру',
+                        messageTop: 'Дата выгрузки ' + todayString,
+                        exportOptions: {
+                            columns: '.exportable-column',
+                            modifier: { search: 'applied' }
+                        }
+                    }
+                ]
             });
             var dt = $('#InventoryGrid').DataTable();
             // select all checkbox
             $(".selectAll").on("click",
-                function (e) {
+                function(e) {
                     if ($(this).is(":checked")) {
                         dt.rows().select();
                     } else {
                         dt.rows().deselect();
                     }
                 });
-
             $('.js-loading-bar').modal({
                 backdrop: 'static',
                 show: false
             });
         });
 
-        function linkInventory(id) {
-            var url = '/Inventory/LinkNomenclature';
+        // открыть форму выбора Номенклатуры
+        function linkSingleInventory(id) {
+            selectedInventories = [id];
+        }
+
+        function loadNomenclatureModal() {
+            var url = '/Inventory/NomenclatureForm';
             $.ajax({
                 type: "GET",
                 url: url,
-                success: function (data) {
+                success: function(data) {
                     $('#NomenclatureModalContent').html(data);
                     $('#NomenclatureModal').modal({
                         backdrop: 'static',
                         keyboard: false
                     });
                 },
-                error: function () {
+                error: function() {
                     alert('Ошибка открытия формы для выбора номенклатуры');
                 }
             });
+        }
 
+        // привязать выбранную Номенклатуру к ТМЦ
+        function linkSelectedNomenclature() {
+            var dtNomenclature = $('#NomenclatureGrid').DataTable();
+            var selectedData = dtNomenclature.rows({ selected: true }).data();
+            if (selectedData.length === 0) {
+                alert('Не выбрана позиция Номенклатуры');
+                return;
+            }
+            var nomId = selectedData[0].id;
+            var nomCode = selectedData[0].code;
+            var nomName = selectedData[0].name;
+            var url = '/Inventory/LinkNomenclature';
+            var requestData = {
+                "inventories": selectedInventories,
+                "nomenclature": nomId
+            };
+
+            $.ajax({
+                url: url,
+                data: JSON.stringify(requestData),
+                contentType: 'application/json; charset=utf-8;',
+                dataType: 'json',
+                type: 'post',
+                success: function() {
+                    // update DataTable
+                    var dtInventory = $('#InventoryGrid').DataTable();
+                    selectedInventories.forEach(function(id) {
+                        var row = dtInventory.row('#' + id);
+                        var data = row.data();
+                        data.nomenclatureCode = nomCode;
+                        data.nomenclatureName = nomName;
+                        row.data(data).invalidate();
+                    });
+                    dtInventory.rows().deselect();
+                    dtInventory.draw();
+                    $('#NomenclatureModal').modal('hide');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Ошибка выполнения операции');
+                }
+            });
+        }
+
+        function blockSelectedInventories() {
+            var url = '/Inventory/BlockInventory';
+            var requestData = {
+                "inventories": selectedInventories
+            };
+
+            $.ajax({
+                url: url,
+                data: JSON.stringify(requestData),
+                contentType: 'application/json; charset=utf-8;',
+                dataType: 'json',
+                type: 'post',
+                success: function() {
+                    // update DataTable
+                    var dtInventory = $('#InventoryGrid').DataTable();
+                    selectedInventories.forEach(function(id) {
+                        var row = dtInventory.row('#' + id);
+                        var data = row.data();
+                        data.active = false;
+                        data.nomenclatureCode = null;
+                        data.nomenclatureName = null;
+                        row.data(data).invalidate();
+                    });
+                    dtInventory.rows().deselect();
+                    dtInventory.draw();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Ошибка выполнения операции');
+                }
+            });
         }
     </script>
 }
