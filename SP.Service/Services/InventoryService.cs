@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using EFCore.BulkExtensions;
@@ -21,6 +22,7 @@ namespace SP.Service.Services
         Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync();
         Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId);
         Task<int> BlockInventoryAsync(int[] inventoryIdList);
+        Task<IEnumerable<InventoryBalanceListItem>> GetBalanceListAsync();
     }
 
     public class InventoryService : IInventoryService
@@ -165,6 +167,36 @@ namespace SP.Service.Services
                 });
 
             return updated;
+        }
+
+        public async Task<IEnumerable<InventoryBalanceListItem>> GetBalanceListAsync()
+        {
+            try
+            {
+                var list = await _context.NomenclatureBalance
+                    .Include(x => x.Nomenclature)
+                    .Include(x => x.GasStation)
+                    .Include(x => x.Nomenclature.MeasureUnit)
+                    .Select(x => new InventoryBalanceListItem
+                    {
+                        Id = x.Id,
+                        Code = x.Nomenclature.Code ?? x.Id.ToString(),
+                        Name = x.Nomenclature.Name,
+                        GasStationName = x.GasStation.StationNumber,
+                        Quantity = x.Quantity,
+                        MeasureUnitName = x.Nomenclature.MeasureUnit.Name,
+                        LastUpdate = x.LastUpdate
+                    })
+                    .ToArrayAsync();
+
+                return list;
+            }
+            catch (Exception ex)
+            {
+                Debugger.Break();
+            }
+
+            return null;
         }
 
         private async Task UpdateInventory(IEnumerable<StageInventory> data)

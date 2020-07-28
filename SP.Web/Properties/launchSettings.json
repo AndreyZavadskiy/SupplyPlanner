@@ -11,7 +11,7 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "Inventory/CalcBalance",
+      "launchUrl": "Inventory/Balance",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

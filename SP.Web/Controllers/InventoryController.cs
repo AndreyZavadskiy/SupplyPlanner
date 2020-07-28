@@ -202,6 +202,28 @@ namespace SP.Web.Controllers
         }
 
         /// <summary>
+        /// Отобразить форму остатков ТМЦ в разрезе Номенклатуры
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult Balance()
+        {
+            var model = new InventoryProcessingViewModel
+            {
+                ProcessingDate = DateTime.Now
+            };
+
+            return View("Balance", model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> LoadBalanceListAsync()
+        {
+            var userList = await _inventoryService.GetBalanceListAsync();
+
+            return Json(new { data = userList });
+        }
+
+        /// <summary>
         /// Получить статус выполнения задания
         /// </summary>
         /// <param name="key"></param>

@@ -30,5 +30,20 @@ namespace SP.Core.Model
         /// Дата актуализации
         /// </summary>
         public DateTime LastUpdate { get; set; }
+
+        #region Navigation properties
+
+        /// <summary>
+        /// АЗС
+        /// </summary>
+        [ForeignKey("GasStationId")]
+        public GasStation GasStation { get; set; }
+        /// <summary>
+        /// Номенклатура
+        /// </summary>
+        [ForeignKey("NomenclatureId")]
+        public Nomenclature Nomenclature { get; set; }
+
+        #endregion
     }
 }
