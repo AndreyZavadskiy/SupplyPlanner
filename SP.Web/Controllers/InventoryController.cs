@@ -231,85 +231,111 @@ namespace SP.Web.Controllers
             return View("Balance", model);
         }
 
+        /// <summary>
+        /// Получить остатки ТМЦ
+        /// </summary>
+        /// <param name="region"></param>
+        /// <param name="terr"></param>
+        /// <param name="station"></param>
+        /// <param name="group"></param>
+        /// <param name="nom"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> LoadBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom)
         {
-            var userList = await _inventoryService.GetBalanceListAsync(region, terr, station, group, nom);
+            var list = await _inventoryService.GetBalanceListAsync(region, terr, station, group, nom);
 
-            return Json(new { data = userList });
+            return Json(new { data = list });
         }
 
-        /// <summary>
-        /// Получить статус выполнения задания
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="coordinator"></param>
-        /// <returns></returns>
-        public IActionResult PeekStatus(Guid key, [FromServices] IBackgroundCoordinator coordinator)
+        public IActionResult Order()
         {
-            var data = coordinator.GetProgress(key);
-
-            if (data.Status == BackgroundServiceStatus.NotFound)
+            var model = new InventoryProcessingViewModel
             {
-                return Json(new
-                {
-                    status = 0,
-                    step = "Загрузка ТМЦ уже выполнена либо указан неправильный идентификатор загрузки.",
-                    progress = 0
-                });
-            }
+                ProcessingDate = DateTime.Now
+            };
 
-            return Json(new
-            {
-                status = data.Status,
-                step = data.Step,
-                progress = data.Progress,
-                log = data.Log
-            });
+            return View("order", model);
         }
 
-        private bool CheckExcelFile(string fileName)
+        [HttpPost]
+        public async Task<IActionResult> LoadOrderList()
         {
-            if (string.IsNullOrWhiteSpace(fileName))
-            {
-                return false;
-            }
-
-            string fileExtension = Path.GetExtension(fileName);
-            switch (fileExtension.ToLower())
-            {
-                case ".xlsx":
-                    return true;
-            }
-
-            return false;
+            var list = await _inventoryService.GetOrderListAsync();
+            return Json(new { data = list });
         }
 
-        private void StartBackgroundUpload(IBackgroundCoordinator coordinator, Guid serviceKey, List<UploadedFile> files, string aspNetUserId)
+/// <summary>
+/// Получить статус выполнения задания
+/// </summary>
+/// <param name="key"></param>
+/// <param name="coordinator"></param>
+/// <returns></returns>
+public IActionResult PeekStatus(Guid key, [FromServices] IBackgroundCoordinator coordinator)
+{
+    var data = coordinator.GetProgress(key);
+
+    if (data.Status == BackgroundServiceStatus.NotFound)
+    {
+        return Json(new
         {
-            Task.Run(async () =>
-            {
-                var service = new BackgroundInventoryService(coordinator);
-                await service.UploadAsync(serviceKey, files, aspNetUserId);
-            });
-        }
+            status = 0,
+            step = "Загрузка ТМЦ уже выполнена либо указан неправильный идентификатор загрузки.",
+            progress = 0
+        });
+    }
 
-        private void StartBackgroundAutoMerge(IBackgroundCoordinator coordinator, Guid serviceKey, string aspNetUserId)
-        {
-            Task.Run(async () =>
-            {
-                var service = new BackgroundInventoryService(coordinator);
-                await service.AutoMergeAsync(serviceKey, aspNetUserId);
-            });
-        }
-        
-        private void StartBackgroundBalanceCalculation(IBackgroundCoordinator coordinator, Guid serviceKey, string aspNetUserId)
-        {
-            Task.Run(async () =>
-            {
-                var service = new BackgroundInventoryService(coordinator);
-                await service.CalculateBalanceAsync(serviceKey, aspNetUserId);
-            });
-        }
+    return Json(new
+    {
+        status = data.Status,
+        step = data.Step,
+        progress = data.Progress,
+        log = data.Log
+    });
+}
+
+private bool CheckExcelFile(string fileName)
+{
+    if (string.IsNullOrWhiteSpace(fileName))
+    {
+        return false;
+    }
+
+    string fileExtension = Path.GetExtension(fileName);
+    switch (fileExtension.ToLower())
+    {
+        case ".xlsx":
+            return true;
+    }
+
+    return false;
+}
+
+private void StartBackgroundUpload(IBackgroundCoordinator coordinator, Guid serviceKey, List<UploadedFile> files, string aspNetUserId)
+{
+    Task.Run(async () =>
+    {
+        var service = new BackgroundInventoryService(coordinator);
+        await service.UploadAsync(serviceKey, files, aspNetUserId);
+    });
+}
+
+private void StartBackgroundAutoMerge(IBackgroundCoordinator coordinator, Guid serviceKey, string aspNetUserId)
+{
+    Task.Run(async () =>
+    {
+        var service = new BackgroundInventoryService(coordinator);
+        await service.AutoMergeAsync(serviceKey, aspNetUserId);
+    });
+}
+
+private void StartBackgroundBalanceCalculation(IBackgroundCoordinator coordinator, Guid serviceKey, string aspNetUserId)
+{
+    Task.Run(async () =>
+    {
+        var service = new BackgroundInventoryService(coordinator);
+        await service.CalculateBalanceAsync(serviceKey, aspNetUserId);
+    });
+}
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
 using SP.Core.Master;
 using SP.Core.Model;
 using SP.Data;
@@ -24,6 +25,7 @@ namespace SP.Service.Services
         Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId);
         Task<int> BlockInventoryAsync(int[] inventoryIdList);
         Task<IEnumerable<InventoryBalanceListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom);
+        Task<IEnumerable<InventoryOrderListItem>> GetOrderListAsync();
     }
 
     public class InventoryService : IInventoryService
@@ -224,6 +226,46 @@ namespace SP.Service.Services
                     .ToArrayAsync();
 
                 return list;
+            }
+            catch (Exception ex)
+            {
+                Debugger.Break();
+            }
+
+            return null;
+        }
+
+        public async Task<IEnumerable<InventoryOrderListItem>> GetOrderListAsync()
+        {
+            try
+            {
+                var orderList = await _context.NomenclatureBalance
+                    .GroupJoin(_context.Requirements,
+                        b => new {b.NomenclatureId, b.GasStationId},
+                        r => new {r.NomenclatureId, r.GasStationId},
+                        (b, r) => new
+                        {
+                            NomBalance = b,
+                            Requirement = r
+                        })
+                    .SelectMany(
+                        x => x.Requirement.DefaultIfEmpty(),
+                        (x, y) => new InventoryOrderListItem
+                        {
+                            Id = x.NomBalance.Id,
+                            Code = x.NomBalance.Nomenclature.Code ?? x.NomBalance.Id.ToString(),
+                            Name = x.NomBalance.Nomenclature.Name,
+                            GasStationName = x.NomBalance.GasStation.StationNumber,
+                            Quantity = x.NomBalance.Quantity,
+                            MeasureUnitName = x.NomBalance.Nomenclature.MeasureUnit.Name,
+                            FixedAmount = y == null ? 0.0m : y.FixedAmount,
+                            Formula = y == null ? null : y.Formula,
+                            Plan = y == null ? 0.0m : y.Plan,
+                            OrderQuantity = y == null ? 0.0m : y.Plan - x.NomBalance.Quantity
+                        })
+                    .ToArrayAsync();
+
+                return orderList;
             }
             catch (Exception ex)
             {

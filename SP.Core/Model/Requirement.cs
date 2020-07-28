@@ -21,10 +21,10 @@ namespace SP.Core.Model
         /// </summary>
         public int GasStationId { get; set; }
         /// <summary>
-        /// Количество
+        /// Фикс.количество
         /// </summary>
         [Column(TypeName = "decimal(19,4)")]
-        public decimal Quantity { get; set; }
+        public decimal FixedAmount { get; set; }
         /// <summary>
         /// Формула расчета
         /// </summary>
@@ -39,6 +39,11 @@ namespace SP.Core.Model
         /// 1 - вниз, 2 - вверх, 3 - до ближайшего целого
         /// </summary>
         public int Rounding { get; set; }
+        /// <summary>
+        /// План потребности
+        /// </summary>
+        [Column(TypeName = "decimal(19,4)")]
+        public decimal Plan { get; set; }
 
         #region Navigation properties
 
