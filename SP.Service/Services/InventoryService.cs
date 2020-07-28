@@ -20,9 +20,10 @@ namespace SP.Service.Services
         Task<(bool Success, IEnumerable<string> Errors)> SaveStageInventoryAsync(StageInventory[] data, Guid? serviceKey, int personId);
         Task<IEnumerable<MergingInventory>> GetListForManualMerge();
         Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync();
+        Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int groupId);
         Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId);
         Task<int> BlockInventoryAsync(int[] inventoryIdList);
-        Task<IEnumerable<InventoryBalanceListItem>> GetBalanceListAsync();
+        Task<IEnumerable<InventoryBalanceListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom);
     }
 
     public class InventoryService : IInventoryService
@@ -143,6 +144,19 @@ namespace SP.Service.Services
             return list;
         }
 
+        public async Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int groupId)
+        {
+            var list = await _context.Nomenclatures
+                .Select(x => new DictionaryListItem
+                {
+                    Id = x.Id,
+                    Name = x.Name
+                })
+                .ToArrayAsync();
+
+            return list;
+        }
+
         public async Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId)
         {
             int updated = await _context.Inventories
@@ -169,14 +183,34 @@ namespace SP.Service.Services
             return updated;
         }
 
-        public async Task<IEnumerable<InventoryBalanceListItem>> GetBalanceListAsync()
+        public async Task<IEnumerable<InventoryBalanceListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom)
         {
             try
             {
-                var list = await _context.NomenclatureBalance
-                    .Include(x => x.Nomenclature)
-                    .Include(x => x.GasStation)
-                    .Include(x => x.Nomenclature.MeasureUnit)
+                var query = _context.NomenclatureBalance.AsQueryable();
+                if (station.HasValue)
+                {
+                    query = query.Where(x => x.GasStationId == station);
+                }
+                else if (terr.HasValue)
+                {
+                    query = query.Where(x => x.GasStation.TerritoryId == terr);
+                }
+                else if (region.HasValue)
+                {
+                    query = query.Where(x => x.GasStation.Territory.ParentId == region);
+                }
+
+                if (nom.HasValue)
+                {
+                    query = query.Where(x => x.NomenclatureId == nom);
+                }
+                else if (group.HasValue)
+                {
+                    query = query.Where(x => x.Nomenclature.NomenclatureGroupId == group);
+                }
+
+                var list = await query
                     .Select(x => new InventoryBalanceListItem
                     {
                         Id = x.Id,

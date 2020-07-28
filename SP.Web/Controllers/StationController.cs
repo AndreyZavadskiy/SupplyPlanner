@@ -34,6 +34,26 @@ namespace SP.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> LoadList(int? region, int? terr)
         {
+            var stations = await GetGasStationListItems(region, terr);
+
+            return Json(new { data = stations });
+        }
+
+        public async Task<IActionResult> LoadStations(int? region, int? terr)
+        {
+            var list = await GetGasStationListItems(region, terr);
+            var stations = list
+                .Select(x => new DictionaryListItem
+                {
+                    Id = x.Id,
+                    Name = x.StationNumber
+                });
+
+            return Json(stations);
+        }
+
+        private async Task<IEnumerable<GasStationListItem>> GetGasStationListItems(int? region, int? terr)
+        {
             IEnumerable<GasStationListItem> stations;
             if (region == null)
             {
@@ -48,7 +68,7 @@ namespace SP.Web.Controllers
                 stations = await _gasStationService.GetGasStationListAsync(terr);
             }
 
-            return Json(new { data = stations });
+            return stations;
         }
 
         [Route("Station/{id}")]

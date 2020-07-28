@@ -15,10 +15,6 @@
                 <span asp-validation-for="ProcessingDate" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-row button-row">
-            <a href='@Url.Action("Balance", "Inventory")' class="btn btn-success">Перейти на следующий шаг</a>
-            <a href='@Url.Action("CalcBalance", "Inventory")' class="btn btn-secondary">Вернуться назад</a>
-        </div>
     </div>
 
     <div class="col-xl-9">
@@ -50,9 +46,34 @@
                     </button>
                 </div>
                 <div class="modal-body filter-area">
-                    <p>
-                        <input type="checkbox" id="IncludeBlocked" /> включить заблокированных
-                    </p>
+                    <div class="col-12">
+                        <div class="form-row zero-gutters">
+                            <div class="form-group row col-12">
+                                <label for="RegionList" class="control-label zero-gutters col-3">Регион</label>
+                                <select id="RegionList" asp-items="ViewBag.RegionList" class="col-9" onchange="loadTerritories(this);"></select>
+                            </div>
+                            <div class="form-group row col-12">
+                                <label for="TerritoryList" class="control-label zero-gutters col-3">Территория</label>
+                                <select id="TerritoryList" class="col-9" onchange="loadStations(this);"></select>
+                            </div>
+                            <div class="form-group row col-12">
+                                <label for="GasStationList" class="control-label zero-gutters col-3">АЗС</label>
+                                <select id="GasStationList" class="col-9"></select>
+                            </div>
+                            <div class="form-group row col-12">
+                                <label for="NomenclatureGroupList" class="control-label zero-gutters col-3">Группа номенклатуры</label>
+                                <select id="NomenclatureGroupList" asp-items="ViewBag.NomenclatureGroupList" class="col-9" onchange="loadNomenclature(this);"></select>
+                            </div>
+                            <div class="form-group row col-12">
+                                <label for="NomenclatureList" class="control-label zero-gutters col-3">Номенклатура</label>
+                                <select id="NomenclatureList" class="col-9"></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer form-row button-row">
+                    <button type="button" class="btn btn-primary" onclick="applyFilter();">Применить и закрыть</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
                 </div>
             </div>
         </div>
@@ -77,6 +98,13 @@
                 ajax: {
                     url: '/Inventory/LoadBalanceList',
                     type: 'POST',
+                    data: function (d) {
+                        d.region = $('#RegionList').val();
+                        d.terr = $('#TerritoryList').val();
+                        d.station = $('#StationList').val();
+                        d.group = $('#NomenclatureGroupList').val();
+                        d.nom = $('#NomenclatureList').val();
+                    },
                     dataType: 'json'
                 },
                 columns: [
@@ -114,16 +142,30 @@
                     },
                     {
                         targets: 7,
-                        render: $.fn.dataTable.render.moment('DD.MM.YYYY')
+                        render: $.fn.dataTable.render.moment('YYYY-MM-DDTHH:mm:ss.SSSSSSS', 'DD.MM.YYYY')
                     }
                 ],
                 dom:
-                    "<'row'<'col-sm-12 col-md-6 dt-action-group'B>>" +
+                    "<'row'<'col-sm-12 col-md-12 dt-action-group'B>>" +
                         "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
                         "<'row'<'col-sm-12'tr>>" +
                         "<'row'<'col-sm-12 col-md-6'i>>" +
                         "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
                 buttons: [
+                    {
+                        text: 'Перейти на следующий шаг',
+                        className: 'dt-action-button btn btn-success',
+                        action: function () {
+                            window.location = '@Url.Action("Balance", "Inventory")';
+                        }
+                    },
+                    {
+                        text: 'Вернуться назад',
+                        className: 'dt-action-button btn btn-secondary',
+                        action: function () {
+                            window.location = '@Url.Action("CalcBalance", "Inventory")';
+                        }
+                    },
                     {
                         text: 'Excel',
                         titleAttr: "Выгрузить таблицу в Excel",
@@ -141,12 +183,117 @@
                         text: 'Фильтры',
                         className: 'dt-action-button filter-button',
                         action: function(e, dt, node, config) {
-                            $('#FilterModal').modal();
+                            $('#FilterModal').modal({
+                                backdrop: 'static',
+                                keyboard: false
+                            });
                         }
                     }
                 ]
             });
             var dt = $('#BalanceGrid').DataTable();
         });
+
+        function loadTerritories(control) {
+            var region = $(control).val();
+            var terrList = $('#TerritoryList');
+            terrList.empty();
+            if (region === '') {
+                terrList.trigger('change');
+                return;
+            }
+            var url = '/Region/LoadTerritories';
+            var requestData = { parent: region };
+            $.get(url,
+                requestData,
+                function (data) {
+                    terrList.append($('<option>',
+                        {
+                            value: '',
+                            text: '-- ВСЕ --'
+                        }));
+                    $.each(data,
+                        function (index, element) {
+                            terrList.append($('<option>',
+                                {
+                                    value: element.id,
+                                    text: element.name
+                                }));
+                        });
+                    terrList.prop('selectedIndex', 0);
+                    terrList.trigger('change');
+                });
+        }
+
+        function loadStations(control) {
+            var region = $('#RegionList').val();
+            var territory = $(control).val();
+            var stationList = $("#GasStationList");
+            stationList.empty();
+            if (territory === '') {
+                stationList.trigger('change');
+                return;
+            }
+            var url = '/Station/LoadStations';
+            var requestData = {
+                'region': region,
+                'terr': territory
+            };
+            $.get(url,
+                requestData,
+                function (data) {
+                    stationList.append($('<option>',
+                        {
+                            value: '',
+                            text: '-- ВСЕ --'
+                        }));
+                    $.each(data,
+                        function (index, element) {
+                            stationList.append($('<option>',
+                                {
+                                    value: element.id,
+                                    text: element.name
+                                }));
+                        });
+                    stationList.prop('selectedIndex', 0);
+                    stationList.trigger('change');
+                });
+        }
+
+        function loadNomenclature(control) {
+            var group = $(control).val();
+            var nomList = $('#NomenclatureList');
+            nomList.empty();
+            if (group === '') {
+                nomList.trigger('change');
+                return;
+            }
+            var url = '/Nomenclature/LoadNomenclature';
+            var requestData = { 'group': group };
+            $.get(url,
+                requestData,
+                function (data) {
+                    nomList.append($('<option>',
+                        {
+                            value: '',
+                            text: '-- ВСЕ --'
+                        }));
+                    $.each(data,
+                        function (index, element) {
+                            nomList.append($('<option>',
+                                {
+                                    value: element.id,
+                                    text: element.name
+                                }));
+                        });
+                    nomList.prop('selectedIndex', 0);
+                    nomList.trigger('change');
+                });
+        }
+
+        function applyFilter() {
+            $('#BalanceGrid').DataTable().ajax.reload();
+            $('#FilterModal').modal('hide');
+        }
     </script>
 }

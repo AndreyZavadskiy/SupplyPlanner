@@ -39,7 +39,9 @@
       "wwwroot/lib/datatables/ext/select/js/select.bootstrap4.js",
       "wwwroot/lib/datatables/ext/rowgroup/js/dataTables.rowGroup.js",
       "wwwroot/lib/datatables/ext/rowgroup/js/rowGroup.bootstrap4.js",
-      "wwwroot/lib/datatables/ext/fixedcolumns/js/dataTables.fixedColumns.js"
+      "wwwroot/lib/datatables/ext/fixedcolumns/js/dataTables.fixedColumns.js",
+      "wwwroot/lib/moment/moment.js",
+      "wwwroot/lib/datatables/ext/render/datetime.js"
     ],
     "minify": {
       "enabled": false,
@@ -63,7 +65,9 @@
       "wwwroot/lib/datatables/ext/select/js/select.bootstrap4.min.js",
       "wwwroot/lib/datatables/ext/rowgroup/js/dataTables.rowGroup.min.js",
       "wwwroot/lib/datatables/ext/rowgroup/js/rowGroup.bootstrap4.min.js",
-      "wwwroot/lib/datatables/ext/fixedcolumns/js/dataTables.fixedColumns.min.js"
+      "wwwroot/lib/datatables/ext/fixedcolumns/js/dataTables.fixedColumns.min.js",
+      "wwwroot/lib/moment/moment.min.js",
+      "wwwroot/lib/datatables/ext/render/datetime.min.js"
     ],
     "minify": {
       "enabled": false,

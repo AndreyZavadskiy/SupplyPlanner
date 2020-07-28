@@ -3,11 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using SP.Core.Master;
 using SP.Data;
 using SP.Service.Background;
 using SP.Service.DTO;
@@ -19,11 +22,13 @@ namespace SP.Web.Controllers
     public class InventoryController : Controller
     {
         private readonly IInventoryService _inventoryService;
+        private readonly IMasterService _masterService;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public InventoryController(IInventoryService inventoryService, UserManager<ApplicationUser> userManager)
+        public InventoryController(IInventoryService inventoryService, IMasterService masterService, UserManager<ApplicationUser> userManager)
         {
             _inventoryService = inventoryService;
+            _masterService = masterService;
             _userManager = userManager;
         }
 
@@ -205,20 +210,31 @@ namespace SP.Web.Controllers
         /// Отобразить форму остатков ТМЦ в разрезе Номенклатуры
         /// </summary>
         /// <returns></returns>
-        public IActionResult Balance()
+        [Route("[controller]/Balance")]
+        public async Task<IActionResult> BalanceAsync()
         {
             var model = new InventoryProcessingViewModel
             {
                 ProcessingDate = DateTime.Now
             };
 
+            var regions = await _masterService.SelectRegionAsync();
+            var list = new SelectList(regions, "Id", "Name").ToList();
+            list.Insert(0, new SelectListItem("-- ВСЕ --", ""));
+            ViewData["RegionList"] = list;
+
+            var nomenclatureGroups = await _masterService.GetDictionaryListAsync<NomenclatureGroup>();
+            var groupList = new SelectList(nomenclatureGroups, "Id", "Name").ToList();
+            groupList.Insert(0, new SelectListItem("-- ВСЕ --", ""));
+            ViewData["NomenclatureGroupList"] = groupList;
+
             return View("Balance", model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoadBalanceListAsync()
+        public async Task<IActionResult> LoadBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom)
         {
-            var userList = await _inventoryService.GetBalanceListAsync();
+            var userList = await _inventoryService.GetBalanceListAsync(region, terr, station, group, nom);
 
             return Json(new { data = userList });
         }

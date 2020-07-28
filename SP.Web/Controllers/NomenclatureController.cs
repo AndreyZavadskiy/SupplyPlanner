@@ -24,10 +24,16 @@ namespace SP.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> LoadListAsync()
         {
-            var userList = await _inventoryService.GetNomenclatureListAsync();
+            var list = await _inventoryService.GetNomenclatureListAsync();
 
-            return Json(new { data = userList });
+            return Json(new { data = list });
         }
 
+        public async Task<IActionResult> LoadNomenclature(int group)
+        {
+            var list = await _inventoryService.GetNomenclatureListItemsAsync(group);
+
+            return Json(list);
+        }
     }
 }
