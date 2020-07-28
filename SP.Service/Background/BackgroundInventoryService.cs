@@ -462,7 +462,138 @@ namespace SP.Service.Background
 
             _coordinator.AddOrUpdate(progressIndicator);
 
+            StringBuilder processingLog = new StringBuilder();
+            processingLog.AppendLine("Расчет остатков Номенклатуры начат.");
+
             var person = await _masterService.GetPersonAsync(aspNetUserId);
+            var nomenclatureIdList = await _context.Nomenclatures
+                .Where(x => x.IsActive)
+                .Select(x => x.Id)
+                .ToArrayAsync();
+            int totalNomenclatures = nomenclatureIdList.Length;
+            processingLog.AppendLine($"Количество Номенклатуры: {totalNomenclatures}");
+
+            var stations = await _context.GasStations
+                .Select(x => new
+                {
+                    x.Id,
+                    x.StationNumber
+                })
+                .ToArrayAsync();
+            int totalStations = stations.Length;
+            processingLog.AppendLine($"Количество АЗС: {totalStations}");
+
+            int currentStation = 1;
+            // кол-в остатков для расчета = кол-во номенклатуры * кол-во АЗС
+            int totalRows = totalNomenclatures * totalStations;
+            int currentRow = 0;
+
+            progressIndicator.Status = BackgroundServiceStatus.Running;
+
+            foreach (var station in stations)
+            {
+                progressIndicator.Step = $"АЗС {station.StationNumber} : {currentStation} из {totalStations}";
+                _coordinator.AddOrUpdate(progressIndicator);
+                processingLog.AppendLine($"АЗС {station.StationNumber}");
+
+                // предыдущие остатки
+                var oldBalances = await _context.NomenclatureBalance
+                    .Where(x => x.GasStationId == station.Id)
+                    .Select(x => new
+                    {
+                        x.Id,
+                        x.NomenclatureId
+                    })
+                    .ToArrayAsync();
+                // остатки по АЗС
+                var inventoryBalances = await _context.Inventories
+                    .Where(x => x.GasStationId == station.Id && x.NomenclatureId.HasValue && !x.IsBlocked)
+                    .GroupBy(x => x.NomenclatureId)
+                    .Select(x => new
+                    {
+                        NomenclatureId = x.Key,
+                        Quantity = x.Sum(i => i.Quantity)
+                    })
+                    .ToArrayAsync();
+                // обновляем существующие остатки
+                var existingBalances = oldBalances
+                    .Join(inventoryBalances,
+                        o => o.NomenclatureId,
+                        b => b.NomenclatureId,
+                        (o, b) => new
+                        {
+                            o.Id,
+                            o.NomenclatureId,
+                            b.Quantity
+                        })
+                    .ToArray();
+                foreach (var rec in existingBalances)
+                {
+                    var dbBalance = new NomenclatureBalance
+                    {
+                        Id = rec.Id,
+                        Quantity = rec.Quantity,
+                        LastUpdate = DateTime.Now
+                    };
+                    _context.NomenclatureBalance.Attach(dbBalance);
+                    _context.Entry(dbBalance).Property(r => r.Quantity).IsModified = true;
+                    _context.Entry(dbBalance).Property(r => r.LastUpdate).IsModified = true;
+                }
+
+                await _context.SaveChangesAsync();
+                processingLog.AppendLine($"Обновлено записей: {existingBalances.Length}");
+
+                // добавляем новые остатки
+                var newNomenclatures = nomenclatureIdList
+                    .Where(n => !existingBalances.Any(b => b.NomenclatureId == n))
+                    .ToArray();
+                var newBalances = newNomenclatures
+                    .GroupJoin(inventoryBalances,
+                        n => n,
+                        i => i.NomenclatureId,
+                        (n, i) => new
+                        {
+                            NomenclatureId = n,
+                            Balance = i
+                        })
+                    .SelectMany(
+                        x => x.Balance.DefaultIfEmpty(),
+                        (x, y) => new
+                        {
+                            x.NomenclatureId,
+                            Quantity = y == null ? 0.0m : y.Quantity
+                        })
+                    .ToArray();
+                foreach (var rec in newBalances)
+                {
+                    var newBalance = new NomenclatureBalance
+                    {
+                        NomenclatureId = rec.NomenclatureId,
+                        GasStationId = station.Id,
+                        Quantity = rec.Quantity,
+                        LastUpdate = DateTime.Now
+                    };
+                    _context.NomenclatureBalance.Add(newBalance);
+                }
+                await _context.SaveChangesAsync();
+                processingLog.AppendLine($"Добавлено записей: {newBalances.Length}");
+
+                currentRow += totalNomenclatures;
+                currentStation++;
+                progressIndicator.Progress = 100.0m * currentRow / totalRows;
+                _coordinator.AddOrUpdate(progressIndicator);
+            }
+
+            processingLog.AppendLine($"Расчет остатков Номенклатуры завершен");
+            var successFinalProgress = new BackgroundServiceProgress
+            {
+                Key = serviceKey,
+                Status = BackgroundServiceStatus.RanToCompletion,
+                Step = "Расчет остатков завершен",
+                Progress = 100,
+                Log = processingLog.ToString()
+            };
+            _coordinator.AddOrUpdate(successFinalProgress);
 
             return true;
         } 
