@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using OfficeOpenXml.FormulaParsing.ExcelUtilities;
 using SP.Core.Master;
 using SP.Data;
 using SP.Service.Background;
@@ -265,77 +266,133 @@ namespace SP.Web.Controllers
             return Json(new { data = list });
         }
 
-/// <summary>
-/// Получить статус выполнения задания
-/// </summary>
-/// <param name="key"></param>
-/// <param name="coordinator"></param>
-/// <returns></returns>
-public IActionResult PeekStatus(Guid key, [FromServices] IBackgroundCoordinator coordinator)
-{
-    var data = coordinator.GetProgress(key);
-
-    if (data.Status == BackgroundServiceStatus.NotFound)
-    {
-        return Json(new
+        [HttpPost]
+        [Route("[controller]/CalcOrder")]
+        public async Task<IActionResult> CalcOrderAsync([FromBody] int[] idList,
+            [FromServices] IBackgroundCoordinator coordinator)
         {
-            status = 0,
-            step = "Загрузка ТМЦ уже выполнена либо указан неправильный идентификатор загрузки.",
-            progress = 0
-        });
-    }
+            Guid serviceKey = Guid.NewGuid();
+            var user = await _userManager.GetUserAsync(User);
+            StartBackgroundOrderCalculation(coordinator, serviceKey, idList, user.Id);
 
-    return Json(new
-    {
-        status = data.Status,
-        step = data.Step,
-        progress = data.Progress,
-        log = data.Log
-    });
-}
+            return Json(new { Key = serviceKey });
+        }
 
-private bool CheckExcelFile(string fileName)
-{
-    if (string.IsNullOrWhiteSpace(fileName))
-    {
-        return false;
-    }
+        [HttpPost]
+        [Route("[controller]/Requirement")]
+        public async Task<IActionResult> Requirement([FromBody] RequirementViewModel model)
+        {
+            decimal? fixedAmount = null;
+            if (decimal.TryParse(model.FixedAmount, out decimal amount))
+            {
+                fixedAmount = amount;
+            }
 
-    string fileExtension = Path.GetExtension(fileName);
-    switch (fileExtension.ToLower())
-    {
-        case ".xlsx":
-            return true;
-    }
+            if ((fixedAmount == null && string.IsNullOrWhiteSpace(model.Formula)) || model.IdList.Length == 0)
+            {
+                var badResult = new RequirementViewModel
+                {
+                    UpdatedCount = 0
+                };
+                return Json(badResult);
+            }
 
-    return false;
-}
+            if (fixedAmount != 0.0m && !string.IsNullOrWhiteSpace(model.Formula))
+            {
+                model.Formula = null;
+            }
 
-private void StartBackgroundUpload(IBackgroundCoordinator coordinator, Guid serviceKey, List<UploadedFile> files, string aspNetUserId)
-{
-    Task.Run(async () =>
-    {
-        var service = new BackgroundInventoryService(coordinator);
-        await service.UploadAsync(serviceKey, files, aspNetUserId);
-    });
-}
+            int updated = await _inventoryService.SetRequirementAsync(fixedAmount, model.Formula, model.IdList);
+            var successResult = new RequirementViewModel
+            {
+                FixedAmount = fixedAmount?.ToString(),
+                Formula = model.Formula,
+                UpdatedCount = updated
+            };
 
-private void StartBackgroundAutoMerge(IBackgroundCoordinator coordinator, Guid serviceKey, string aspNetUserId)
-{
-    Task.Run(async () =>
-    {
-        var service = new BackgroundInventoryService(coordinator);
-        await service.AutoMergeAsync(serviceKey, aspNetUserId);
-    });
-}
+            return Json(successResult);
+        }
 
-private void StartBackgroundBalanceCalculation(IBackgroundCoordinator coordinator, Guid serviceKey, string aspNetUserId)
-{
-    Task.Run(async () =>
-    {
-        var service = new BackgroundInventoryService(coordinator);
-        await service.CalculateBalanceAsync(serviceKey, aspNetUserId);
-    });
-}
+        /// <summary>
+        /// Получить статус выполнения задания
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="coordinator"></param>
+        /// <returns></returns>
+        public IActionResult PeekStatus(Guid key, [FromServices] IBackgroundCoordinator coordinator)
+        {
+            var data = coordinator.GetProgress(key);
+
+            if (data.Status == BackgroundServiceStatus.NotFound)
+            {
+                return Json(new
+                {
+                    status = 0,
+                    step = "Загрузка ТМЦ уже выполнена либо указан неправильный идентификатор загрузки.",
+                    progress = 0
+                });
+            }
+
+            return Json(new
+            {
+                status = data.Status,
+                step = data.Step,
+                progress = data.Progress,
+                log = data.Log
+            });
+        }
+
+        private bool CheckExcelFile(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return false;
+            }
+
+            string fileExtension = Path.GetExtension(fileName);
+            switch (fileExtension.ToLower())
+            {
+                case ".xlsx":
+                    return true;
+            }
+
+            return false;
+        }
+
+        private void StartBackgroundUpload(IBackgroundCoordinator coordinator, Guid serviceKey, List<UploadedFile> files, string aspNetUserId)
+        {
+            Task.Run(async () =>
+            {
+                var service = new BackgroundInventoryService(coordinator);
+                await service.UploadAsync(serviceKey, files, aspNetUserId);
+            });
+        }
+
+        private void StartBackgroundAutoMerge(IBackgroundCoordinator coordinator, Guid serviceKey, string aspNetUserId)
+        {
+            Task.Run(async () =>
+            {
+                var service = new BackgroundInventoryService(coordinator);
+                await service.AutoMergeAsync(serviceKey, aspNetUserId);
+            });
+        }
+
+        private void StartBackgroundBalanceCalculation(IBackgroundCoordinator coordinator, Guid serviceKey, string aspNetUserId)
+        {
+            Task.Run(async () =>
+            {
+                var service = new BackgroundInventoryService(coordinator);
+                await service.CalculateBalanceAsync(serviceKey, aspNetUserId);
+            });
+        }
+
+        private void StartBackgroundOrderCalculation(IBackgroundCoordinator coordinator, Guid serviceKey, int[] idList, string aspNetUserId)
+        {
+            Task.Run(async () =>
+            {
+                var service = new BackgroundInventoryService(coordinator);
+                await service.CalculateOrderAsync(serviceKey, idList, aspNetUserId);
+            });
+        }
     }
 }

@@ -20,6 +20,8 @@ namespace SP.Service.Background
         Task<bool> UploadAsync(Guid serviceKey, List<UploadedFile> files, string aspNetUserId);
         Task<bool> AutoMergeAsync(Guid serviceKey, string aspNetUserId);
         Task<bool> CalculateBalanceAsync(Guid serviceKey, string aspNetUserId);
+
+        Task<bool> CalculateOrderAsync(Guid serviceKey, int[] idList, string aspNetUserId);
     }
 
     public class BackgroundInventoryService : IBackgroundInventoryService
@@ -596,6 +598,89 @@ namespace SP.Service.Background
             _coordinator.AddOrUpdate(successFinalProgress);
 
             return true;
-        } 
+        }
+
+        public async Task<bool> CalculateOrderAsync(Guid serviceKey, int[] idList, string aspNetUserId)
+        {
+            // регистрируем в координаторе
+            var progressIndicator = new BackgroundServiceProgress
+            {
+                Key = serviceKey,
+                Status = BackgroundServiceStatus.Created,
+                Progress = 0
+            };
+
+            _coordinator.AddOrUpdate(progressIndicator);
+
+            StringBuilder processingLog = new StringBuilder();
+            processingLog.AppendLine("Расчет заказа ТМЦ начат.");
+
+            var person = await _masterService.GetPersonAsync(aspNetUserId);
+
+            int currentRow = 0;
+            int totalRows = idList.Length;
+
+            progressIndicator.Status = BackgroundServiceStatus.Running;
+            while (true)
+            {
+                var portion = idList
+                    .Skip(currentRow)
+                    .Take(100)
+                    .ToArray();
+                if (portion.Length == 0)
+                {
+                    break;
+                }
+
+                foreach (var id in portion)
+                {
+                    await CalculateSingleOrder(id);
+                }
+
+                await _context.SaveChangesAsync();
+
+                currentRow += 100;
+                progressIndicator.Progress = 100.0m * currentRow / totalRows;
+                _coordinator.AddOrUpdate(progressIndicator);
+            }
+
+            processingLog.AppendLine($"Расчет заказа ТМЦ завершен");
+            var successFinalProgress = new BackgroundServiceProgress
+            {
+                Key = serviceKey,
+                Status = BackgroundServiceStatus.RanToCompletion,
+                Step = "Расчет заказа ТМЦ завершен",
+                Progress = 100,
+                Log = processingLog.ToString()
+            };
+            _coordinator.AddOrUpdate(successFinalProgress);
+
+            return true;
+        }
+
+        private async Task<bool> CalculateSingleOrder(int id)
+        {
+            var nomBalance = await _context.NomenclatureBalance.FirstOrDefaultAsync(x => x.Id == id);
+            if (nomBalance == null)
+            {
+                return false;
+            }
+
+            var requirement = await _context.Requirements
+                .FirstOrDefaultAsync(x => x.NomenclatureId == nomBalance.NomenclatureId
+                                          && x.GasStationId == nomBalance.GasStationId);
+            if (requirement == null)
+            {
+                return false;
+            }
+
+            decimal plan = requirement.FixedAmount ?? 0.0m;
+            // TODO: расчет по формуле
+
+            requirement.Plan = plan;
+            _context.Entry(requirement).Property(r => r.Plan).IsModified = true;
+
+            return true;
+        }
     }
 }

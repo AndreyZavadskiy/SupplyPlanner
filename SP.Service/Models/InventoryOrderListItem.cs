@@ -33,7 +33,7 @@ namespace SP.Service.Models
         /// <summary>
         /// Фикс.количество
         /// </summary>
-        public decimal FixedAmount { get; set; }
+        public decimal? FixedAmount { get; set; }
         /// <summary>
         /// Формула расчета
         /// </summary>

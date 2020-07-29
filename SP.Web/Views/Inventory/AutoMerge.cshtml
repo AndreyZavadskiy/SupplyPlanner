@@ -33,26 +33,28 @@
     </div>
 </form>
 
-<input id="serviceKey" type="hidden" />
+<section>
+    <input id="serviceKey" type="hidden" />
 
-<div class="modal js-loading-bar" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Загрузка ТМЦ</h5>
-            </div>
-            <div class="modal-body">
-                <div class="progress-step"></div>
-                <div class="progress" style="height: 20px;">
-                    <div class="progress-bar" role="progressbar"></div>
+    <div class="modal js-loading-bar" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Загрузка ТМЦ</h5>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" data-dismiss="modal">Закрыть</button>
+                <div class="modal-body">
+                    <div class="progress-step"></div>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar" role="progressbar"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" data-dismiss="modal">Закрыть</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
 @section Scripts
 {

@@ -24,7 +24,7 @@ namespace SP.Core.Model
         /// Фикс.количество
         /// </summary>
         [Column(TypeName = "decimal(19,4)")]
-        public decimal FixedAmount { get; set; }
+        public decimal? FixedAmount { get; set; }
         /// <summary>
         /// Формула расчета
         /// </summary>

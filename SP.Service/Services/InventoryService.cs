@@ -26,6 +26,7 @@ namespace SP.Service.Services
         Task<int> BlockInventoryAsync(int[] inventoryIdList);
         Task<IEnumerable<InventoryBalanceListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom);
         Task<IEnumerable<InventoryOrderListItem>> GetOrderListAsync();
+        Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, int[] idList);
     }
 
     public class InventoryService : IInventoryService
@@ -253,12 +254,12 @@ namespace SP.Service.Services
                         (x, y) => new InventoryOrderListItem
                         {
                             Id = x.NomBalance.Id,
-                            Code = x.NomBalance.Nomenclature.Code ?? x.NomBalance.Id.ToString(),
+                            Code = x.NomBalance.Nomenclature.Code ?? x.NomBalance.Nomenclature.Id.ToString(),
                             Name = x.NomBalance.Nomenclature.Name,
                             GasStationName = x.NomBalance.GasStation.StationNumber,
                             Quantity = x.NomBalance.Quantity,
                             MeasureUnitName = x.NomBalance.Nomenclature.MeasureUnit.Name,
-                            FixedAmount = y == null ? 0.0m : y.FixedAmount,
+                            FixedAmount = y.FixedAmount,
                             Formula = y == null ? null : y.Formula,
                             Plan = y == null ? 0.0m : y.Plan,
                             OrderQuantity = y == null ? 0.0m : y.Plan - x.NomBalance.Quantity
@@ -273,6 +274,61 @@ namespace SP.Service.Services
             }
 
             return null;
+        }
+
+        public async Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, int[] idList)
+        {
+            var existingRecords = await _context.NomenclatureBalance
+                .Where(b => idList.Contains(b.Id))
+                .Join(_context.Requirements,
+                    b => new { b.NomenclatureId, b.GasStationId },
+                    r => new {r.NomenclatureId, r.GasStationId},
+                    (r, b) => new
+                    {
+                        RequirementId = r.Id,
+                        NomenclatureBalanceId = b.Id
+                    }
+                )
+                .ToArrayAsync();
+
+            foreach (var item in existingRecords)
+            {
+                var rec = new Requirement
+                {
+                    Id = item.RequirementId,
+                    FixedAmount = fixedAmount,
+                    Formula = formula
+                };
+
+                _context.Entry(rec).Property(r => r.FixedAmount).IsModified = true;
+                _context.Entry(rec).Property(r => r.Formula).IsModified = true;
+            }
+
+            var updated = await _context.SaveChangesAsync();
+
+            var newIdList = idList.Except(
+                existingRecords.Select(e => e.NomenclatureBalanceId)
+                )
+                .ToArray();
+            var nomBalanceList = await _context.NomenclatureBalance
+                .Where(x => newIdList.Contains(x.Id))
+                .ToArrayAsync();
+            foreach (var nb in nomBalanceList)
+            {
+                var newRec = new Requirement
+                {
+                    NomenclatureId = nb.NomenclatureId,
+                    GasStationId = nb.GasStationId,
+                    FixedAmount = fixedAmount,
+                    Formula = formula
+                };
+
+                await _context.Requirements.AddAsync(newRec);
+            }
+
+            var inserted = await _context.SaveChangesAsync();
+
+            return updated + inserted;
         }
 
         private async Task UpdateInventory(IEnumerable<StageInventory> data)

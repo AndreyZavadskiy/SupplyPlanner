@@ -29,8 +29,8 @@
                     <th class="exportable-column">АЗС</th>
                     <th class="exportable-column">Остаток</th>
                     <th class="exportable-column">Ед.изм.</th>
-                    <th class="exportable-column">Формула</th>
                     <th class="exportable-column">Фикс. значение</th>
+                    <th class="exportable-column">Формула</th>
                     <th class="exportable-column">План</th>
                     <th class="exportable-column">Заказ</th>
                 </tr>
@@ -82,16 +82,78 @@
         </div>
     </div>
 </section>
+<section>
+    <input id="serviceKey" type="hidden" />
+
+    <div class="modal js-loading-bar" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Загрузка ТМЦ</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="progress-step"></div>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar" role="progressbar"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" data-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section>
+    <div class="modal" id="OrderModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Параметры заказа</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="col-12">
+                        <div class="form-row zero-gutters">
+                            <div class="form-group row col-12">
+                                <label for="FixedAmount" class="control-label zero-gutters col-3">Фикс.значение</label>
+                                <input id="FixedAmount" class="form-control col-6" />
+                            </div>
+                            <div class="form-group row col-12">
+                                <label for="Formula" class="control-label zero-gutters col-3">Формула</label>
+                                <textarea id="Formula" class="form-control col-9" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer form-row button-row">
+                    <button type="button" class="btn btn-primary" onclick="savePlan();">Сохранить и закрыть</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 @section Scripts
 {
     <script>
+        var intervalId;
+        var selectedOrders;
+
         $(document).ready(function() {
             var d = new Date();
             var todayString = ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
             $('#OrderGrid').DataTable({
                 language: {
                     url: '/lib/datatables/i18n/russian.json'
+                },
+                rowId: 'id',
+                select: {
+                    style: 'multi',
+                    selector: 'td:first-child'
                 },
                 stateSave: true,
                 lengthMenu: [
@@ -101,7 +163,7 @@
                 ajax: {
                     url: '/Inventory/LoadOrderList',
                     type: 'POST',
-                    data: function (d) {
+                    data: function(d) {
                         d.region = $('#RegionList').val();
                         d.terr = $('#TerritoryList').val();
                         d.station = $('#StationList').val();
@@ -114,7 +176,7 @@
                     { defaultContent: '' },
                     {
                         render: function(data, type, full, meta) {
-                            return '<a href="#" onclick="editOrder(' + full.id + ');"><img src="/images/pencil-square.svg"/></a>';
+                            return '<a onclick="changeSingleOrder(' + full.id + ');"><img src="/images/pencil-square.svg"/></a>';
                         }
                     },
                     { data: 'code' },
@@ -122,8 +184,8 @@
                     { data: 'gasStationName' },
                     { data: 'quantity' },
                     { data: 'measureUnitName' },
-                    { data: 'formula' },
                     { data: 'fixedAmount' },
+                    { data: 'formula' },
                     { data: 'plan' },
                     { data: 'orderQuantity' }
                 ],
@@ -155,15 +217,32 @@
                         "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
                 buttons: [
                     {
-                        text: 'Расчет потребности',
-                        className: 'dt-action-button btn btn-success',
-                        action: function () {
+                        text: 'Рассчитать',
+                        titleAttr: 'Сделать расчет потребности в ТМЦ',
+                        className: 'dt-action-button btn btn-primary',
+                        action: function() {
+                            calcOrder();
+                        }
+                    },
+                    {
+                        text: 'Заказать',
+                        titleAttr: 'Сделать заказ ТМЦ',
+                        className: 'dt-action-button btn btn-primary',
+                        action: function() {
+                        }
+                    },
+                    {
+                        text: 'Изменить',
+                        titleAttr: 'Изменить параметры заказа ТМЦ',
+                        className: 'dt-action-button btn btn-primary',
+                        action: function() {
+                            changeOrders();
                         }
                     },
                     {
                         text: 'Вернуться назад',
                         className: 'dt-action-button btn btn-secondary',
-                        action: function () {
+                        action: function() {
                             window.location = '@Url.Action("Balance", "Inventory")';
                         }
                     },
@@ -195,6 +274,21 @@
             var dt = $('#OrderGrid').DataTable();
         });
 
+        var dt = $('#InventoryGrid').DataTable();
+        // select all checkbox
+        $(".selectAll").on("click",
+            function(e) {
+                if ($(this).is(":checked")) {
+                    dt.rows().select();
+                } else {
+                    dt.rows().deselect();
+                }
+            });
+        $('.js-loading-bar').modal({
+            backdrop: 'static',
+            show: false
+        });
+
         function loadTerritories(control) {
             var region = $(control).val();
             var terrList = $('#TerritoryList');
@@ -207,14 +301,14 @@
             var requestData = { parent: region };
             $.get(url,
                 requestData,
-                function (data) {
+                function(data) {
                     terrList.append($('<option>',
                         {
                             value: '',
                             text: '-- ВСЕ --'
                         }));
                     $.each(data,
-                        function (index, element) {
+                        function(index, element) {
                             terrList.append($('<option>',
                                 {
                                     value: element.id,
@@ -242,14 +336,14 @@
             };
             $.get(url,
                 requestData,
-                function (data) {
+                function(data) {
                     stationList.append($('<option>',
                         {
                             value: '',
                             text: '-- ВСЕ --'
                         }));
                     $.each(data,
-                        function (index, element) {
+                        function(index, element) {
                             stationList.append($('<option>',
                                 {
                                     value: element.id,
@@ -273,14 +367,14 @@
             var requestData = { 'group': group };
             $.get(url,
                 requestData,
-                function (data) {
+                function(data) {
                     nomList.append($('<option>',
                         {
                             value: '',
                             text: '-- ВСЕ --'
                         }));
                     $.each(data,
-                        function (index, element) {
+                        function(index, element) {
                             nomList.append($('<option>',
                                 {
                                     value: element.id,
@@ -296,5 +390,121 @@
             $('#OrderGrid').DataTable().ajax.reload();
             $('#FilterModal').modal('hide');
         }
+
+        function calcOrder() {
+            var url = "/Inventory/CalcOrder";
+            var dt = $("#OrderGrid").DataTable();
+            var rows = dt.rows({ selected: true }).data();
+            if (rows.length === 0) {
+                rows = dt.rows().data();
+            }
+            var requestData = rows.pluck('id').toArray();
+
+            $.ajax({
+                url: url,
+                data: JSON.stringify(requestData),
+                contentType: 'application/json; charset=utf-8;',
+                dataType: 'json',
+                type: 'post',
+                success: function(data) {
+                    console.log(data.key);
+                    $('input + span').text('');
+                    $('#serviceKey').val(data.key);
+                    $('.modal-footer').hide();
+                    $('.js-loading-bar').modal('show');
+                    intervalId = setInterval(function() {
+                            updateProgress();
+                        },
+                        1000);
+                }
+            });
+        }
+
+        function updateProgress() {
+            var keyValue = $('#serviceKey').val();
+            console.log('progress on ' + keyValue);
+            $.ajax({
+                url: 'PeekStatus',
+                data: 'key=' + keyValue,
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                processData: false,
+                type: 'get',
+                success: function(data) {
+                    $('.progress-step').text(data.step);
+                    $('.progress-bar').width(data.progress + '%');
+                    $('.progress-bar').text(data.progress.toFixed(0) + '%');
+                    if (data.status > 2) {
+                        clearInterval(intervalId);
+                        $('.log-textarea').val(data.log);
+                        $('.modal-footer').show();
+                    }
+                }
+            });
+        }
+
+        function changeOrders() {
+            debugger;
+            var dt = $("#OrderGrid").DataTable();
+            var rows = dt.rows({ selected: true }).data();
+            if (rows.length === 0) {
+                rows = dt.rows().data();
+            }
+            selectedOrders = rows.pluck('id').toArray();
+            openOrderModal();
+        }
+
+        function changeSingleOrder(id) {
+            selectedOrders = [id];
+            openOrderModal();
+        }
+
+        function openOrderModal() {
+            debugger;
+            if (!selectedOrders || selectedOrders.length === 0) return;
+            var dt = $("#OrderGrid").DataTable();
+            var data = dt.row('#' + selectedOrders[0]).data();
+            $('#FixedAmount').val(data.fixedAmount);
+            $('#Formula').val(data.formula);
+            $('#OrderModal').modal({
+                backdrop: 'static',
+                show: true
+            });
+        }
+
+        function savePlan() {
+            var url = '/Inventory/Requirement';
+            var requestData = {
+                "fixedAmount": $('#FixedAmount').val(),
+                "formula": $('#Formula').val(),
+                "idList": selectedOrders
+            };
+
+            $.ajax({
+                url: url,
+                data: JSON.stringify(requestData),
+                contentType: 'application/json; charset=utf-8;',
+                dataType: 'json',
+                type: 'post',
+                success: function(result) {
+                    if (result.updateCount === 0) {
+                        alert('Изменения не сохранены. Проверьте правильность ввода данных.');
+                        return;
+                    }
+
+                    var dt = $("#OrderGrid").DataTable();
+                    selectedOrders.forEach(function(id) {
+                        var row = dt.row('#' + id);
+                        var data = row.data();
+                        data.fixedAmount = result.fixedAmount;
+                        data.formula = result.formula;
+                        row.data(data).invalidate();
+                    });
+                    dt.rows().deselect();
+                    dt.draw();
+                    $('#OrderModal').modal('hide');
+                }
+            });
+    }
     </script>
 }
