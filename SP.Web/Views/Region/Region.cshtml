@@ -255,7 +255,7 @@
                 url: url,
                 contentType: "application/json; charset=utf-8",
                 data: { "id": id },
-                dataType: "json",
+                dataType: "html",
                 success: function (data) {
                     $('#RegionModalContent').html(data);
                     $('#RegionModal').modal({
@@ -263,7 +263,8 @@
                         keyboard: false
                     });
                 },
-                error: function () {
+                error: function (jqXHR, textStatus, errorThrown) {
+                    debugger;
                     alert('Ошибка открытия формы для создания региона');
                 }
             });
@@ -281,7 +282,7 @@
                 url: url,
                 contentType: "application/json; charset=utf-8",
                 data: { "parent": parent },
-                dataType: "json",
+                dataType: "html",
                 success: function (data) {
                     $('#TerritoryModalContent').html(data);
                     $('#TerritoryModal').modal({
@@ -302,7 +303,7 @@
                 url: url,
                 contentType: "application/json; charset=utf-8",
                 data: { "id": id },
-                dataType: "json",
+                dataType: "html",
                 success: function (data) {
                     $('#TerritoryModalContent').html(data);
                     $('#TerritoryModal').modal({

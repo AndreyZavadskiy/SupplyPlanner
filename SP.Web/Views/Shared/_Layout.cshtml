@@ -32,8 +32,16 @@
                                 <span class="nav-link text-dark dropbtn">Расчет</span>
                                 <div class="dropdown-content">
                                     <a class="nav-link text-dark" asp-controller="Inventory" asp-action="Upload">Загрузка остатков ТМЦ</a>
+                                    <a class="nav-link text-dark" asp-controller="Inventory" asp-action="AutoMerge">Автоматическое объединение ТМЦ с Номенклатурой</a>
+                                    <a class="nav-link text-dark" asp-controller="Inventory" asp-action="ManualMerge">Ручное объединение ТМЦ с Номенклатурой</a>
+                                    <a class="nav-link text-dark" asp-controller="Inventory" asp-action="CalcBalance">Расчет остатков ТМЦ</a>
+                                    <a class="nav-link text-dark" asp-controller="Inventory" asp-action="Balance">Остатки ТМЦ в разрезе Номенклатуры</a>
+                                    <a class="nav-link text-dark" asp-controller="Inventory" asp-action="Order">Заказ ТМЦ</a>
                                 </div>
                             </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Nomenclature" asp-action="Index">Номенклатура</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Station" asp-action="Index">Реестр АЗС</a>

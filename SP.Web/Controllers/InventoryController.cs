@@ -219,6 +219,13 @@ namespace SP.Web.Controllers
                 ProcessingDate = DateTime.Now
             };
 
+            await LoadEssentialDictionaries();
+
+            return View("Balance", model);
+        }
+
+        private async Task LoadEssentialDictionaries()
+        {
             var regions = await _masterService.SelectRegionAsync();
             var list = new SelectList(regions, "Id", "Name").ToList();
             list.Insert(0, new SelectListItem("-- ВСЕ --", ""));
@@ -228,8 +235,6 @@ namespace SP.Web.Controllers
             var groupList = new SelectList(nomenclatureGroups, "Id", "Name").ToList();
             groupList.Insert(0, new SelectListItem("-- ВСЕ --", ""));
             ViewData["NomenclatureGroupList"] = groupList;
-
-            return View("Balance", model);
         }
 
         /// <summary>
@@ -249,12 +254,15 @@ namespace SP.Web.Controllers
             return Json(new { data = list });
         }
 
-        public IActionResult Order()
+        [Route("[controller]/Order")]
+        public async Task<IActionResult> OrderAsync()
         {
             var model = new InventoryProcessingViewModel
             {
                 ProcessingDate = DateTime.Now
             };
+
+            await LoadEssentialDictionaries();
 
             return View("order", model);
         }

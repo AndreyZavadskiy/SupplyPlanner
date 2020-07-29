@@ -1,0 +1,232 @@
+﻿@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Номенклатура</h1>
+
+<div class="col-md-12">
+    <section class="container">
+        <table id="NomenclatureGrid" class="table table-striped table-bordered nowrap" width="100%" cellspacing="0">
+            <thead>
+                <tr>
+                    <th class="hidden-column"><input type="checkbox" class="selectAll" /></th>
+                    <th></th>
+                    <th>Статус</th>
+                    <th class="hidden-column"></th>
+                    <th class="exportable-column">Код</th>
+                    <th class="exportable-column">Наименование</th>
+                    <th class="exportable-column">Код Петроникса</th>
+                    <th class="exportable-column">Наименование Петроникса</th>
+                    <th class="exportable-column">Ед.изм.</th>
+                    <th class="exportable-column">СПИ</th>
+                    <th class="exportable-column">Группа</th>
+                </tr>
+            </thead>
+        </table>
+    </section>
+</div>
+
+<section>
+    <div class="modal" id="FilterModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Фильтры</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body filter-area">
+                    <p>
+
+                    </p>
+                    <div class="col-12">
+                        <div class="form-row zero-gutters">
+                            <div class="form-group row col-12">
+                                <input type="checkbox" id="IncludeBlocked" /> &nbsp; включить заблокированные
+                            </div>
+                            <div class="form-group row col-12">
+                                <label for="NomenclatureGroupList" class="control-label zero-gutters col-3">Группа номенклатуры</label>
+                                <select id="NomenclatureGroupList" asp-items="ViewBag.NomenclatureGroupList" class="col-9"></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer form-row button-row">
+                    <button type="button" class="btn btn-primary" onclick="applyFilter();">Применить и закрыть</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section>
+    <div class="modal" id="NomenclatureModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document" style="max-width: 720px;">
+            <div class="modal-content">
+                <div id="NomenclatureModalContent"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function () {
+            var d = new Date();
+            var todayString = ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
+            $('#NomenclatureGrid').DataTable({
+                language: {
+                    url: '/lib/datatables/i18n/russian.json'
+                },
+                rowId: 'id',
+                scrollX: true,
+                order: [[3, "asc"]],
+                stateSave: true,
+                lengthMenu: [
+                    [10, 25, 50, 100, -1],
+                    [10, 25, 50, 100, "Все"]
+                ],
+                ajax: {
+                    url: '/Nomenclature/LoadList',
+                    type: 'POST',
+                    dataType: 'json'
+                },
+                columns: [
+                    { defaultContent: '' },
+                    {
+                        render: function (data, type, full, meta) {
+                            return '<a onclick="editNomenclature(' + full.id + ');"><img src="/images/pencil-square.svg"/></a>';
+                        }
+                    },
+                    {
+                        data: null,
+                        render: {
+                            '_': 'active',
+                            'filter': 'active',
+                            'display': function (data, type, full, meta) {
+                                if (full.active === '1') return null;
+                                else return '<img src="/images/ban-solid-16.png" alt="blocked" title="Пользователь заблокирован" />';
+                            }
+                        }
+                    },
+                    { data: 'nomenclatureGroupId' },
+                    { data: 'code' },
+                    { data: 'name' },
+                    { data: 'petronicsCode' },
+                    { data: 'petronicsName' },
+                    { data: 'measureUnitName' },
+                    { data: 'usefulLife' },
+                    { data: 'nomenclatureGroupName' }
+                ],
+                columnDefs: [
+                    {
+                        targets: 'hidden-column',
+                        visible: false
+                    },
+                    {
+                        targets: 0,
+                        data: null,
+                        orderable: false,
+                        sorting: false,
+                        className: 'select-checkbox',
+                        width: '1.5em'
+                    },
+                    {
+                        targets: 1,
+                        orderable: false,
+                        sorting: false,
+                        width: '1em'
+                    },
+                    {
+                        targets: 2,
+                        orderable: false,
+                        sorting: false,
+                        className: 'dt-center',
+                        width: '1em'
+                    }
+                ],
+                dom:
+                    "<'row'<'col-sm-12 col-md-6 dt-action-group'B>>" +
+                    "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                    "<'row'<'col-sm-12'tr>>" +
+                    "<'row'<'col-sm-12 col-md-6'i>>" +
+                    "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
+                buttons:
+                    [
+                        {
+                            text: 'Excel',
+                            titleAttr: "Выгрузить таблицу в Excel",
+                            className: 'dt-action-button',
+                            extend: 'excel',
+                            title: 'Список пользователей',
+                            messageTop: 'Дата выгрузки ' + todayString,
+                            exportOptions: {
+                                columns: '.exportable-column',
+                                modifier: { search: 'applied' }
+                            }
+                        },
+                        {
+                            text: 'Фильтры',
+                            className: 'dt-action-button filter-button',
+                            action: function (e, dt, node, config) {
+                                $('#FilterModal').modal({
+                                    backdrop: 'static',
+                                    keyboard: false
+                                });
+                            }
+                        }
+                    ]
+            });
+            // default filter
+            dt.columns(2).search('1').draw(false);
+
+        });
+
+        function applyFilter() {
+            var isEnabled = false;
+            var searchString = '';
+            if ($('#IncludeBlocked').is(':checked')) {
+                isEnabled = true;
+            } else {
+                searchString = '1';
+            }
+            var dt = $('#NomenclatureGrid').DataTable();
+            dt.columns(2).search(searchString).draw(false);
+            var searchGroup = $('#NomenclatureGroupList').val();
+            if (searchGroup !== '') {
+                isEnabled = true;
+            }
+            dt.columns(3).search(searchGroup).draw(false);
+
+            if (isEnabled) $('.filter-button').addClass('filter-enabled');
+            else $('.filter-button').removeClass('filter-enabled');
+
+            $('#FilterModal').modal('hide');
+        }
+
+        function editNomenclature(id) {
+            var url = '/Nomenclature/Edit';
+            $.ajax({
+                type: "GET",
+                url: url,
+                contentType: "application/json; charset=utf-8",
+                data: { "id": id },
+                dataType: "html",
+                success: function (data) {
+                    $('#NomenclatureModalContent').html(data);
+                    $('#NomenclatureModal').modal({
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                },
+                error: function () {
+                    alert('Ошибка открытия формы для редактирования номенклатуры');
+                }
+            });
+        }
+
+    </script>
+}

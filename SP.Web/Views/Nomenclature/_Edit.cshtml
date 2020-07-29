@@ -1,0 +1,103 @@
+﻿@model SP.Service.Models.NomenclatureModel
+@{
+    Layout = null;
+}
+
+<form id="EditRegionForm">
+    <div class="modal-header">
+        <h5 class="modal-title">Номенклатура</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <div class="zero-gutters col-12">
+            <input asp-for="Id" type="hidden" />
+            <div class="form-row zero-gutters">
+                <div class="form-group row col-12">
+                    <label asp-for="Code" class="control-label col-4"></label>
+                    <input asp-for="Code" class="form-control col-8" />
+                </div>
+            </div>
+            <div class="form-row zero-gutters">
+                <div class="form-group row col-12">
+                    <label asp-for="Name" class="control-label"></label>
+                    <input asp-for="Name" class="form-control" />
+                </div>
+            </div>
+            <div class="form-row zero-gutters">
+                <div class="form-group row col-12">
+                    <label asp-for="PetronicsCode" class="control-label"></label>
+                    <input asp-for="PetronicsCode" class="form-control" />
+                </div>
+            </div>
+            <div class="form-row zero-gutters">
+                <div class="form-group row col-12">
+                    <label asp-for="PetronicsName" class="control-label"></label>
+                    <input asp-for="PetronicsName" class="form-control" />
+                </div>
+            </div>
+            <div class="form-row zero-gutters">
+                <div class="form-group row col-12">
+                    <label asp-for="MeasureUnitId" class="control-label"></label>
+                    <select asp-for="MeasureUnitId" asp-items="ViewBag.MeasureUnitList"></select>
+                </div>
+            </div>
+            <div class="form-row zero-gutters">
+                <div class="form-group row col-12">
+                    <label asp-for="NomenclatureGroupId" class="control-label"></label>
+                    <select asp-for="NomenclatureGroupId" asp-items="ViewBag.NomenclatureGroupList"></select>
+                </div>
+            </div>
+            <div class="form-row zero-gutters">
+                <div class="form-group row col-12">
+                    <label asp-for="UsefulLife" class="control-label"></label>
+                    <input asp-for="UsefulLife" class="form-control" />
+                </div>
+            </div>
+            <div class="form-row zero-gutters">
+                <div class="form-group form-check">
+                    <label class="form-check-label">
+                        <input class="form-check-input" asp-for="Inactive" /> @Html.DisplayNameFor(model => model.Inactive)
+                    </label>
+                </div>
+                <div id="EditRegionAlert" class="text-danger"></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer form-row button-row">
+        <button type="button" class="btn btn-primary" onclick="postForm();">Сохранить и закрыть</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+    </div>
+</form>
+
+<script>
+    function postForm() {
+        var url = '/Region/EditRegion';
+        var postData = $('#EditRegionForm').serialize();
+        $.post(url, postData, function (data) {
+            if (isNaN(data)) {
+                $('#EditRegionAlert').html(data);
+                return;
+            }
+            var id = $('#Id').val();
+            var name = $('#Name').val();
+            var dt = $('#TerritoryGrid').DataTable();
+            if (id === '0') {
+                // create
+                $('#RegionList').append($('<option>',
+                    {
+                        value: data,
+                        text: name
+                    }))
+                    .val(data)
+                    .trigger('change');
+            } else {
+                // edit
+                $('#RegionList option[value="' + id + '"]').text(name);
+                dt.ajax.reload(null, false);
+            }
+            $('#RegionModal').modal('hide');
+        });
+    }
+</script>

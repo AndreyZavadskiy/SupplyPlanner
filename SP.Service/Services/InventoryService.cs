@@ -20,6 +20,7 @@ namespace SP.Service.Services
         Task<bool> PurgeStageInventoryAsync(int personId);
         Task<(bool Success, IEnumerable<string> Errors)> SaveStageInventoryAsync(StageInventory[] data, Guid? serviceKey, int personId);
         Task<IEnumerable<MergingInventory>> GetListForManualMerge();
+        Task<NomenclatureModel> GetNomenclatureModelAsync(int id);
         Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync();
         Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int groupId);
         Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId);
@@ -126,6 +127,31 @@ namespace SP.Service.Services
             return mergingList;
         }
 
+        public async Task<NomenclatureModel> GetNomenclatureModelAsync(int id)
+        {
+            var nomenclature = await _context.Nomenclatures.FindAsync(id);
+            if (nomenclature == null)
+            {
+                return null;
+            }
+
+            var nomenclatureModel = new NomenclatureModel()
+            {
+                Id = nomenclature.Id,
+                Code = nomenclature.Code,
+                Name = nomenclature.Name,
+                PetronicsCode = nomenclature.PetronicsCode,
+                PetronicsName = nomenclature.PetronicsName,
+                MeasureUnitId = nomenclature.MeasureUnitId,
+                NomenclatureGroupId = nomenclature.NomenclatureGroupId,
+                UsefulLife = nomenclature.UsefulLife,
+                Inactive = !nomenclature.IsActive
+            };
+
+            return nomenclatureModel;
+
+        }
+
         public async Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync()
         {
             var list = await _context.Nomenclatures
@@ -139,8 +165,10 @@ namespace SP.Service.Services
                     PetronicsCode = x.PetronicsCode,
                     PetronicsName = x.PetronicsName,
                     MeasureUnitName = x.MeasureUnit.Name,
+                    NomenclatureGroupId = x.NomenclatureGroupId,
                     NomenclatureGroupName = x.NomenclatureGroup.Name,
-                    UsefulLife = x.UsefulLife
+                    UsefulLife = x.UsefulLife,
+                    Active = x.IsActive ? "1" : "0"
                 })
                 .ToArrayAsync();
 

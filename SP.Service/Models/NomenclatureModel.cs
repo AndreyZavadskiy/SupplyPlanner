@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.ComponentModel;
 
 namespace SP.Service.Models
 {
-    public class NomenclatureListItem
+    public class NomenclatureModel
     {
         /// <summary>
         /// ID
@@ -13,38 +11,42 @@ namespace SP.Service.Models
         /// <summary>
         /// Код
         /// </summary>
+        [DisplayName("Код")]
         public string Code { get; set; }
         /// <summary>
         /// Наименование
         /// </summary>
+        [DisplayName("Наименование")]
         public string Name { get; set; }
         /// <summary>
         /// Код Петроникса
         /// </summary>
+        [DisplayName("Код Петроникса")]
         public string PetronicsCode { get; set; }
         /// <summary>
         /// Наименование Петроникса
         /// </summary>
+        [DisplayName("Наименование Петроникса")]
         public string PetronicsName { get; set; }
         /// <summary>
         /// Единица измерения
         /// </summary>
-        public string MeasureUnitName { get; set; }
-        /// <summary>
-        /// ID группы номенклатуры
-        /// </summary>
-        public int NomenclatureGroupId { get; set; }
+        [DisplayName("Ед.изм.")]
+        public int MeasureUnitId { get; set; }
         /// <summary>
         /// Группа номенклатуры
         /// </summary>
-        public string NomenclatureGroupName { get; set; }
+        [DisplayName("Группа номенклатуры")]
+        public int NomenclatureGroupId { get; set; }
         /// <summary>
         /// Срок полезного использования, месяцев
         /// </summary>
+        [DisplayName("СПИ")]
         public int UsefulLife { get; set; }
         /// <summary>
-        /// В работе
+        /// Запись исключена
         /// </summary>
-        public string Active { get; set; }
+        [DisplayName("Запись исключена")]
+        public bool Inactive { get; set; }
     }
 }
