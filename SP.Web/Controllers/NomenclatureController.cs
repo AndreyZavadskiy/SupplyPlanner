@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SP.Core.Master;
+using SP.Service.Models;
 using SP.Service.Services;
 
 namespace SP.Web.Controllers
@@ -57,6 +56,41 @@ namespace SP.Web.Controllers
             ViewData["NomenclatureGroupList"] = new SelectList(nomenclatureGroups, "Id", "Name").ToList(); ;
 
             return View("_Edit", model);
+        }
+
+        public async Task<IActionResult> Create()
+        {
+            var model = new NomenclatureModel();
+
+            var measureUnits = await _masterService.GetDictionaryListAsync<MeasureUnit>();
+            ViewData["MeasureUnitList"] = new SelectList(measureUnits, "Id", "Name").ToList(); ;
+            var nomenclatureGroups = await _masterService.GetDictionaryListAsync<NomenclatureGroup>();
+            ViewData["NomenclatureGroupList"] = new SelectList(nomenclatureGroups, "Id", "Name").ToList(); ;
+
+            return View("_Edit", model);
+        }
+
+        public async Task<IActionResult> SaveAsync([FromForm] NomenclatureModel model)
+        {
+            string errorMessage;
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(ms => ms.Errors)
+                    .Select(e => e.ErrorMessage);
+                errorMessage = string.Join(" ", errors);
+                return Content(errorMessage);
+            }
+
+            var result = await _inventoryService.SaveNomenclatureAsync(model);
+            if (result.Success)
+            {
+                return Content(result.Id.ToString());
+            }
+
+            errorMessage = string.Join(" ", result.Errors);
+
+            return Content(errorMessage);
         }
     }
 }

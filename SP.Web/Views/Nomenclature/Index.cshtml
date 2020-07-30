@@ -157,6 +157,14 @@
                 buttons:
                     [
                         {
+                            text: 'Добавить',
+                            titleAttr: "Создать новую номенклатуру",
+                            className: 'dt-action-button',
+                            action: function (e, dt, node, config) {
+                                createNomenclature();
+                            }
+                        },
+                        {
                             text: 'Excel',
                             titleAttr: "Выгрузить таблицу в Excel",
                             className: 'dt-action-button',
@@ -214,6 +222,25 @@
                 url: url,
                 contentType: "application/json; charset=utf-8",
                 data: { "id": id },
+                dataType: "html",
+                success: function (data) {
+                    $('#NomenclatureModalContent').html(data);
+                    $('#NomenclatureModal').modal({
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                },
+                error: function () {
+                    alert('Ошибка открытия формы для редактирования номенклатуры');
+                }
+            });
+        }
+
+        function createNomenclature() {
+            var url = '/Nomenclature/Create';
+            $.ajax({
+                type: "GET",
+                url: url,
                 dataType: "html",
                 success: function (data) {
                     $('#NomenclatureModalContent').html(data);

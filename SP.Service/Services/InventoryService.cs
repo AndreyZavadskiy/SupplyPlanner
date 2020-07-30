@@ -5,8 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
-using SP.Core.Master;
 using SP.Core.Model;
 using SP.Data;
 using SP.Service.Background;
@@ -21,6 +19,7 @@ namespace SP.Service.Services
         Task<(bool Success, IEnumerable<string> Errors)> SaveStageInventoryAsync(StageInventory[] data, Guid? serviceKey, int personId);
         Task<IEnumerable<MergingInventory>> GetListForManualMerge();
         Task<NomenclatureModel> GetNomenclatureModelAsync(int id);
+        Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveNomenclatureAsync(NomenclatureModel model);
         Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync();
         Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int groupId);
         Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId);
@@ -138,7 +137,7 @@ namespace SP.Service.Services
             var nomenclatureModel = new NomenclatureModel()
             {
                 Id = nomenclature.Id,
-                Code = nomenclature.Code,
+                Code = nomenclature.Code ?? nomenclature.Id.ToString(),
                 Name = nomenclature.Name,
                 PetronicsCode = nomenclature.PetronicsCode,
                 PetronicsName = nomenclature.PetronicsName,
@@ -149,7 +148,6 @@ namespace SP.Service.Services
             };
 
             return nomenclatureModel;
-
         }
 
         public async Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync()
@@ -186,6 +184,87 @@ namespace SP.Service.Services
                 .ToArrayAsync();
 
             return list;
+        }
+
+        public async Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveNomenclatureAsync(NomenclatureModel model)
+        {
+            bool hasRegionWithSameName = await _context.RegionStructure.AnyAsync(x => x.Id != model.Id && x.Name == model.Name);
+            if (hasRegionWithSameName)
+            {
+                return (false, null, new[] { "Регион с таким наименованием уже существует. Нельзя создавать дубли." });
+            }
+
+            if (model.Id == 0)
+            {
+                return await CreateNomenclatureAsync(model);
+            }
+
+            return await UpdateNomenclatureAsync(model);
+
+        }
+
+        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> CreateNomenclatureAsync(NomenclatureModel model)
+        {
+            var nomenclature = new NomenclatureModel
+            {
+                Name = model.Name,
+                ParentId = model.ParentId,
+                IsActive = !model.Inactive
+            };
+
+            var errors = new List<string>();
+            try
+            {
+                _context.Nomenclatures.Add(region);
+                await _context.SaveChangesAsync();
+
+                return (true, region.Id, null);
+            }
+            catch (DbUpdateException ex)
+            {
+                Debug.WriteLine(ex);
+                errors.Add("Невозможно сохранить изменения в базе данных. Если ошибка повторится, обратитесь в тех.поддержку.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                errors.Add("Ошибка создания региона в системе.");
+            }
+
+            return (false, null, errors);
+        }
+
+        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> UpdateNomenclatureAsync(NomenclatureModel model)
+        {
+            var region = await _context.Nomenclatures.FindAsync(model.Id);
+            if (region == null)
+            {
+                return (false, model.Id, new[] { "Регион не найден в базе данных." });
+            }
+
+            var errors = new List<string>();
+            try
+            {
+                region.Name = model.Name;
+                region.ParentId = model.ParentId;
+                region.IsActive = !model.Inactive;
+                _context.RegionStructure.Update(region);
+                await _context.SaveChangesAsync();
+
+                return (true, model.Id, null);
+            }
+            catch (DbUpdateException ex)
+            {
+                Debug.WriteLine(ex);
+                errors.Add("Невозможно сохранить изменения в базе данных. Если ошибка повторится, обратитесь в тех.поддержку.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                errors.Add("Ошибка изменения региона в системе.");
+            }
+
+            return (false, null, errors);
         }
 
         public async Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId)

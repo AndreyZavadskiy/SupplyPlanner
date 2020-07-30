@@ -3,7 +3,7 @@
     Layout = null;
 }
 
-<form id="EditRegionForm">
+<form id="EditNomenclatureForm">
     <div class="modal-header">
         <h5 class="modal-title">Номенклатура</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -16,53 +16,54 @@
             <div class="form-row zero-gutters">
                 <div class="form-group row col-12">
                     <label asp-for="Code" class="control-label col-4"></label>
-                    <input asp-for="Code" class="form-control col-8" />
+                    <input asp-for="Code" class="form-control col-4" />
                 </div>
             </div>
             <div class="form-row zero-gutters">
                 <div class="form-group row col-12">
-                    <label asp-for="Name" class="control-label"></label>
-                    <input asp-for="Name" class="form-control" />
+                    <label asp-for="Name" class="control-label col-4"></label>
+                    <input asp-for="Name" class="form-control col-8" />
                 </div>
             </div>
             <div class="form-row zero-gutters">
                 <div class="form-group row col-12">
-                    <label asp-for="PetronicsCode" class="control-label"></label>
-                    <input asp-for="PetronicsCode" class="form-control" />
+                    <label asp-for="PetronicsCode" class="control-label col-4"></label>
+                    <input asp-for="PetronicsCode" class="form-control col-4" />
                 </div>
             </div>
             <div class="form-row zero-gutters">
                 <div class="form-group row col-12">
-                    <label asp-for="PetronicsName" class="control-label"></label>
-                    <input asp-for="PetronicsName" class="form-control" />
+                    <label asp-for="PetronicsName" class="control-label col-4"></label>
+                    <input asp-for="PetronicsName" class="form-control col-8" />
                 </div>
             </div>
             <div class="form-row zero-gutters">
                 <div class="form-group row col-12">
-                    <label asp-for="MeasureUnitId" class="control-label"></label>
-                    <select asp-for="MeasureUnitId" asp-items="ViewBag.MeasureUnitList"></select>
+                    <label asp-for="MeasureUnitId" class="control-label col-4"></label>
+                    <select asp-for="MeasureUnitId" asp-items="ViewBag.MeasureUnitList" class="form-control col-8"></select>
                 </div>
             </div>
             <div class="form-row zero-gutters">
                 <div class="form-group row col-12">
-                    <label asp-for="NomenclatureGroupId" class="control-label"></label>
-                    <select asp-for="NomenclatureGroupId" asp-items="ViewBag.NomenclatureGroupList"></select>
+                    <label asp-for="NomenclatureGroupId" class="control-label col-4"></label>
+                    <select asp-for="NomenclatureGroupId" asp-items="ViewBag.NomenclatureGroupList" class="form-control col-8"></select>
                 </div>
             </div>
             <div class="form-row zero-gutters">
                 <div class="form-group row col-12">
-                    <label asp-for="UsefulLife" class="control-label"></label>
-                    <input asp-for="UsefulLife" class="form-control" />
+                    <label asp-for="UsefulLife" class="control-label col-4"></label>
+                    <input asp-for="UsefulLife" class="form-control col-2" />
                 </div>
             </div>
             <div class="form-row zero-gutters">
-                <div class="form-group form-check">
+                <div class="form-group row col-4"></div>
+                <div class="form-group row form-check col-8">
                     <label class="form-check-label">
-                        <input class="form-check-input" asp-for="Inactive" /> @Html.DisplayNameFor(model => model.Inactive)
+                        <input asp-for="Inactive" /> @Html.DisplayNameFor(model => model.Inactive)
                     </label>
                 </div>
-                <div id="EditRegionAlert" class="text-danger"></div>
             </div>
+            <div id="EditAlert" class="text-danger"></div>
         </div>
     </div>
     <div class="modal-footer form-row button-row">
@@ -73,31 +74,20 @@
 
 <script>
     function postForm() {
-        var url = '/Region/EditRegion';
-        var postData = $('#EditRegionForm').serialize();
+        debugger;
+        var url = '/Nomenclature/Save';
+        var postData = $('#EditNomenclatureForm').serialize();
         $.post(url, postData, function (data) {
             if (isNaN(data)) {
-                $('#EditRegionAlert').html(data);
+                $('#EditAlert').html(data);
                 return;
             }
             var id = $('#Id').val();
             var name = $('#Name').val();
-            var dt = $('#TerritoryGrid').DataTable();
-            if (id === '0') {
-                // create
-                $('#RegionList').append($('<option>',
-                    {
-                        value: data,
-                        text: name
-                    }))
-                    .val(data)
-                    .trigger('change');
-            } else {
-                // edit
-                $('#RegionList option[value="' + id + '"]').text(name);
-                dt.ajax.reload(null, false);
-            }
-            $('#RegionModal').modal('hide');
+            var dt = $('#NomenclatureGrid').DataTable();
+            dt.ajax.reload(null, false);
+            $('#NomenclatureModal').modal('hide');
         });
     }
+
 </script>

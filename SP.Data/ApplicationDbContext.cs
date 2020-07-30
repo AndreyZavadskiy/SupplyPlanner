@@ -46,6 +46,8 @@ namespace SP.Data
         public DbSet<StageInventory> StageInventories { get; set; }
         public DbSet<Inventory> Inventories { get; set; }
         public DbSet<Requirement> Requirements { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderDetail> OrderDetails { get; set; }
 
         // справочники
         public DbSet<CashboxLocation> CashboxLocations { get; set; }
