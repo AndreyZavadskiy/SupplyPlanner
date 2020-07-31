@@ -17,7 +17,7 @@
         </div>
     </div>
 
-    <div class="col-xl-9">
+    <div class="col-xl-12">
         <hr class="section-separate" />
         <table id="OrderGrid" class="table table-striped table-bordered nowrap" width="100%" cellspacing="0">
             <thead>
@@ -161,7 +161,7 @@
                     [10, 25, 50, 100, 'Все']
                 ],
                 ajax: {
-                    url: '/Inventory/LoadOrderList',
+                    url: '/Inventory/LoadInventoryOrderList',
                     type: 'POST',
                     data: function(d) {
                         d.region = $('#RegionList').val();
@@ -240,6 +240,13 @@
                         }
                     },
                     {
+                        text: 'Перейти на следующий шаг',
+                        className: 'dt-action-button btn btn-success',
+                        action: function() {
+                            window.location = '@Url.Action("OrderList", "Inventory")';
+                        }
+                    },
+                    {
                         text: 'Вернуться назад',
                         className: 'dt-action-button btn btn-secondary',
                         action: function() {
@@ -271,7 +278,6 @@
                     }
                 ]
             });
-            var dt = $('#OrderGrid').DataTable();
         });
 
         var dt = $('#InventoryGrid').DataTable();

@@ -25,7 +25,9 @@ namespace SP.Service.Services
         Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId);
         Task<int> BlockInventoryAsync(int[] inventoryIdList);
         Task<IEnumerable<InventoryBalanceListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom);
-        Task<IEnumerable<InventoryOrderListItem>> GetOrderListAsync();
+        Task<IEnumerable<InventoryOrderListItem>> GetInventoryOrderListAsync();
+        Task<IEnumerable<OrderModel>> GetOrderListAsync();
+        Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(int id);
         Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, int[] idList);
     }
 
@@ -205,20 +207,25 @@ namespace SP.Service.Services
 
         private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> CreateNomenclatureAsync(NomenclatureModel model)
         {
-            var nomenclature = new NomenclatureModel
+            var nomenclature = new Nomenclature
             {
+                Code = model.Code,
                 Name = model.Name,
-                ParentId = model.ParentId,
+                PetronicsCode = model.PetronicsCode,
+                PetronicsName = model.PetronicsName,
+                MeasureUnitId = model.MeasureUnitId,
+                NomenclatureGroupId = model.NomenclatureGroupId,
+                UsefulLife = model.UsefulLife,
                 IsActive = !model.Inactive
             };
 
             var errors = new List<string>();
             try
             {
-                _context.Nomenclatures.Add(region);
+                _context.Nomenclatures.Add(nomenclature);
                 await _context.SaveChangesAsync();
 
-                return (true, region.Id, null);
+                return (true, nomenclature.Id, null);
             }
             catch (DbUpdateException ex)
             {
@@ -228,7 +235,7 @@ namespace SP.Service.Services
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                errors.Add("Ошибка создания региона в системе.");
+                errors.Add("Ошибка создания номенклатуры в системе.");
             }
 
             return (false, null, errors);
@@ -236,19 +243,25 @@ namespace SP.Service.Services
 
         private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> UpdateNomenclatureAsync(NomenclatureModel model)
         {
-            var region = await _context.Nomenclatures.FindAsync(model.Id);
-            if (region == null)
+            var nomenclature = await _context.Nomenclatures.FindAsync(model.Id);
+            if (nomenclature == null)
             {
-                return (false, model.Id, new[] { "Регион не найден в базе данных." });
+                return (false, model.Id, new[] { "Номенклатура не найдена в базе данных." });
             }
 
             var errors = new List<string>();
             try
             {
-                region.Name = model.Name;
-                region.ParentId = model.ParentId;
-                region.IsActive = !model.Inactive;
-                _context.RegionStructure.Update(region);
+                nomenclature.Code = model.Code;
+                nomenclature.Name = model.Name;
+                nomenclature.PetronicsCode = model.PetronicsCode;
+                nomenclature.PetronicsName = model.PetronicsName;
+                nomenclature.MeasureUnitId = model.MeasureUnitId;
+                nomenclature.NomenclatureGroupId = model.NomenclatureGroupId;
+                nomenclature.UsefulLife = model.UsefulLife;
+                nomenclature.IsActive = !model.Inactive;
+
+                _context.Nomenclatures.Update(nomenclature);
                 await _context.SaveChangesAsync();
 
                 return (true, model.Id, null);
@@ -343,7 +356,7 @@ namespace SP.Service.Services
             return null;
         }
 
-        public async Task<IEnumerable<InventoryOrderListItem>> GetOrderListAsync()
+        public async Task<IEnumerable<InventoryOrderListItem>> GetInventoryOrderListAsync()
         {
             try
             {
@@ -436,6 +449,39 @@ namespace SP.Service.Services
             var inserted = await _context.SaveChangesAsync();
 
             return updated + inserted;
+        }
+
+        public async Task<IEnumerable<OrderModel>> GetOrderListAsync()
+        {
+            var list = await _context.Orders
+                .OrderByDescending(x => x.OrderDate)
+                .Select(x => new OrderModel
+                {
+                    Id = x.Id,
+                    OrderDate = x.OrderDate,
+                    PersonName = $"{x.Person.LastName} {x.Person.FirstName}"
+                })
+                .ToArrayAsync();
+
+            return list;
+        }
+
+        public async Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(int id)
+        {
+            var list = await _context.OrderDetails
+                .Where(x => x.OrderId == id)
+                .Select(x => new OrderDetailModel
+                {
+                    Id = x.Id,
+                    Code = x.Nomenclature.Code ?? x.Nomenclature.Id.ToString(),
+                    Name = x.Nomenclature.Name,
+                    MeasureUnitName = x.Nomenclature.MeasureUnit.Name,
+                    GasStationName = x.GasStation.StationNumber,
+                    UsefulLife = x.Nomenclature.UsefulLife,
+                    Quantity = x.Quantity
+                })
+                .ToArrayAsync();
+            return list;
         }
 
         private async Task UpdateInventory(IEnumerable<StageInventory> data)

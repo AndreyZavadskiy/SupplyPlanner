@@ -1,22 +1,19 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.Extensions.DependencyInjection;
-using OfficeOpenXml.FormulaParsing.ExcelUtilities;
 using SP.Core.Master;
 using SP.Data;
 using SP.Service.Background;
 using SP.Service.DTO;
 using SP.Service.Services;
 using SP.Web.ViewModels;
+using SQLitePCL;
 
 namespace SP.Web.Controllers
 {
@@ -264,13 +261,13 @@ namespace SP.Web.Controllers
 
             await LoadEssentialDictionaries();
 
-            return View("order", model);
+            return View("Order", model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoadOrderList()
+        public async Task<IActionResult> LoadInventoryOrderList()
         {
-            var list = await _inventoryService.GetOrderListAsync();
+            var list = await _inventoryService.GetInventoryOrderListAsync();
             return Json(new { data = list });
         }
 
@@ -319,6 +316,41 @@ namespace SP.Web.Controllers
             };
 
             return Json(successResult);
+        }
+
+        [Route("[controller]/OrderList")]
+        public async Task<IActionResult> OrderListAsync()
+        {
+            var model = new InventoryProcessingViewModel
+            {
+                ProcessingDate = DateTime.Now
+            };
+
+            await LoadEssentialDictionaries();
+
+            return View("OrderList", model);
+        }
+        public async Task<IActionResult> LoadOrderList()
+        {
+            var data = await _inventoryService.GetOrderListAsync();
+            var list = data
+                .Select(x => new
+                {
+                    x.Id,
+                    OrderDate = x.OrderDate.AddMilliseconds(x.OrderDate.Millisecond),
+                    x.PersonName
+                });
+            return Json(new { data = list });
+        }
+        public async Task<IActionResult> LoadOrderDetailList(int? id)
+        {
+            if (id == null)
+            {
+                return null;
+            }
+
+            var list = await _inventoryService.GetOrderDetailAsync(id.Value);
+            return Json(new { data = list });
         }
 
         /// <summary>

@@ -14,6 +14,10 @@ namespace SP.Core.Model
         /// </summary>
         public int Id { get; set; }
         /// <summary>
+        /// ID заказа
+        /// </summary>
+        public int OrderId { get; set; }
+        /// <summary>
         /// ID Номенклатуры
         /// </summary>
         public int NomenclatureId { get; set; }
@@ -28,6 +32,10 @@ namespace SP.Core.Model
 
         #region Navigation properties
 
+        /// <summary>
+        /// Заказ
+        /// </summary>
+        public Order Order { get; set; }
         /// <summary>
         /// Номенклатура
         /// </summary>

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SP.Service.Models
+﻿namespace SP.Service.Models
 {
     public class InventoryOrderListItem
     {
