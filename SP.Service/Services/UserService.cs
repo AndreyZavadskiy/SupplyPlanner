@@ -117,6 +117,11 @@ namespace SP.Service.Services
 
             var userRoles = await _userManager.GetRolesAsync(appUser);
 
+            var userTerritories = await _context.PersonTerritories
+                .Where(x => x.PersonId == id)
+                .Select(x => x.RegionalStructureId)
+                .ToArrayAsync();
+
             var model = new UserModel
             {
                 Id = person.Id,
@@ -128,7 +133,8 @@ namespace SP.Service.Services
                 Email = user.Email,
                 RegistrationDate = user.RegistrationDate,
                 Inactive = !user.IsActive,
-                RoleName = userRoles.FirstOrDefault()
+                RoleName = userRoles.FirstOrDefault(),
+                Territories = string.Join(',', userTerritories)
             };
 
             return model;
@@ -189,6 +195,22 @@ namespace SP.Service.Services
                     };
 
                     _context.Persons.Add(person);
+
+                    if (!string.IsNullOrWhiteSpace(model.Territories))
+                    {
+                        var terrList = model.Territories.Split(',');
+                        foreach (var terrId in terrList)
+                        {
+                            var personTerritory = new PersonTerritory
+                            {
+                                Person = person,
+                                RegionalStructureId = Convert.ToInt32(terrId)
+                            };
+
+                            await _context.PersonTerritories.AddAsync(personTerritory);
+                        }
+                    }
+
                     await _context.SaveChangesAsync();
                     //_logger.LogInformation("User created a new account with password.");
 
@@ -239,6 +261,14 @@ namespace SP.Service.Services
                 person.MiddleName = model.MiddleName;
                 _context.Persons.Update(person);
                 await _context.SaveChangesAsync();
+
+                // PersonTerritory
+                var dbTerritories = await _context.PersonTerritories
+                    .Where(x => x.PersonId == model.Id)
+                    .ToArrayAsync();
+                var terrList = model.Territories.Split(',')
+                    .Select(x => Convert.ToInt32(x));
+                // TODO сохранение списка территорий
 
                 // AspNetUser
                 appUser.UserName = model.UserName;

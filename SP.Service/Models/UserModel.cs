@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -87,5 +88,10 @@ namespace SP.Service.Models
         [Required(ErrorMessage = "Поле Роль является обязательным.")]
         [DisplayName("Роль пользователя")]
         public string RoleName { get; set; }
+
+        /// <summary>
+        /// Список id территорий
+        /// </summary>
+        public string Territories { get; set; }
     }
 }

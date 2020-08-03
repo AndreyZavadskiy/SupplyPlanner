@@ -1,0 +1,112 @@
+﻿@{
+    Layout = null;
+}
+
+<div>
+    <table id="TerritorySelectionGrid" class="table table-striped table-bordered nowrap" width="100%" cellspacing="0">
+        <thead>
+        <tr>
+            <th><input type="checkbox" class="selectAll" /></th>
+            <th class="hidden-column">ID региона</th>
+            <th class="exportable-column">Регион</th>
+            <th class="exportable-column">Территория</th>
+            <th>Статус</th>
+        </tr>
+        </thead>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#TerritorySelectionGrid').DataTable({
+            language: {
+                url: '/lib/datatables/i18n/russian.json'
+            },
+            rowId: 'territoryId',
+            select:
+            {
+                style: 'multi',
+                selector: 'td:first-child'
+            },
+            orderFixed: [2, 'asc'],
+            rowGroup: {
+                dataSrc: 'regionName'
+            },
+            stateSave: false,
+            lengthMenu: [
+                [10, 25, 50, 100, -1],
+                [10, 25, 50, 100, 'Все']
+            ],
+            ajax: {
+                url: '/Region/LoadTerritoryList',
+                type: 'POST',
+                dataType: 'json'
+            },
+            columns: [
+                { defaultContent: '' },
+                { data: 'regionId' },
+                { data: 'regionName' },
+                { data: 'territoryName' },
+                {
+                    data: null,
+                    render: {
+                        '_': 'active',
+                        'filter': 'active',
+                        'display': function (data, type, full, meta) {
+                            if (full.active === '1') return null;
+                            else return '<img src="/images/ban-solid-16.png" alt="blocked" title="Территория заблокирована" />';
+                        }
+                    }
+                }
+            ],
+            columnDefs: [
+                {
+                    targets: 'hidden-column',
+                    visible: false
+                },
+                {
+                    targets: 0,
+                    data: null,
+                    orderable: false,
+                    sorting: false,
+                    className: 'select-checkbox',
+                    width: '1.5em'
+                },
+                {
+                    targets: 4,
+                    orderable: false,
+                    sorting: false,
+                    className: 'dt-center',
+                    width: '1em'
+                }
+            ],
+            dom:
+                "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                    "<'row'<'col-sm-12'tr>>" +
+                    "<'row'<'col-sm-12 col-md-6'i>>" +
+                "<'row'<'col-sm-12 col-md-6 left-pagination'p>>"
+        });
+
+        var dt = $('#TerritorySelectionGrid').DataTable();
+        // pre-select rows
+        dt.on('draw', function () {
+            var selected = '@ViewBag.SelectedTerritories';
+            if (selected.trim().length > 0) {
+                var ids = selected.split(',');
+                ids.forEach(function (id) {
+                    var row = dt.row('#' + id);
+                    row.select();
+                });
+            }
+        });
+        // select all checkbox
+        $(".selectAll").on("click",
+            function (e) {
+                if ($(this).is(":checked")) {
+                    dt.rows().select();
+                } else {
+                    dt.rows().deselect();
+                }
+            });
+    });
+</script>

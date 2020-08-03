@@ -163,6 +163,7 @@ namespace SP.Service.Services
             if (parent == null)
             {
                 var fullList = await _context.RegionStructure.AsNoTracking()
+                    .Where(x => x.ParentId.HasValue )
                     .Select(x => new DictionaryListItem
                     {
                         Id = x.Id,

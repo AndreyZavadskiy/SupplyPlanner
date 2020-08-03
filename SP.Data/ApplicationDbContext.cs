@@ -39,6 +39,7 @@ namespace SP.Data
 
         // таблицы с данными
         public DbSet<Person> Persons { get; set; }
+        public DbSet<PersonTerritory> PersonTerritories { get; set; }
         public DbSet<RegionalStructure> RegionStructure { get; set; }
         public DbSet<GasStation> GasStations { get; set; }
         public DbSet<Nomenclature> Nomenclatures { get; set; }

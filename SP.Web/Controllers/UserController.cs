@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore.Internal;
 using SP.Data;
 using SP.Service.Models;
 using SP.Service.Services;
@@ -78,6 +79,14 @@ namespace SP.Web.Controllers
         {
             var roleList = await _userService.GetRolesAsync();
             ViewData["RoleList"] = new SelectList(roleList, "Id", "Name");
+            var territoryList = await _masterService.SelectTerritoryAsync(null);
+            var selectedTerritories = user.Territories.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            var nameList = territoryList
+                .Join(selectedTerritories,
+                    t => t.Id.ToString(),
+                    s => s,
+                    (t, s) => t.Name);
+            ViewData["TerritoryNames"] = string.Join(", ", nameList);
 
             return View("User", user);
         }
@@ -148,6 +157,12 @@ namespace SP.Web.Controllers
             TempData["ActionMessageClass"] = "alert-info";
 
             return Redirect($"/User/{result.Id}");
+        }
+
+        public IActionResult TerritorySelection(string selected)
+        {
+            ViewData["SelectedTerritories"] = selected;
+            return View("_TerritorySelection");
         }
     }
 }
