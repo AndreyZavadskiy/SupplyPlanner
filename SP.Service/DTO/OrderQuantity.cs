@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace SP.Web.ViewModels
+﻿namespace SP.Service.DTO
 {
     /// <summary>
     /// Количество заказа позиции
     /// </summary>
-    public class OrderQuantityViewModel
+    public class OrderQuantity
     {
         /// <summary>
         /// ID позиции остатка Номенклатуры

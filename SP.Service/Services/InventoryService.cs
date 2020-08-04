@@ -29,6 +29,7 @@ namespace SP.Service.Services
         Task<IEnumerable<OrderModel>> GetOrderListAsync();
         Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(int id);
         Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, int[] idList);
+        Task<(int OrderNumber, int RecordCount)> SaveOrderAsync(IEnumerable<OrderQuantity> data, int personId);
     }
 
     public class InventoryService : IInventoryService
@@ -449,6 +450,48 @@ namespace SP.Service.Services
             var inserted = await _context.SaveChangesAsync();
 
             return updated + inserted;
+        }
+
+        public async Task<(int OrderNumber, int RecordCount)> SaveOrderAsync(IEnumerable<OrderQuantity> data, int personId)
+        {
+            if (data == null || !data.Any())
+            {
+                return (0, 0);
+            }
+
+            var order = new Order
+            {
+                OrderDate = DateTime.Now,
+                PersonId = personId
+            };
+
+            var orderDetails = await _context.NomenclatureBalance
+                .Join(data,
+                    b => b.Id,
+                    d => d.Id,
+                    (b, d) => new OrderDetail
+                    {
+                        Order = order,
+                        NomenclatureId = b.NomenclatureId,
+                        GasStationId = b.GasStationId,
+                        Quantity = d.Quantity
+                    })
+                .ToArrayAsync();
+
+            try
+            {
+                await _context.Orders.AddAsync(order);
+                await _context.OrderDetails.AddRangeAsync(orderDetails);
+                int saved = await _context.SaveChangesAsync();
+
+                return (order.Id, saved);
+            }
+            catch (Exception ex)
+            {
+                Debugger.Break();
+            }
+
+            return (0, 0);
         }
 
         public async Task<IEnumerable<OrderModel>> GetOrderListAsync()

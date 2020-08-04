@@ -321,14 +321,18 @@ namespace SP.Web.Controllers
 
         [HttpPost]
         [Route("[controller]/SaveOrder")]
-        public async Task<IActionResult> SaveOrderAsync([FromBody] IEnumerable<OrderQuantityViewModel> data)
+        public async Task<IActionResult> SaveOrderAsync([FromBody] IEnumerable<OrderQuantity> data)
         {
             if (data == null || !data.Any())
             {
-                return null;
+                return Json(new { order = 0, updated = 0 });
             }
 
-            return null;
+            var user = await _userManager.GetUserAsync(User);
+            var person = await _masterService.GetPersonAsync(user.Id);
+            var result = await _inventoryService.SaveOrderAsync(data, person.Id);
+
+            return Json(new { order = result.OrderNumber, updated = result.RecordCount });
         }
 
         [Route("[controller]/OrderList")]
