@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SP.Core.Model
@@ -47,5 +48,11 @@ namespace SP.Core.Model
         /// </summary>
         [StringLength(50)]
         public string MiddleName { get; set; }
+
+        #region Navigation properties
+
+        public IEnumerable<PersonTerritory> PersonTerritories { get; set; }
+
+        #endregion
     }
 }

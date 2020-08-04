@@ -228,7 +228,8 @@
                         text: 'Заказать',
                         titleAttr: 'Сделать заказ ТМЦ',
                         className: 'dt-action-button btn btn-primary',
-                        action: function() {
+                        action: function () {
+                            makeOrder();
                         }
                     },
                     {
@@ -450,7 +451,6 @@
         }
 
         function changeOrders() {
-            debugger;
             var dt = $("#OrderGrid").DataTable();
             var rows = dt.rows({ selected: true }).data();
             if (rows.length === 0) {
@@ -466,7 +466,6 @@
         }
 
         function openOrderModal() {
-            debugger;
             if (!selectedOrders || selectedOrders.length === 0) return;
             var dt = $("#OrderGrid").DataTable();
             var data = dt.row('#' + selectedOrders[0]).data();
@@ -511,6 +510,34 @@
                     $('#OrderModal').modal('hide');
                 }
             });
-    }
+        }
+
+        function makeOrder() {
+            debugger;
+            var url = '/Inventory/SaveOrder';
+
+            var dt = $('#OrderGrid').DataTable();
+            var rows = dt.rows({ selected: true });
+            if (rows.count() === 0) {
+                alert('Выберите позиции Номенклатуры для заказа.');
+                return;
+            }
+            var requestData = [];
+            rows.every(function(rowIdx, tableLoop, rowLoop) {
+                var data = this.data();
+                requestData.push({ id: data.id, quantity : data.orderQuantity });
+            });
+
+            $.ajax({
+                url: url,
+                data: JSON.stringify(requestData),
+                contentType: 'application/json; charset=utf-8;',
+                dataType: 'json',
+                type: 'post',
+                success: function (result) {
+                    
+                }
+            });
+        }
     </script>
 }

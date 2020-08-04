@@ -115,13 +115,16 @@ namespace SP.Web.Controllers
 
         private async Task<IActionResult> SaveUser(UserModel model, string actionName = null)
         {
-            if (model.Id == 0)
+            if (string.IsNullOrWhiteSpace(model.Password))
             {
-                if (string.IsNullOrWhiteSpace(model.Password))
+                if (model.Id == 0)
                 {
                     ModelState.AddModelError("Password", "Не задан пароль пользователя");
                 }
-                else if (model.Password != model.PasswordRepeat)
+            }
+            else
+            {
+                if (model.Password != model.PasswordRepeat)
                 {
                     ModelState.AddModelError("Password", "Пароли не совпадают");
                 }

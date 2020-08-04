@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -316,6 +317,18 @@ namespace SP.Web.Controllers
             };
 
             return Json(successResult);
+        }
+
+        [HttpPost]
+        [Route("[controller]/SaveOrder")]
+        public async Task<IActionResult> SaveOrderAsync([FromBody] IEnumerable<OrderQuantityViewModel> data)
+        {
+            if (data == null || !data.Any())
+            {
+                return null;
+            }
+
+            return null;
         }
 
         [Route("[controller]/OrderList")]

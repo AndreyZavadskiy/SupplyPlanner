@@ -39,13 +39,8 @@ namespace SP.Service.Services
                     u => u.Id,
                     (p, u) => new
                     {
-                        p.Id,
-                        p.Code,
-                        p.AspNetUserId,
-                        p.LastName,
-                        p.FirstName,
-                        p.MiddleName,
-                        u.IsActive
+                        Person = p,
+                        AppUser = u,
                     })
                 .Join(
                     _context.UserRoles.AsNoTracking()
@@ -57,17 +52,35 @@ namespace SP.Service.Services
                                 ur.UserId,
                                 RoleName = r.FriendlyName
                             }),
-                    p => p.AspNetUserId,
+                    p => p.Person.AspNetUserId,
                     r => r.UserId,
                     (p, r) => new
                     {
-                        p.Id,
-                        p.Code,
-                        p.LastName,
-                        p.FirstName,
-                        p.MiddleName,
-                        r.RoleName,
-                        p.IsActive
+                        p.Person,
+                        p.AppUser,
+                        r.RoleName
+                    })
+                .GroupJoin(_context.PersonTerritories,
+                    p => p.Person.Id,
+                    t => t.PersonId,
+                    (p, t) => new
+                    {
+                        p.Person,
+                        p.AppUser,
+                        p.RoleName,
+                        Terrtory = t
+                    })
+                .SelectMany(x => x.Terrtory.DefaultIfEmpty(),
+                    (x, y) => new 
+                    {
+                        x.Person.Id,
+                        x.Person.Code,
+                        x.Person.LastName,
+                        x.Person.FirstName,
+                        x.Person.MiddleName,
+                        x.AppUser.IsActive,
+                        x.RoleName,
+                        TerritoryName = y.RegionalStructure.Name
                     })
                 .ToArrayAsync();
 
@@ -86,7 +99,8 @@ namespace SP.Service.Services
                     Id = z.Key.Id,
                     Code = string.IsNullOrWhiteSpace(z.Key.Code) ? z.Key.Id.ToString() : z.Key.Code,
                     FullName = $"{z.Key.LastName} {z.Key.FirstName} {z.Key.MiddleName}",
-                    RoleDescription = string.Join(", ", z.Select(r => r.RoleName)),
+                    RoleDescription = string.Join(", ", z.Select(r => r.RoleName).Distinct()),
+                    TerritoryDescription = string.Join(", ", z.Select(t => t.TerritoryName).Distinct()),
                     Active = z.Key.IsActive ? "1" : "0"
                 })
                 .ToArray();
@@ -157,13 +171,14 @@ namespace SP.Service.Services
             {
                 UserName = model.UserName,
                 Email = model.Email,
+                EmailConfirmed = true,
                 IsActive = !model.Inactive,
                 RegistrationDate = DateTime.Now
             };
 
             if (string.IsNullOrWhiteSpace(model.Password))
             {
-                model.Password = "Pa$$w0rd";
+                throw new ArgumentException("Пароль не может быть пустым.");
             }
 
             // создаем ApplicationUser в ASP.Net Identity
@@ -266,9 +281,24 @@ namespace SP.Service.Services
                 var dbTerritories = await _context.PersonTerritories
                     .Where(x => x.PersonId == model.Id)
                     .ToArrayAsync();
-                var terrList = model.Territories.Split(',')
-                    .Select(x => Convert.ToInt32(x));
-                // TODO сохранение списка территорий
+                var actualList = string.IsNullOrWhiteSpace(model.Territories)
+                    ? new int[0]
+                    : model.Territories.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt32(x));
+                var listToInsert = actualList.Except(dbTerritories.Select(x => x.RegionalStructureId));
+                foreach (var terr in listToInsert)
+                {
+                    var newPersonTerr = new PersonTerritory
+                    {
+                        PersonId = model.Id,
+                        RegionalStructureId = terr
+                    };
+
+                    await _context.PersonTerritories.AddAsync(newPersonTerr);
+                }
+
+                var listToDelete = dbTerritories
+                    .Where(x => !actualList.Any(y => x.RegionalStructureId == y));
+                _context.PersonTerritories.RemoveRange(listToDelete);
 
                 // AspNetUser
                 appUser.UserName = model.UserName;
@@ -278,6 +308,13 @@ namespace SP.Service.Services
                 if (!updateUserResult.Succeeded)
                 {
                     return (false, model.Id, updateUserResult.Errors.Select(e => e.Description));
+                }
+
+                // пароль
+                if (!string.IsNullOrWhiteSpace(model.Password))
+                {
+                    var passResult = await _userManager.RemovePasswordAsync(appUser);
+                    passResult = await _userManager.AddPasswordAsync(appUser, model.Password);
                 }
 
                 // роли
