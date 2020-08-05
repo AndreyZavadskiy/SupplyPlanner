@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SP.Core.Master;
@@ -10,6 +10,7 @@ using SP.Service.Services;
 
 namespace SP.Web.Controllers
 {
+    [Authorize]
     public class StationController : Controller
     {
         private readonly IGasStationService _gasStationService;

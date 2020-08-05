@@ -1,18 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore.Internal;
 using SP.Data;
 using SP.Service.Models;
 using SP.Service.Services;
 
 namespace SP.Web.Controllers
 {
+    [Authorize]
     public class UserController : Controller
     {
         private readonly IUserService _userService;
@@ -79,14 +78,21 @@ namespace SP.Web.Controllers
         {
             var roleList = await _userService.GetRolesAsync();
             ViewData["RoleList"] = new SelectList(roleList, "Id", "Name");
-            var territoryList = await _masterService.SelectTerritoryAsync(null);
-            var selectedTerritories = user.Territories.Split(',', StringSplitOptions.RemoveEmptyEntries);
-            var nameList = territoryList
-                .Join(selectedTerritories,
-                    t => t.Id.ToString(),
-                    s => s,
-                    (t, s) => t.Name);
-            ViewData["TerritoryNames"] = string.Join(", ", nameList);
+            if (string.IsNullOrWhiteSpace(user.Territories))
+            {
+                ViewData["TerritoryNames"] = string.Empty;
+            }
+            else
+            {
+                var territoryList = await _masterService.SelectTerritoryAsync(null);
+                var selectedTerritories = user.Territories.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                var nameList = territoryList
+                    .Join(selectedTerritories,
+                        t => t.Id.ToString(),
+                        s => s,
+                        (t, s) => t.Name);
+                ViewData["TerritoryNames"] = string.Join(", ", nameList);
+            }
 
             return View("User", user);
         }

@@ -1,10 +1,10 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -14,10 +14,10 @@ using SP.Service.Background;
 using SP.Service.DTO;
 using SP.Service.Services;
 using SP.Web.ViewModels;
-using SQLitePCL;
 
 namespace SP.Web.Controllers
 {
+    [Authorize]
     public class InventoryController : Controller
     {
         private readonly IInventoryService _inventoryService;

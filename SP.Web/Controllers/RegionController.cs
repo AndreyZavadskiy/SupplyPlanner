@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Razor.Language.Extensions;
 using SP.Service.Models;
 using SP.Service.Services;
 using SP.Web.ViewModels;
 
 namespace SP.Web.Controllers
 {
+    [Authorize]
     public class RegionController : Controller
     {
         private readonly IMasterService _masterService;

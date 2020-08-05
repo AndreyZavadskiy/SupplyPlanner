@@ -35,7 +35,10 @@ namespace SP.Web
                     options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
                     options.UseLoggerFactory(ApplicationDbContext.ApplicationDbLoggerFactory);
                 });
-            services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddDefaultIdentity<ApplicationUser>(options =>
+                {
+                    options.SignIn.RequireConfirmedAccount = true;
+                })
                 .AddRoles<ApplicationRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddSingleton<IBackgroundCoordinator, BackgroundCoordinator>();

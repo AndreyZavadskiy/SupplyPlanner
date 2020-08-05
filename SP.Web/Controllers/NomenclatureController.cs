@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SP.Core.Master;
@@ -8,6 +9,7 @@ using SP.Service.Services;
 
 namespace SP.Web.Controllers
 {
+    [Authorize]
     public class NomenclatureController : Controller
     {
         private readonly IInventoryService _inventoryService;
