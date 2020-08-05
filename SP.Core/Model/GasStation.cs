@@ -69,20 +69,24 @@ namespace SP.Core.Model
         public int ManagementSystemId { get; set; }
         /// <summary>
         /// Режим работы торгового зала
+        /// не ведется для ААЗС и окон
         /// </summary>
-        public int TradingHallOperatingModeId { get; set; }
+        public int? TradingHallOperatingModeId { get; set; }
         /// <summary>
         /// Санузел для клиентов
+        /// не ведется для ААЗС
         /// </summary>
-        public int ClientRestroomId { get; set; }
+        public int? ClientRestroomId { get; set; }
         /// <summary>
         /// Расчетно-кассовый узел
+        /// не ведется для ААЗС и окон
         /// </summary>
-        public int CashboxLocationId { get; set; }
+        public int? CashboxLocationId { get; set; }
         /// <summary>
         /// Размер торгового зала
+        /// не ведется для ААЗС и окон
         /// </summary>
-        public int TradingHallSizeId { get; set; }
+        public int? TradingHallSizeId { get; set; }
         /// <summary>
         /// Количество касс
         /// </summary>

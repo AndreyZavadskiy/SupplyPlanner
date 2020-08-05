@@ -90,27 +90,23 @@ namespace SP.Service.Models
         /// <summary>
         /// Режим работы торгового зала
         /// </summary>
-        [Required(ErrorMessage = "Поле является обязательным")]
         [DisplayName("Режим работы торгового зала")]
-        public int TradingHallOperatingModeId { get; set; }
+        public int? TradingHallOperatingModeId { get; set; }
         /// <summary>
         /// Санузел для клиентов
         /// </summary>
-        [Required(ErrorMessage = "Поле является обязательным")]
         [DisplayName("Санузел для клиентов")]
-        public int ClientRestroomId { get; set; }
+        public int? ClientRestroomId { get; set; }
         /// <summary>
         /// Расчетно-кассовый узел
         /// </summary>
-        [Required(ErrorMessage = "Поле является обязательным")]
         [DisplayName("Расчетно-кассовый узел")]
-        public int CashboxLocationId { get; set; }
+        public int? CashboxLocationId { get; set; }
         /// <summary>
         /// Размер торгового зала
         /// </summary>
-        [Required(ErrorMessage = "Поле является обязательным")]
         [DisplayName("Размер торгового зала")]
-        public int TradingHallSizeId { get; set; }
+        public int? TradingHallSizeId { get; set; }
         /// <summary>
         /// Количество касс
         /// </summary>
