@@ -459,27 +459,27 @@ namespace SP.Service.Services
                 return (0, 0);
             }
 
-            var order = new Order
-            {
-                OrderDate = DateTime.Now,
-                PersonId = personId
-            };
-
-            var orderDetails = await _context.NomenclatureBalance
-                .Join(data,
-                    b => b.Id,
-                    d => d.Id,
-                    (b, d) => new OrderDetail
-                    {
-                        Order = order,
-                        NomenclatureId = b.NomenclatureId,
-                        GasStationId = b.GasStationId,
-                        Quantity = d.Quantity
-                    })
-                .ToArrayAsync();
-
             try
             {
+                var order = new Order
+                {
+                    OrderDate = DateTime.Now,
+                    PersonId = personId
+                };
+
+                var orderDetails = _context.NomenclatureBalance.AsEnumerable()
+                    .Join(data,
+                        b => b.Id,
+                        d => d.Id,
+                        (b, d) => new OrderDetail
+                        {
+                            Order = order,
+                            NomenclatureId = b.NomenclatureId,
+                            GasStationId = b.GasStationId,
+                            Quantity = d.Quantity
+                        })
+                    .ToArray();
+
                 await _context.Orders.AddAsync(order);
                 await _context.OrderDetails.AddRangeAsync(orderDetails);
                 int saved = await _context.SaveChangesAsync();
