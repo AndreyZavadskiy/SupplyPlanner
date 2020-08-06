@@ -134,9 +134,8 @@ namespace SP.Service.Models
         /// <summary>
         /// Площадь торгового зала
         /// </summary>
-        [Required(ErrorMessage = "Поле является обязательным")]
         [DisplayName("Площадь торгового зала")]
-        public decimal TradingHallArea { get; set; }
+        public decimal? TradingHallArea { get; set; }
         /// <summary>
         /// Среднее количество чеков в сутки
         /// </summary>

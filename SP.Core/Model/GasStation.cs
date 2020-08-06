@@ -105,9 +105,10 @@ namespace SP.Core.Model
         public int ClientRestroomTotal { get; set; }
         /// <summary>
         /// Площадь торгового зала
+        /// не ведется для ААЗС и окон
         /// </summary>
         [Column(TypeName = "decimal(8,2)")]
-        public decimal TradingHallArea { get; set; }
+        public decimal? TradingHallArea { get; set; }
         /// <summary>
         /// Среднее количество чеков в сутки
         /// </summary>

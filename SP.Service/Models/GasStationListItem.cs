@@ -125,7 +125,7 @@ namespace SP.Service.Models
         /// Площадь торгового зала
         /// </summary>
         [DisplayName("Площадь торгового зала")]
-        public decimal TradingHallArea { get; set; }
+        public decimal? TradingHallArea { get; set; }
         /// <summary>
         /// Среднее количество чеков в сутки
         /// </summary>

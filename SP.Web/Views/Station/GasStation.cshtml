@@ -239,11 +239,18 @@
         <div class="form-row button-row">
             <input type="submit" value="Сохранить и вернуться" class="btn btn-primary" />
             <button asp-action="Save" class="btn btn-success">Сохранить</button>
-            <button asp-action="Index" class="btn btn-secondary">Вернуться</button>
+            <a class="btn btn-secondary" style="color: white;" onclick="goBack();">Вернуться</a>
         </div>
     </div>
 </form>
 
 @section Scripts
 {
+    <script>
+        function goBack() {
+            var region = '@ViewBag.SelectedRegion';
+            var terr = '@ViewBag.SelectedTerritory';
+            window.location = '/Station/Index?region=' + region + '&terr=' + terr;
+        }
+    </script>
 }

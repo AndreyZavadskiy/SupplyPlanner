@@ -83,8 +83,20 @@
 @section Scripts
 {
     <script>
+        var region;
+        var terr;
         $(document).ready(function () {
-            changeRegion();
+            debugger;
+            region = '@ViewData["SelectedRegion"]';
+            terr = '@ViewData["SelectedTerritory"]';
+            var regionList = $('#RegionList');
+            if (region) {
+                regionList.val(region);
+            } else {
+                regionList.prop('selectedIndex', 0);
+                region = regionList.val();
+            }
+            changeRegion(terr);
         });
 
         function initializeDataTable() {
@@ -224,17 +236,12 @@
             });
         }
 
-        function changeRegion() {
-            var region = '@ViewData["SelectedRegion"]';
-            var regionList = $('#RegionList');
+        function changeRegion(terr) {
+            var selectedRegion = $('#RegionList').val();
             var terrList = $('#TerritoryList');
-            if (region === '') {
-                regionList.prop('selectedIndex', 0);
-                region = regionList.val();
-            }
             terrList.empty();
             var url = '/Region/LoadTerritories';
-            var requestData = { parent: region };
+            var requestData = { parent: selectedRegion };
             $.get(url,
                 requestData,
                 function (data) {
@@ -247,11 +254,11 @@
                                 }));
                         });
 
-                    var terr = '@ViewData["SelectedTerritory"]';
-                    if (terr === '') {
-                        terrList.prop('selectedIndex', 0);
-                    } else {
+                    debugger;
+                    if (terr) {
                         terrList.val(terr);
+                    } else {
+                        terrList.prop('selectedIndex', 0);
                     }
                     terrList.trigger('change');
                 });
@@ -264,7 +271,8 @@
                 initializeDataTable();
             }
 
-            history.replaceState(null, '', '/Station?region=' + $('#RegionList').val() + '&terr=' + $('#TerritoryList').val());
+            terr = $('#TerritoryList').val();
+            history.replaceState(null, '', '/Station?region=' + $('#RegionList').val() + '&terr=' + terr);
         }
 
         function createGasStation() {
