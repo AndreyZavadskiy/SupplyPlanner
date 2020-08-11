@@ -99,7 +99,6 @@
                     url: '/Inventory/LoadOrderDetailList',
                     type: 'POST',
                     data: function (d) {
-                        debugger;
                         var data = $('#OrderGrid').DataTable().rows({ selected: true }).ids();
                         if (data.length === 0) {
                             d.id = 0;

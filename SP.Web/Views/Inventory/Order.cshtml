@@ -166,7 +166,7 @@
                     data: function(d) {
                         d.region = $('#RegionList').val();
                         d.terr = $('#TerritoryList').val();
-                        d.station = $('#StationList').val();
+                        d.station = $('#GasStationList').val();
                         d.group = $('#NomenclatureGroupList').val();
                         d.nom = $('#NomenclatureList').val();
                     },
@@ -279,21 +279,20 @@
                     }
                 ]
             });
-        });
-
-        var dt = $('#InventoryGrid').DataTable();
-        // select all checkbox
-        $(".selectAll").on("click",
-            function(e) {
-                if ($(this).is(":checked")) {
-                    dt.rows().select();
-                } else {
-                    dt.rows().deselect();
-                }
+            var dt = $('#OrderGrid').DataTable();
+            // select all checkbox
+            $(".selectAll").on("click",
+                function (e) {
+                    if ($(this).is(":checked")) {
+                        dt.rows({ page: 'current' }).select();
+                    } else {
+                        dt.rows().deselect();
+                    }
+                });
+            $('.js-loading-bar').modal({
+                backdrop: 'static',
+                show: false
             });
-        $('.js-loading-bar').modal({
-            backdrop: 'static',
-            show: false
         });
 
         function loadTerritories(control) {
@@ -443,6 +442,7 @@
                     $('.progress-bar').text(data.progress.toFixed(0) + '%');
                     if (data.status > 2) {
                         clearInterval(intervalId);
+                        $('#OrderGrid').DataTable().ajax.reload();
                         $('.log-textarea').val(data.log);
                         $('.modal-footer').show();
                     }
@@ -513,7 +513,6 @@
         }
 
         function makeOrder() {
-            debugger;
             var url = '/Inventory/SaveOrder';
 
             var dt = $('#OrderGrid').DataTable();

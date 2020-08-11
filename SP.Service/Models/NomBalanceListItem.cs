@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SP.Service.Models
 {
-    public class InventoryBalanceListItem
+    public class NomBalanceListItem
     {
         /// <summary>
         /// ID

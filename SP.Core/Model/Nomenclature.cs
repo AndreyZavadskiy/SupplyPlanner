@@ -64,9 +64,9 @@ namespace SP.Core.Model
         /// </summary>
         public ICollection<Inventory> Inventories { get; set; }
         /// <summary>
-        /// Потребность ТМЦ по конкретной Номенклатуре
+        /// Остатки и потребности по Номенклатуре
         /// </summary>
-        public ICollection<Requirement> Requirements { get; set; }
+        public ICollection<NomCalculation> NomCalculations { get; set; }
 
         #endregion
     }

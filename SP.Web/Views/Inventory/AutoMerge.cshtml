@@ -63,7 +63,6 @@
         $(document).ready(function () {
             $('#submit').on('click', function (evt) {
                 evt.preventDefault();
-                //debugger;
                 var hasErrors = false;
                 if ($('#ProcessingDate').val() === '') {
                     $('#ProcessingDate + span').text('Поле Дата обработки обязательно для заполнения.');
@@ -78,7 +77,6 @@
                     processData: false,
                     type: 'post',
                     success: function (data) {
-                        //debugger;
                         $('input + span').text('');
                         $('#serviceKey').val(data.key);
                         $('.modal-footer').hide();

@@ -1,6 +1,6 @@
 ﻿namespace SP.Service.Models
 {
-    public class InventoryOrderListItem
+    public class NomCalcListItem
     {
         /// <summary>
         /// ID

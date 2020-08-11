@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CodingSeb.ExpressionEvaluator;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using SP.Core.Master;
@@ -291,6 +293,10 @@ namespace SP.Service.Background
             return true;
         }
 
+        /// <summary>
+        /// Сформировать список колонок для распознавания в Excel файле
+        /// </summary>
+        /// <returns></returns>
         private List<ColumnDefinition> GenerateColumnDefinitions()
         {
             var list = new List<ColumnDefinition>
@@ -452,6 +458,12 @@ namespace SP.Service.Background
             return true;
         }
 
+        /// <summary>
+        /// Рассчитать остатки по Номенклатуре
+        /// </summary>
+        /// <param name="serviceKey"></param>
+        /// <param name="aspNetUserId"></param>
+        /// <returns></returns>
         public async Task<bool> CalculateBalanceAsync(Guid serviceKey, string aspNetUserId)
         {
             // регистрируем в координаторе
@@ -499,7 +511,7 @@ namespace SP.Service.Background
                 processingLog.AppendLine($"АЗС {station.StationNumber}");
 
                 // предыдущие остатки
-                var oldBalances = await _context.NomenclatureBalance
+                var oldBalances = await _context.NomCalculations
                     .Where(x => x.GasStationId == station.Id)
                     .Select(x => new
                     {
@@ -531,13 +543,13 @@ namespace SP.Service.Background
                     .ToArray();
                 foreach (var rec in existingBalances)
                 {
-                    var dbBalance = new NomenclatureBalance
+                    var dbBalance = new NomCalculation
                     {
                         Id = rec.Id,
                         Quantity = rec.Quantity,
                         LastUpdate = DateTime.Now
                     };
-                    _context.NomenclatureBalance.Attach(dbBalance);
+                    _context.NomCalculations.Attach(dbBalance);
                     _context.Entry(dbBalance).Property(r => r.Quantity).IsModified = true;
                     _context.Entry(dbBalance).Property(r => r.LastUpdate).IsModified = true;
                 }
@@ -568,14 +580,14 @@ namespace SP.Service.Background
                     .ToArray();
                 foreach (var rec in newBalances)
                 {
-                    var newBalance = new NomenclatureBalance
+                    var newBalance = new NomCalculation
                     {
                         NomenclatureId = rec.NomenclatureId,
                         GasStationId = station.Id,
                         Quantity = rec.Quantity,
                         LastUpdate = DateTime.Now
                     };
-                    _context.NomenclatureBalance.Add(newBalance);
+                    _context.NomCalculations.Add(newBalance);
                 }
                 await _context.SaveChangesAsync();
                 processingLog.AppendLine($"Добавлено записей: {newBalances.Length}");
@@ -600,6 +612,13 @@ namespace SP.Service.Background
             return true;
         }
 
+        /// <summary>
+        /// Рассчитать потребность в заказе Номенклатуры
+        /// </summary>
+        /// <param name="serviceKey"></param>
+        /// <param name="idList"></param>
+        /// <param name="aspNetUserId"></param>
+        /// <returns></returns>
         public async Task<bool> CalculateOrderAsync(Guid serviceKey, int[] idList, string aspNetUserId)
         {
             // регистрируем в координаторе
@@ -621,6 +640,8 @@ namespace SP.Service.Background
             int totalRows = idList.Length;
 
             progressIndicator.Status = BackgroundServiceStatus.Running;
+            _coordinator.AddOrUpdate(progressIndicator);
+
             while (true)
             {
                 var portion = idList
@@ -658,27 +679,56 @@ namespace SP.Service.Background
             return true;
         }
 
+        /// <summary>
+        /// Рассчитать потребность в заказе отдельной позиции Номенклатуры по АЗС
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         private async Task<bool> CalculateSingleOrder(int id)
         {
-            var nomBalance = await _context.NomenclatureBalance.FirstOrDefaultAsync(x => x.Id == id);
+            var nomBalance = await _context.NomCalculations.FirstOrDefaultAsync(x => x.Id == id);
             if (nomBalance == null)
             {
                 return false;
             }
 
-            var requirement = await _context.Requirements
-                .FirstOrDefaultAsync(x => x.NomenclatureId == nomBalance.NomenclatureId
-                                          && x.GasStationId == nomBalance.GasStationId);
-            if (requirement == null)
+            decimal plan = 0.0m;
+            // TODO: расчет по формуле
+            if (nomBalance.FixedAmount != null)
             {
-                return false;
+                plan = nomBalance.FixedAmount.Value;
+            }
+            else if (!string.IsNullOrWhiteSpace(nomBalance.Formula))
+            {
+                // параметры АЗС
+                var gasStation = await _context.GasStations
+                    .Include(x => x.ServiceLevel)
+                    .FirstOrDefaultAsync(x => x.Id == nomBalance.GasStationId);
+
+                ExpressionEvaluator evaluator = new ExpressionEvaluator();
+                evaluator.Variables = new Dictionary<string, object>()
+                {
+                    { "if", new Func<bool,double,double,double>((c, x, y) => c ? x : y)},
+                    { "totalarm", gasStation.CashboxTotal },
+                    { "cluster", gasStation.ServiceLevel.Name.ToLower() }
+                };
+
+                try
+                {
+                    var result = evaluator.Evaluate(nomBalance.Formula.ToLower());
+                    if (!decimal.TryParse(result.ToString(), out plan))
+                    {
+                        throw new ArithmeticException($"Некорректная формула: {nomBalance.Formula}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debugger.Break();
+                }
             }
 
-            decimal plan = requirement.FixedAmount ?? 0.0m;
-            // TODO: расчет по формуле
-
-            requirement.Plan = plan;
-            _context.Entry(requirement).Property(r => r.Plan).IsModified = true;
+            nomBalance.Plan = plan;
+            _context.Entry(nomBalance).Property(r => r.Plan).IsModified = true;
 
             return true;
         }

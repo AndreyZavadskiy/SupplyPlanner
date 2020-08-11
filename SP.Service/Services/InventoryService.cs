@@ -24,8 +24,8 @@ namespace SP.Service.Services
         Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int groupId);
         Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId);
         Task<int> BlockInventoryAsync(int[] inventoryIdList);
-        Task<IEnumerable<InventoryBalanceListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom);
-        Task<IEnumerable<InventoryOrderListItem>> GetInventoryOrderListAsync();
+        Task<IEnumerable<NomBalanceListItem>> GetNomBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom);
+        Task<IEnumerable<NomCalcListItem>> GetNomCalcListAsync(int? region, int? terr, int? station, int? group, int? nom);
         Task<IEnumerable<OrderModel>> GetOrderListAsync();
         Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(int id);
         Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, int[] idList);
@@ -43,6 +43,11 @@ namespace SP.Service.Services
             _context = context;
         }
 
+        /// <summary>
+        /// Очистить данные по ТМЦ по конкретному пользователю в stage-таблице
+        /// </summary>
+        /// <param name="personId"></param>
+        /// <returns></returns>
         public async Task<bool> PurgeStageInventoryAsync(int personId)
         {
             await _context.StageInventories
@@ -51,6 +56,13 @@ namespace SP.Service.Services
             return true;
         }
 
+        /// <summary>
+        /// Сохранить данные по ТМЦ в stage-таблице
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="serviceKey"></param>
+        /// <param name="personId"></param>
+        /// <returns></returns>
         public async Task<(bool Success, IEnumerable<string> Errors)> SaveStageInventoryAsync(StageInventory[] data, Guid? serviceKey, int personId)
         {
             if (data == null)
@@ -100,10 +112,13 @@ namespace SP.Service.Services
                 UpdateProgress(serviceKey, stepMessage, 50.0m + 50.0m * currentRow / totalRows);
             }
 
-
             return (true, null);
         }
 
+        /// <summary>
+        /// Получить список ТМЦ для ручного объединения в Номенклатуру
+        /// </summary>
+        /// <returns></returns>
         public async Task<IEnumerable<MergingInventory>> GetListForManualMerge()
         {
             var mergingList = await _context.Inventories
@@ -129,6 +144,11 @@ namespace SP.Service.Services
             return mergingList;
         }
 
+        /// <summary>
+        /// Получить позицию Номенклатуры для редактирования
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<NomenclatureModel> GetNomenclatureModelAsync(int id)
         {
             var nomenclature = await _context.Nomenclatures.FindAsync(id);
@@ -153,6 +173,10 @@ namespace SP.Service.Services
             return nomenclatureModel;
         }
 
+        /// <summary>
+        /// Получить список Номенклатуры для просмотра
+        /// </summary>
+        /// <returns></returns>
         public async Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync()
         {
             var list = await _context.Nomenclatures
@@ -176,6 +200,11 @@ namespace SP.Service.Services
             return list;
         }
 
+        /// <summary>
+        /// Получить позицию Номенклатуры
+        /// </summary>
+        /// <param name="groupId"></param>
+        /// <returns></returns>
         public async Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int groupId)
         {
             var list = await _context.Nomenclatures
@@ -189,14 +218,13 @@ namespace SP.Service.Services
             return list;
         }
 
+        /// <summary>
+        /// Сохранить позицию Номенклатуры
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         public async Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveNomenclatureAsync(NomenclatureModel model)
         {
-            bool hasRegionWithSameName = await _context.RegionStructure.AnyAsync(x => x.Id != model.Id && x.Name == model.Name);
-            if (hasRegionWithSameName)
-            {
-                return (false, null, new[] { "Регион с таким наименованием уже существует. Нельзя создавать дубли." });
-            }
-
             if (model.Id == 0)
             {
                 return await CreateNomenclatureAsync(model);
@@ -206,6 +234,11 @@ namespace SP.Service.Services
 
         }
 
+        /// <summary>
+        /// Создать позицию Номенклатуры
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> CreateNomenclatureAsync(NomenclatureModel model)
         {
             var nomenclature = new Nomenclature
@@ -242,6 +275,11 @@ namespace SP.Service.Services
             return (false, null, errors);
         }
 
+        /// <summary>
+        /// Обновить позицию Номенклатуры
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> UpdateNomenclatureAsync(NomenclatureModel model)
         {
             var nomenclature = await _context.Nomenclatures.FindAsync(model.Id);
@@ -281,6 +319,12 @@ namespace SP.Service.Services
             return (false, null, errors);
         }
 
+        /// <summary>
+        /// Присоединить ТМЦ к Номенклатуре
+        /// </summary>
+        /// <param name="inventoryIdList"></param>
+        /// <param name="nomenclatureId"></param>
+        /// <returns></returns>
         public async Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId)
         {
             int updated = await _context.Inventories
@@ -294,6 +338,11 @@ namespace SP.Service.Services
             return updated;
         }
 
+        /// <summary>
+        /// Заблокировать ТМЦ от присоединения к Номенклатуре
+        /// </summary>
+        /// <param name="inventoryIdList"></param>
+        /// <returns></returns>
         public async Task<int> BlockInventoryAsync(int[] inventoryIdList)
         {
             int updated = await _context.Inventories
@@ -307,11 +356,20 @@ namespace SP.Service.Services
             return updated;
         }
 
-        public async Task<IEnumerable<InventoryBalanceListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom)
+        /// <summary>
+        /// Получить список остатков по Номенклатуре для просмотра
+        /// </summary>
+        /// <param name="region"></param>
+        /// <param name="terr"></param>
+        /// <param name="station"></param>
+        /// <param name="group"></param>
+        /// <param name="nom"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<NomBalanceListItem>> GetNomBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom)
         {
             try
             {
-                var query = _context.NomenclatureBalance.AsQueryable();
+                var query = _context.NomCalculations.AsQueryable();
                 if (station.HasValue)
                 {
                     query = query.Where(x => x.GasStationId == station);
@@ -335,7 +393,7 @@ namespace SP.Service.Services
                 }
 
                 var list = await query
-                    .Select(x => new InventoryBalanceListItem
+                    .Select(x => new NomBalanceListItem
                     {
                         Id = x.Id,
                         Code = x.Nomenclature.Code ?? x.Id.ToString(),
@@ -357,33 +415,50 @@ namespace SP.Service.Services
             return null;
         }
 
-        public async Task<IEnumerable<InventoryOrderListItem>> GetInventoryOrderListAsync()
+        /// <summary>
+        /// Получить список остатков и потребности по Номенклатуре для просмотра
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IEnumerable<NomCalcListItem>> GetNomCalcListAsync(int? region, int? terr, int? station, int? group, int? nom)
         {
             try
             {
-                var orderList = await _context.NomenclatureBalance
-                    .GroupJoin(_context.Requirements,
-                        b => new {b.NomenclatureId, b.GasStationId},
-                        r => new {r.NomenclatureId, r.GasStationId},
-                        (b, r) => new
+                var query = _context.NomCalculations.AsQueryable();
+                if (station.HasValue)
+                {
+                    query = query.Where(x => x.GasStationId == station);
+                }
+                else if (terr.HasValue)
+                {
+                    query = query.Where(x => x.GasStation.TerritoryId == terr);
+                }
+                else if (region.HasValue)
+                {
+                    query = query.Where(x => x.GasStation.Territory.ParentId == region);
+                }
+
+                if (nom.HasValue)
+                {
+                    query = query.Where(x => x.NomenclatureId == nom);
+                }
+                else if (group.HasValue)
+                {
+                    query = query.Where(x => x.Nomenclature.NomenclatureGroupId == group);
+                }
+
+                var orderList = await query
+                    .Select(x => new NomCalcListItem
                         {
-                            NomBalance = b,
-                            Requirement = r
-                        })
-                    .SelectMany(
-                        x => x.Requirement.DefaultIfEmpty(),
-                        (x, y) => new InventoryOrderListItem
-                        {
-                            Id = x.NomBalance.Id,
-                            Code = x.NomBalance.Nomenclature.Code ?? x.NomBalance.Nomenclature.Id.ToString(),
-                            Name = x.NomBalance.Nomenclature.Name,
-                            GasStationName = x.NomBalance.GasStation.StationNumber,
-                            Quantity = x.NomBalance.Quantity,
-                            MeasureUnitName = x.NomBalance.Nomenclature.MeasureUnit.Name,
-                            FixedAmount = y.FixedAmount,
-                            Formula = y == null ? null : y.Formula,
-                            Plan = y == null ? 0.0m : y.Plan,
-                            OrderQuantity = y == null ? 0.0m : y.Plan - x.NomBalance.Quantity
+                            Id = x.Id,
+                            Code = x.Nomenclature.Code ?? x.Nomenclature.Id.ToString(),
+                            Name = x.Nomenclature.Name,
+                            GasStationName = x.GasStation.StationNumber,
+                            Quantity = x.Quantity,
+                            MeasureUnitName = x.Nomenclature.MeasureUnit.Name,
+                            FixedAmount = x.FixedAmount,
+                            Formula = x.Formula,
+                            Plan = x.Plan,
+                            OrderQuantity = x.Plan - x.Quantity
                         })
                     .ToArrayAsync();
 
@@ -397,30 +472,23 @@ namespace SP.Service.Services
             return null;
         }
 
+        /// <summary>
+        /// Сохранить потребность по Номенклатуре
+        /// </summary>
+        /// <param name="fixedAmount"></param>
+        /// <param name="formula"></param>
+        /// <param name="idList"></param>
+        /// <returns></returns>
         public async Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, int[] idList)
         {
-            var existingRecords = await _context.NomenclatureBalance
+            var existingRecords = await _context.NomCalculations
                 .Where(b => idList.Contains(b.Id))
-                .Join(_context.Requirements,
-                    b => new { b.NomenclatureId, b.GasStationId },
-                    r => new {r.NomenclatureId, r.GasStationId},
-                    (r, b) => new
-                    {
-                        RequirementId = r.Id,
-                        NomenclatureBalanceId = b.Id
-                    }
-                )
                 .ToArrayAsync();
 
-            foreach (var item in existingRecords)
+            foreach (var rec in existingRecords)
             {
-                var rec = new Requirement
-                {
-                    Id = item.RequirementId,
-                    FixedAmount = fixedAmount,
-                    Formula = formula
-                };
-
+                rec.FixedAmount = fixedAmount;
+                rec.Formula = formula;
                 _context.Entry(rec).Property(r => r.FixedAmount).IsModified = true;
                 _context.Entry(rec).Property(r => r.Formula).IsModified = true;
             }
@@ -428,23 +496,24 @@ namespace SP.Service.Services
             var updated = await _context.SaveChangesAsync();
 
             var newIdList = idList.Except(
-                existingRecords.Select(e => e.NomenclatureBalanceId)
+                existingRecords.Select(e => e.Id)
                 )
                 .ToArray();
-            var nomBalanceList = await _context.NomenclatureBalance
+            var nomCalculations = await _context.NomCalculations
                 .Where(x => newIdList.Contains(x.Id))
                 .ToArrayAsync();
-            foreach (var nb in nomBalanceList)
+            foreach (var item in nomCalculations)
             {
-                var newRec = new Requirement
+                var newRec = new NomCalculation
                 {
-                    NomenclatureId = nb.NomenclatureId,
-                    GasStationId = nb.GasStationId,
+
+                    NomenclatureId = item.NomenclatureId,
+                    GasStationId = item.GasStationId,
                     FixedAmount = fixedAmount,
                     Formula = formula
                 };
 
-                await _context.Requirements.AddAsync(newRec);
+                await _context.NomCalculations.AddAsync(newRec);
             }
 
             var inserted = await _context.SaveChangesAsync();
@@ -452,6 +521,12 @@ namespace SP.Service.Services
             return updated + inserted;
         }
 
+        /// <summary>
+        /// Сохранить заказ по Номенклатуре
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="personId"></param>
+        /// <returns></returns>
         public async Task<(int OrderNumber, int RecordCount)> SaveOrderAsync(IEnumerable<OrderQuantity> data, int personId)
         {
             if (data == null || !data.Any())
@@ -467,7 +542,7 @@ namespace SP.Service.Services
                     PersonId = personId
                 };
 
-                var orderDetails = _context.NomenclatureBalance.AsEnumerable()
+                var orderDetails = _context.NomCalculations.AsEnumerable()
                     .Join(data,
                         b => b.Id,
                         d => d.Id,
@@ -494,6 +569,10 @@ namespace SP.Service.Services
             return (0, 0);
         }
 
+        /// <summary>
+        /// Получить список заказов для просмотра
+        /// </summary>
+        /// <returns></returns>
         public async Task<IEnumerable<OrderModel>> GetOrderListAsync()
         {
             var list = await _context.Orders
@@ -509,6 +588,11 @@ namespace SP.Service.Services
             return list;
         }
 
+        /// <summary>
+        /// Получить позиции заказа
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(int id)
         {
             var list = await _context.OrderDetails
@@ -527,6 +611,11 @@ namespace SP.Service.Services
             return list;
         }
 
+        /// <summary>
+        /// Перенести данные по ТМЦ из stage-таблицы в основную
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         private async Task UpdateInventory(IEnumerable<StageInventory> data)
         {
             // обновляем существующие записи

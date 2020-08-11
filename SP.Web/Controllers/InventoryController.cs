@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -247,7 +246,7 @@ namespace SP.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> LoadBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom)
         {
-            var list = await _inventoryService.GetBalanceListAsync(region, terr, station, group, nom);
+            var list = await _inventoryService.GetNomBalanceListAsync(region, terr, station, group, nom);
 
             return Json(new { data = list });
         }
@@ -266,12 +265,18 @@ namespace SP.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoadInventoryOrderList()
+        public async Task<IActionResult> LoadInventoryOrderList(int? region, int? terr, int? station, int? group, int? nom)
         {
-            var list = await _inventoryService.GetInventoryOrderListAsync();
+            var list = await _inventoryService.GetNomCalcListAsync(region, terr, station, group, nom);
             return Json(new { data = list });
         }
 
+        /// <summary>
+        /// Рассчитать заказ
+        /// </summary>
+        /// <param name="idList"></param>
+        /// <param name="coordinator"></param>
+        /// <returns></returns>
         [HttpPost]
         [Route("[controller]/CalcOrder")]
         public async Task<IActionResult> CalcOrderAsync([FromBody] int[] idList,
@@ -303,7 +308,7 @@ namespace SP.Web.Controllers
                 return Json(badResult);
             }
 
-            if (fixedAmount != 0.0m && !string.IsNullOrWhiteSpace(model.Formula))
+            if (fixedAmount != null && !string.IsNullOrWhiteSpace(model.Formula))
             {
                 model.Formula = null;
             }

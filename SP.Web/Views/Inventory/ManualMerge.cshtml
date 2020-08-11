@@ -216,7 +216,7 @@
             $(".selectAll").on("click",
                 function(e) {
                     if ($(this).is(":checked")) {
-                        dt.rows().select();
+                        dt.rows().select({ page: 'current' });
                     } else {
                         dt.rows().deselect();
                     }
