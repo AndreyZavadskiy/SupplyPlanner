@@ -130,7 +130,7 @@ namespace SP.Service.Models
         /// Среднее количество чеков в сутки
         /// </summary>
         [DisplayName("Среднее количество чеков в сутки")]
-        public int ChequePerDay { get; set; }
+        public decimal ChequePerDay { get; set; }
         /// <summary>
         /// Выручка в месяц
         /// </summary>
@@ -152,10 +152,10 @@ namespace SP.Service.Models
         [DisplayName("Торты")]
         public bool HasCakes { get; set; }
         /// <summary>
-        /// Фри
+        /// Количество фритюрных аппаратов
         /// </summary>
-        [DisplayName("Фри")]
-        public bool HasFrenchFry { get; set; }
+        [DisplayName("Количество фритюрных аппаратов")]
+        public int DeepFryTotal { get; set; }
         /// <summary>
         /// Мармит
         /// </summary>

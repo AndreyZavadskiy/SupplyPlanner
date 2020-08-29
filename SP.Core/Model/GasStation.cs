@@ -112,7 +112,7 @@ namespace SP.Core.Model
         /// <summary>
         /// Среднее количество чеков в сутки
         /// </summary>
-        public int ChequePerDay { get; set; }
+        public decimal ChequePerDay { get; set; }
         /// <summary>
         /// Выручка в месяц, руб.
         /// </summary>
@@ -135,9 +135,9 @@ namespace SP.Core.Model
         /// </summary>
         public bool HasCakes { get; set; }
         /// <summary>
-        /// Фри
+        /// Количество фритюрных аппаратов
         /// </summary>
-        public bool HasFrenchFry { get; set; }
+        public int DeepFryTotal { get; set; }
         /// <summary>
         /// Мармит
         /// </summary>

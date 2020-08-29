@@ -141,7 +141,7 @@ namespace SP.Service.Models
         /// </summary>
         [Required(ErrorMessage = "Поле является обязательным")]
         [DisplayName("Среднее количество чеков в сутки")]
-        public int ChequePerDay { get; set; }
+        public decimal ChequePerDay { get; set; }
         /// <summary>
         /// Выручка в месяц
         /// </summary>
@@ -176,8 +176,8 @@ namespace SP.Service.Models
         /// Фри
         /// </summary>
         [Required(ErrorMessage = "Поле является обязательным")]
-        [DisplayName("Фри")]
-        public bool HasFrenchFry { get; set; }
+        [DisplayName("Количество фритюрных аппаратов")]
+        public int DeepFryTotal { get; set; }
         /// <summary>
         /// Мармит
         /// </summary>

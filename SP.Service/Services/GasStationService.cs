@@ -76,7 +76,7 @@ namespace SP.Service.Services
                     HasSibilla = x.Station.HasSibilla,
                     HasBakery = x.Station.HasBakery,
                     HasCakes = x.Station.HasCakes,
-                    HasFrenchFry = x.Station.HasFrenchFry,
+                    DeepFryTotal = x.Station.DeepFryTotal,
                     HasMarmite = x.Station.HasMarmite,
                     HasKitchen = x.Station.HasKitchen,
                     CoffeeMachineTotal = x.Station.CoffeeMachineTotal,
@@ -145,7 +145,7 @@ namespace SP.Service.Services
                 HasSibilla = station.HasSibilla,
                 HasBakery = station.HasBakery,
                 HasCakes = station.HasCakes,
-                HasFrenchFry = station.HasFrenchFry,
+                DeepFryTotal = station.DeepFryTotal,
                 HasMarmite = station.HasMarmite,
                 HasKitchen = station.HasKitchen,
                 CoffeeMachineTotal = station.CoffeeMachineTotal,
@@ -200,7 +200,7 @@ namespace SP.Service.Services
                     HasSibilla = model.HasSibilla,
                     HasBakery = model.HasBakery,
                     HasCakes = model.HasCakes,
-                    HasFrenchFry = model.HasFrenchFry,
+                    DeepFryTotal = model.DeepFryTotal,
                     HasMarmite = model.HasMarmite,
                     HasKitchen = model.HasKitchen,
                     CoffeeMachineTotal = model.CoffeeMachineTotal,
@@ -260,7 +260,7 @@ namespace SP.Service.Services
                 station.HasSibilla = model.HasSibilla;
                 station.HasBakery = model.HasBakery;
                 station.HasCakes = model.HasCakes;
-                station.HasFrenchFry = model.HasFrenchFry;
+                station.DeepFryTotal = model.DeepFryTotal;
                 station.HasMarmite = model.HasMarmite;
                 station.HasKitchen = model.HasKitchen;
                 station.CoffeeMachineTotal = model.CoffeeMachineTotal;

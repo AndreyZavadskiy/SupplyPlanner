@@ -201,19 +201,16 @@
                 <div class="form-group row col-4"></div>
                 <div class="form-group row form-check col-8">
                     <label class="form-check-label">
-                        <input asp-for="HasFrenchFry" /> @Html.DisplayNameFor(model => model.HasFrenchFry)
+                        <input asp-for="HasMarmite" /> @Html.DisplayNameFor(model => model.HasMarmite)
                     </label>
                 </div>
             </div>
         </div>
         <div class="form-row zero-gutters">
-            <div class="form-group row zero-gutters col-6">
-                <div class="form-group row col-4"></div>
-                <div class="form-group row form-check col-8">
-                    <label class="form-check-label">
-                        <input asp-for="HasMarmite" /> @Html.DisplayNameFor(model => model.HasMarmite)
-                    </label>
-                </div>
+            <div class="form-group row col-6">
+                <label asp-for="DeepFryTotal" class="control-label col-4"></label>
+                <input asp-for="DeepFryTotal" class="form-control col-4" />
+                <span asp-validation-for="DeepFryTotal" class="text-danger"></span>
             </div>
             <div class="form-group row zero-gutters col-6">
                 <div class="form-group row col-4"></div>
