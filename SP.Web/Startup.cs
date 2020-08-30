@@ -32,7 +32,10 @@ namespace SP.Web
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                 {
-                    options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+                    options.UseSqlServer(
+                        Configuration.GetConnectionString("DefaultConnection"),
+                        sqlServerOptionsAction => sqlServerOptionsAction.CommandTimeout(300)
+                        );
                     options.UseLoggerFactory(ApplicationDbContext.ApplicationDbLoggerFactory);
                 });
             services.AddDefaultIdentity<ApplicationUser>(options =>

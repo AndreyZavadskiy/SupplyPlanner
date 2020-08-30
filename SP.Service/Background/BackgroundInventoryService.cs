@@ -709,8 +709,23 @@ namespace SP.Service.Background
                 evaluator.Variables = new Dictionary<string, object>()
                 {
                     { "if", new Func<bool,double,double,double>((c, x, y) => c ? x : y)},
+                    { "cluster", gasStation.ServiceLevel.Name.ToLower() },
+                    { "operformat", gasStation.OperatorRoomFormat.Name.ToLower() },
+                    { "regime", gasStation.TradingHallOperatingMode.Name.ToLower() },
+                    { "cashdesk", gasStation.CashboxLocation.Name.ToLower() },
+                    { "salearea", gasStation.TradingHallSize.Name.ToLower() },
                     { "totalarm", gasStation.CashboxTotal },
-                    { "cluster", gasStation.ServiceLevel.Name.ToLower() }
+                    { "totaltrk", gasStation.FuelDispenserTotal },
+                    { "avgcheck", gasStation.ChequePerDay },
+                    { "totalclienttoiletroom", gasStation.ClientRestroomTotal },
+                    { "tambour", gasStation.HasJointRestroomEntrance },
+                    { "monthincome", gasStation.RevenueAvg },
+                    { "sibilla", gasStation.HasSibilla },
+                    { "bakery", gasStation.HasBakery },
+                    { "fries", gasStation.DeepFryTotal },
+                    { "marmite", gasStation.HasMarmite },
+                    { "kitchen", gasStation.HasKitchen },
+                    { "coffeemachine", gasStation.CoffeeMachineTotal }
                 };
 
                 try

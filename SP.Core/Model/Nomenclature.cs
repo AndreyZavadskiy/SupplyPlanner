@@ -51,6 +51,11 @@ namespace SP.Core.Model
         /// Является активной (подлежит заказу)
         /// </summary>
         public bool IsActive { get; set; }
+        /// <summary>
+        /// Описание
+        /// </summary>
+        [StringLength(2000)]
+        public string Description { get; set; }
 
         #region Navigation properties
 
