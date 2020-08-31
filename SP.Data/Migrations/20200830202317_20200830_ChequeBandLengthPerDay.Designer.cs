@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SP.Data;
 
 namespace SP.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200830202317_20200830_ChequeBandLengthPerDay")]
+    partial class _20200830_ChequeBandLengthPerDay
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -445,9 +447,6 @@ namespace SP.Data.Migrations
 
                     b.Property<int>("PersonnelPerDay")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("RepresentativenessFactor")
-                        .HasColumnType("decimal(8,2)");
 
                     b.Property<decimal>("RevenueAvg")
                         .HasColumnType("decimal(12,2)");

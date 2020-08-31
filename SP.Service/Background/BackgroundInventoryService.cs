@@ -722,10 +722,14 @@ namespace SP.Service.Background
                     { "monthincome", gasStation.RevenueAvg },
                     { "sibilla", gasStation.HasSibilla },
                     { "bakery", gasStation.HasBakery },
+                    { "cakes", gasStation.HasCakes },
                     { "fries", gasStation.DeepFryTotal },
                     { "marmite", gasStation.HasMarmite },
                     { "kitchen", gasStation.HasKitchen },
-                    { "coffeemachine", gasStation.CoffeeMachineTotal }
+                    { "coffeemachine", gasStation.CoffeeMachineTotal },
+                    { "totalpersonal", gasStation.PersonnelPerDay },
+                    { "avgbandlength", gasStation.ChequeBandLengthPerDay },
+                    { "imagecoef", gasStation.RepresentativenessFactor }
                 };
 
                 try

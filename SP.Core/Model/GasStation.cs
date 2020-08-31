@@ -154,6 +154,17 @@ namespace SP.Core.Model
         /// Количество посудомоечных машин
         /// </summary>
         public int DishWashingMachineTotal { get; set; }
+        /// <summary>
+        /// Расход кассовой ленты за день, м
+        /// кол-во транзакций * среднюю длину чека
+        /// </summary>
+        [Column(TypeName = "decimal(8,2)")]
+        public decimal ChequeBandLengthPerDay { get; set; }
+        /// <summary>
+        /// Имиджевый коэффициент для гр.3
+        /// </summary>
+        [Column(TypeName = "decimal(8,2)")]
+        public decimal RepresentativenessFactor { get; set; }
 
         #region Navigation properties
 
