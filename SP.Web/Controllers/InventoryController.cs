@@ -11,6 +11,7 @@ using SP.Core.Master;
 using SP.Data;
 using SP.Service.Background;
 using SP.Service.DTO;
+using SP.Service.Models;
 using SP.Service.Services;
 using SP.Web.ViewModels;
 
@@ -246,6 +247,12 @@ namespace SP.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> LoadBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom)
         {
+            if (region == null && terr == null && group == null)
+            {
+                var zeroItem = new NomBalanceListItem { Name = "Установите фильтры для отображения данных" };
+                return Json(new { data = new[] { zeroItem } });
+            }
+
             var list = await _inventoryService.GetNomBalanceListAsync(region, terr, station, group, nom);
 
             return Json(new { data = list });
@@ -267,6 +274,12 @@ namespace SP.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> LoadInventoryOrderList(int? region, int? terr, int? station, int? group, int? nom)
         {
+            if (region == null && terr == null && group == null)
+            {
+                var zeroItem = new NomCalcListItem { Name = "Установите фильтры для отображения данных" };
+                return Json(new { data = new[] { zeroItem } });
+            }
+
             var list = await _inventoryService.GetNomCalcListAsync(region, terr, station, group, nom);
             return Json(new { data = list });
         }

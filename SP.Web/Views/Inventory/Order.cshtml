@@ -299,6 +299,7 @@
             var region = $(control).val();
             var terrList = $('#TerritoryList');
             terrList.empty();
+            $("#GasStationList").empty();
             if (region === '') {
                 terrList.trigger('change');
                 return;
@@ -394,6 +395,9 @@
 
         function applyFilter() {
             $('#OrderGrid').DataTable().ajax.reload();
+            var selectedCount = $('.filter-area option:selected[value!=""]').length;
+            if (selectedCount > 0) $('.filter-button').addClass('filter-enabled');
+            else $('.filter-button').removeClass('filter-enabled');
             $('#FilterModal').modal('hide');
         }
 
