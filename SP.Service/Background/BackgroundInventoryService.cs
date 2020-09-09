@@ -51,7 +51,8 @@ namespace SP.Service.Background
             _parser = new ExcelParser();
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
             var options = optionsBuilder
-                .UseSqlServer("Server=(local);Database=SupplyPlanner;Trusted_Connection=True;MultipleActiveResultSets=true")
+                //.UseSqlServer("Server=(local);Database=SupplyPlanner;Trusted_Connection=True;MultipleActiveResultSets=true")
+                .UseSqlServer("Server=.\\SQLEXPRESS;Database=SupplyPlanner;User Id=sp;Password=SupplyPl@nner;MultipleActiveResultSets=true")
                 .UseLoggerFactory(ApplicationDbContext.ApplicationDbLoggerFactory)
                 .EnableDetailedErrors()
                 .EnableSensitiveDataLogging()
@@ -703,6 +704,10 @@ namespace SP.Service.Background
                 // параметры АЗС
                 var gasStation = await _context.GasStations
                     .Include(x => x.ServiceLevel)
+                    .Include(x => x.OperatorRoomFormat)
+                    .Include(x => x.TradingHallOperatingMode)
+                    .Include(x => x.CashboxLocation)
+                    .Include(x => x.TradingHallSize)
                     .FirstOrDefaultAsync(x => x.Id == nomBalance.GasStationId);
 
                 ExpressionEvaluator evaluator = new ExpressionEvaluator();
