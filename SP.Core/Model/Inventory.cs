@@ -39,7 +39,7 @@ namespace SP.Core.Model
         /// </summary>
         public int? NomenclatureId { get; set; }
         /// <summary>
-        /// Количество
+        /// Количество ТМЦ
         /// </summary>
         [Column(TypeName = "decimal(19,4)")]
         public decimal Quantity { get; set; }

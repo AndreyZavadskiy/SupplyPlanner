@@ -6,7 +6,7 @@ namespace SP.Core.Model
     /// <summary>
     /// Расчет остатков и потребности ТМЦ в разрезе Номенклатуры
     /// </summary>
-    [Table("NomCalculation")]
+    [Table("CalcSheet")]
     public class NomCalculation
     {
         /// <summary>
