@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using SP.Core.Model;
 
 namespace SP.Core.Master
 {

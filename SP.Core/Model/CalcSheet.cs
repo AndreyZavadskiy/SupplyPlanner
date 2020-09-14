@@ -4,10 +4,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace SP.Core.Model
 {
     /// <summary>
-    /// Расчет остатков и потребности ТМЦ в разрезе Номенклатуры
+    /// Расчетный лист (остаток и потребность Номенклатуры по АЗС)
     /// </summary>
     [Table("CalcSheet")]
-    public class NomCalculation
+    public class CalcSheet
     {
         /// <summary>
         /// ID

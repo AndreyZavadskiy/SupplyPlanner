@@ -43,7 +43,7 @@ namespace SP.Data
         public DbSet<RegionalStructure> RegionStructure { get; set; }
         public DbSet<GasStation> GasStations { get; set; }
         public DbSet<Nomenclature> Nomenclatures { get; set; }
-        public DbSet<NomCalculation> NomCalculations { get; set; }
+        public DbSet<CalcSheet> CalcSheets { get; set; }
         public DbSet<StageInventory> StageInventories { get; set; }
         public DbSet<Inventory> Inventories { get; set; }
         public DbSet<Order> Orders { get; set; }

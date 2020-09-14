@@ -1,6 +1,9 @@
 ﻿namespace SP.Service.Models
 {
-    public class NomCalcListItem
+    /// <summary>
+    /// Расчетный лист для вывода остатков и потребности
+    /// </summary>
+    public class DemandListItem
     {
         /// <summary>
         /// ID

@@ -249,17 +249,17 @@ namespace SP.Web.Controllers
         {
             if (region == null && terr == null && group == null)
             {
-                var zeroItem = new NomBalanceListItem { Name = "Установите фильтры для отображения данных" };
+                var zeroItem = new BalanceListItem { Name = "Установите фильтры для отображения данных" };
                 return Json(new { data = new[] { zeroItem } });
             }
 
-            var list = await _inventoryService.GetNomBalanceListAsync(region, terr, station, group, nom);
+            var list = await _inventoryService.GetBalanceListAsync(region, terr, station, group, nom);
 
             return Json(new { data = list });
         }
 
-        [Route("[controller]/Order")]
-        public async Task<IActionResult> OrderAsync()
+        [Route("[controller]/Demand")]
+        public async Task<IActionResult> DemandAsync()
         {
             var model = new InventoryProcessingViewModel
             {
@@ -268,19 +268,19 @@ namespace SP.Web.Controllers
 
             await LoadEssentialDictionaries();
 
-            return View("Order", model);
+            return View("Demand", model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoadInventoryOrderList(int? region, int? terr, int? station, int? group, int? nom)
+        public async Task<IActionResult> LoadDemandList(int? region, int? terr, int? station, int? group, int? nom)
         {
             if (region == null && terr == null && group == null)
             {
-                var zeroItem = new NomCalcListItem { Name = "Установите фильтры для отображения данных" };
+                var zeroItem = new DemandListItem { Name = "Установите фильтры для отображения данных" };
                 return Json(new { data = new[] { zeroItem } });
             }
 
-            var list = await _inventoryService.GetNomCalcListAsync(region, terr, station, group, nom);
+            var list = await _inventoryService.GetDemandListAsync(region, terr, station, group, nom);
             return Json(new { data = list });
         }
 
@@ -353,8 +353,8 @@ namespace SP.Web.Controllers
             return Json(new { order = result.OrderNumber, updated = result.RecordCount });
         }
 
-        [Route("[controller]/OrderList")]
-        public async Task<IActionResult> OrderListAsync()
+        [Route("[controller]/Order")]
+        public async Task<IActionResult> OrderAsync()
         {
             var model = new InventoryProcessingViewModel
             {
@@ -363,7 +363,7 @@ namespace SP.Web.Controllers
 
             await LoadEssentialDictionaries();
 
-            return View("OrderList", model);
+            return View("Order", model);
         }
         public async Task<IActionResult> LoadOrderList()
         {

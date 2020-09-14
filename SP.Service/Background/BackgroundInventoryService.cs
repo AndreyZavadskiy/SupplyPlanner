@@ -512,7 +512,7 @@ namespace SP.Service.Background
                 processingLog.AppendLine($"АЗС {station.StationNumber}");
 
                 // предыдущие остатки
-                var oldBalances = await _context.NomCalculations
+                var oldBalances = await _context.CalcSheets
                     .Where(x => x.GasStationId == station.Id)
                     .Select(x => new
                     {
@@ -544,13 +544,13 @@ namespace SP.Service.Background
                     .ToArray();
                 foreach (var rec in existingBalances)
                 {
-                    var dbBalance = new NomCalculation
+                    var dbBalance = new CalcSheet
                     {
                         Id = rec.Id,
                         Quantity = rec.Quantity,
                         LastUpdate = DateTime.Now
                     };
-                    _context.NomCalculations.Attach(dbBalance);
+                    _context.CalcSheets.Attach(dbBalance);
                     _context.Entry(dbBalance).Property(r => r.Quantity).IsModified = true;
                     _context.Entry(dbBalance).Property(r => r.LastUpdate).IsModified = true;
                 }
@@ -581,14 +581,14 @@ namespace SP.Service.Background
                     .ToArray();
                 foreach (var rec in newBalances)
                 {
-                    var newBalance = new NomCalculation
+                    var newBalance = new CalcSheet
                     {
                         NomenclatureId = rec.NomenclatureId,
                         GasStationId = station.Id,
                         Quantity = rec.Quantity,
                         LastUpdate = DateTime.Now
                     };
-                    _context.NomCalculations.Add(newBalance);
+                    _context.CalcSheets.Add(newBalance);
                 }
                 await _context.SaveChangesAsync();
                 processingLog.AppendLine($"Добавлено записей: {newBalances.Length}");
@@ -687,7 +687,7 @@ namespace SP.Service.Background
         /// <returns></returns>
         private async Task<bool> CalculateSingleOrder(int id)
         {
-            var nomBalance = await _context.NomCalculations.FirstOrDefaultAsync(x => x.Id == id);
+            var nomBalance = await _context.CalcSheets.FirstOrDefaultAsync(x => x.Id == id);
             if (nomBalance == null)
             {
                 return false;

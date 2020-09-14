@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SP.Service.Models
 {
-    public class NomBalanceListItem
+    /// <summary>
+    /// Расчетный лист для вывода остатков по номенклатуре
+    /// </summary>
+    public class BalanceListItem
     {
         /// <summary>
         /// ID

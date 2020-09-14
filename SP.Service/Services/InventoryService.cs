@@ -24,8 +24,8 @@ namespace SP.Service.Services
         Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int groupId);
         Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId);
         Task<int> BlockInventoryAsync(int[] inventoryIdList);
-        Task<IEnumerable<NomBalanceListItem>> GetNomBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom);
-        Task<IEnumerable<NomCalcListItem>> GetNomCalcListAsync(int? region, int? terr, int? station, int? group, int? nom);
+        Task<IEnumerable<BalanceListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom);
+        Task<IEnumerable<DemandListItem>> GetDemandListAsync(int? region, int? terr, int? station, int? group, int? nom);
         Task<IEnumerable<OrderModel>> GetOrderListAsync();
         Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(int id);
         Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, int[] idList);
@@ -365,11 +365,11 @@ namespace SP.Service.Services
         /// <param name="group"></param>
         /// <param name="nom"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<NomBalanceListItem>> GetNomBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom)
+        public async Task<IEnumerable<BalanceListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom)
         {
             try
             {
-                var query = _context.NomCalculations.AsQueryable();
+                var query = _context.CalcSheets.AsQueryable();
                 if (station.HasValue)
                 {
                     query = query.Where(x => x.GasStationId == station);
@@ -393,7 +393,7 @@ namespace SP.Service.Services
                 }
 
                 var list = await query
-                    .Select(x => new NomBalanceListItem
+                    .Select(x => new BalanceListItem
                     {
                         Id = x.Id,
                         Code = x.Nomenclature.Code ?? x.Id.ToString(),
@@ -419,11 +419,11 @@ namespace SP.Service.Services
         /// Получить список остатков и потребности по Номенклатуре для просмотра
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<NomCalcListItem>> GetNomCalcListAsync(int? region, int? terr, int? station, int? group, int? nom)
+        public async Task<IEnumerable<DemandListItem>> GetDemandListAsync(int? region, int? terr, int? station, int? group, int? nom)
         {
             try
             {
-                var query = _context.NomCalculations.AsQueryable();
+                var query = _context.CalcSheets.AsQueryable();
                 if (station.HasValue)
                 {
                     query = query.Where(x => x.GasStationId == station);
@@ -447,7 +447,7 @@ namespace SP.Service.Services
                 }
 
                 var orderList = await query
-                    .Select(x => new NomCalcListItem
+                    .Select(x => new DemandListItem
                         {
                             Id = x.Id,
                             Code = x.Nomenclature.Code ?? x.Nomenclature.Id.ToString(),
@@ -481,7 +481,7 @@ namespace SP.Service.Services
         /// <returns></returns>
         public async Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, int[] idList)
         {
-            var existingRecords = await _context.NomCalculations
+            var existingRecords = await _context.CalcSheets
                 .Where(b => idList.Contains(b.Id))
                 .ToArrayAsync();
 
@@ -499,12 +499,12 @@ namespace SP.Service.Services
                 existingRecords.Select(e => e.Id)
                 )
                 .ToArray();
-            var nomCalculations = await _context.NomCalculations
+            var nomCalculations = await _context.CalcSheets
                 .Where(x => newIdList.Contains(x.Id))
                 .ToArrayAsync();
             foreach (var item in nomCalculations)
             {
-                var newRec = new NomCalculation
+                var newRec = new CalcSheet
                 {
 
                     NomenclatureId = item.NomenclatureId,
@@ -513,7 +513,7 @@ namespace SP.Service.Services
                     Formula = formula
                 };
 
-                await _context.NomCalculations.AddAsync(newRec);
+                await _context.CalcSheets.AddAsync(newRec);
             }
 
             var inserted = await _context.SaveChangesAsync();
@@ -542,7 +542,7 @@ namespace SP.Service.Services
                     PersonId = personId
                 };
 
-                var orderDetails = _context.NomCalculations.AsEnumerable()
+                var orderDetails = _context.CalcSheets.AsEnumerable()
                     .Join(data,
                         b => b.Id,
                         d => d.Id,

@@ -202,7 +202,7 @@ namespace SP.Core.Model
         /// <summary>
         /// Остатки и потребность по Номенклатуре
         /// </summary>
-        public ICollection<NomCalculation> NomCalculations { get; set; }
+        public ICollection<CalcSheet> CalcSheets { get; set; }
 
         #endregion
     }
