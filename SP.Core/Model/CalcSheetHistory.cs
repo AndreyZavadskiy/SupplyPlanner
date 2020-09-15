@@ -63,6 +63,21 @@ namespace SP.Core.Model
         /// </summary>
         public DateTime LastUpdate { get; set; }
 
+        #region Navigation properties
+
+        /// <summary>
+        /// АЗС
+        /// </summary>
+        [ForeignKey("GasStationId")]
+        public GasStation GasStation { get; set; }
+        /// <summary>
+        /// Номенклатура
+        /// </summary>
+        [ForeignKey("NomenclatureId")]
+        public Nomenclature Nomenclature { get; set; }
+
+        #endregion
+
         public static CalcSheetHistory CreateHistoryRecord(CalcSheet original, DateTime? effectiveDate = null)
         {
             var historyRecord = new CalcSheetHistory

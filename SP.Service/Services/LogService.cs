@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SP.Core.History;
@@ -14,6 +15,9 @@ namespace SP.Service.Services
     {
         Task<bool> SaveActionAsync(string userId, DateTime date, string category, string description);
         Task<IEnumerable<ActionListItem>> GetActionListAsync(int? user, DateTime? start, DateTime? end);
+
+        Task<IEnumerable<BalanceReportListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group,
+            int? nom, DateTime? start, DateTime? end);
     }
 
     public class LogService : ILogService
@@ -86,6 +90,55 @@ namespace SP.Service.Services
                 ActionDate = x.ActionDate,
                 Description = x.Description
             });
+
+            return list;
+        }
+
+        public async Task<IEnumerable<BalanceReportListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom, DateTime? start, DateTime? end)
+        {
+            var query = _context.CalcSheetHistories.AsNoTracking();
+            if (station != null)
+            {
+                query = query.Where(x => x.GasStationId == station);
+            }
+            else if (terr != null)
+            {
+                query = query
+                    .Include(x => x.GasStation)
+                    .Where(x => x.GasStation.TerritoryId == terr);
+            }
+            else if (region != null)
+            {
+                query = query
+                    .Include(x => x.GasStation)
+                    .Include(x => x.GasStation.Territory)
+                    .Where(x => x.GasStation.Territory.ParentId == region);
+            }
+            if (nom != null)
+            {
+                query = query.Where(x => x.NomenclatureId == nom);
+            }
+            else if (group != null)
+            {
+                query = query
+                    .Include(x => x.Nomenclature)
+                    .Where(x => x.Nomenclature.NomenclatureGroupId == group);
+            }
+
+            var list = await query
+                .Include(x => x.Nomenclature)
+                .Include(x => x.Nomenclature.NomenclatureGroup)
+                .Include(x => x.GasStation)
+                .Where(x => x.Nomenclature.UsefulLife > 12)
+                .Select(x => new BalanceReportListItem
+                {
+                    NomenclatureGroupName = x.Nomenclature.NomenclatureGroup.Name,
+                    NomenclatureName = x.Nomenclature.Name,
+                    StationNumber = x.GasStation.StationNumber,
+                    Date = x.EffectiveDate,
+                    Quantity = x.Quantity
+                })
+                .ToArrayAsync();
 
             return list;
         }

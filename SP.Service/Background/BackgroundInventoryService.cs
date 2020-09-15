@@ -483,13 +483,13 @@ namespace SP.Service.Background
 
             var person = await _masterService.GetPersonAsync(aspNetUserId);
             var nomenclatureQuery = _context.Nomenclatures.AsNoTracking();
-            if (groupId != null)
-            {
-                nomenclatureQuery = nomenclatureQuery.Where(x => x.NomenclatureGroupId == groupId);
-            }
             if (nomId != null)
             {
                 nomenclatureQuery = nomenclatureQuery.Where(x => x.Id == nomId);
+            }
+            else if (groupId != null)
+            {
+                nomenclatureQuery = nomenclatureQuery.Where(x => x.NomenclatureGroupId == groupId);
             }
             if (usefulLife != null)
             {
@@ -503,20 +503,19 @@ namespace SP.Service.Background
             processingLog.AppendLine($"Количество Номенклатуры: {totalNomenclatures}");
 
             var stationQuery = _context.GasStations.AsNoTracking();
-            if (regionId != null)
+            if (stationId != null)
+            {
+                stationQuery = stationQuery.Where(x => x.Id == stationId);
+            }
+            else if (terrId != null)
+            {
+                stationQuery = stationQuery.Where(x => x.TerritoryId == terrId);
+            }
+            else if (regionId != null)
             {
                 stationQuery = stationQuery
                     .Include(x => x.Territory)
                     .Where(x => x.Territory.ParentId == regionId);
-            }
-            if (terrId != null)
-            {
-                stationQuery = stationQuery.Where(x => x.TerritoryId == terrId);
-            }
-            if (stationId != null)
-            {
-                stationQuery = stationQuery.Where(x => x.Id == stationId);
-
             }
             var stations = await stationQuery
                 .Select(x => new
@@ -733,7 +732,6 @@ namespace SP.Service.Background
             }
 
             decimal plan = 0.0m;
-            // TODO: расчет по формуле
             if (nomBalance.FixedAmount != null)
             {
                 plan = nomBalance.FixedAmount.Value;
@@ -790,8 +788,18 @@ namespace SP.Service.Background
                 }
             }
 
+            if (nomBalance.Plan == plan)
+            {
+                return true;
+            }
+
+            DateTime now = DateTime.Now;
             nomBalance.Plan = plan;
+            nomBalance.LastUpdate = now;
             _context.Entry(nomBalance).Property(r => r.Plan).IsModified = true;
+            _context.Entry(nomBalance).Property(r => r.LastUpdate).IsModified = true;
+            var historyRecord = CalcSheetHistory.CreateHistoryRecord(nomBalance, now);
+            _context.CalcSheetHistories.Add(historyRecord);
 
             return true;
         }
