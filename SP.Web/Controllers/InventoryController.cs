@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -209,26 +210,31 @@ namespace SP.Web.Controllers
         /// Отобразить форму для расчета остатков ТМЦ
         /// </summary>
         /// <returns></returns>
-        public IActionResult CalcBalance()
+        public async Task<IActionResult> CalcBalance()
         {
             var model = new InventoryProcessingViewModel
             {
                 ProcessingDate = DateTime.Now
             };
 
+            await LoadEssentialDictionaries();
+
             return View("CalcBalance", model);
         }
 
         [HttpPost]
         [Route("[controller]/CalcBalance")]
-        public async Task<IActionResult> CalcBalanceAsync([FromServices] IBackgroundCoordinator coordinator)
+        public async Task<IActionResult> CalcBalanceAsync(int? region, int? terr, int? station, int? group, int? nom, int? useful,
+            [FromServices] IBackgroundCoordinator coordinator)
         {
+            Debugger.Break();
+
             await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory",
                 "Запущен расчет остатков по Номенклатуре.");
 
             Guid serviceKey = Guid.NewGuid();
             var user = await _userManager.GetUserAsync(User);
-            StartBackgroundBalanceCalculation(coordinator, serviceKey, user.Id);
+            StartBackgroundBalanceCalculation(coordinator, serviceKey, user.Id, region, terr, station, group, nom, useful);
 
             return Json(new { Key = serviceKey });
         }
@@ -495,12 +501,13 @@ namespace SP.Web.Controllers
             });
         }
 
-        private void StartBackgroundBalanceCalculation(IBackgroundCoordinator coordinator, Guid serviceKey, string aspNetUserId)
+        private void StartBackgroundBalanceCalculation(IBackgroundCoordinator coordinator, Guid serviceKey, string aspNetUserId,
+            int? region, int? terr, int? station, int? group, int? nom, int? useful)
         {
             Task.Run(async () =>
             {
                 var service = new BackgroundInventoryService(coordinator);
-                await service.CalculateBalanceAsync(serviceKey, aspNetUserId);
+                await service.CalculateBalanceAsync(serviceKey, aspNetUserId, region, terr, station, group, nom, useful);
             });
         }
 

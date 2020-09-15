@@ -21,8 +21,8 @@ namespace SP.Service.Background
     {
         Task<bool> UploadAsync(Guid serviceKey, List<UploadedFile> files, string aspNetUserId);
         Task<bool> AutoMergeAsync(Guid serviceKey, string aspNetUserId);
-        Task<bool> CalculateBalanceAsync(Guid serviceKey, string aspNetUserId);
-
+        Task<bool> CalculateBalanceAsync(Guid serviceKey, string aspNetUserId, int? regionId, int? terrId, int? stationId,
+            int? groupId, int? nomId, int? usefulLife);
         Task<bool> CalculateOrderAsync(Guid serviceKey, int[] idList, string aspNetUserId);
     }
 
@@ -465,7 +465,8 @@ namespace SP.Service.Background
         /// <param name="serviceKey"></param>
         /// <param name="aspNetUserId"></param>
         /// <returns></returns>
-        public async Task<bool> CalculateBalanceAsync(Guid serviceKey, string aspNetUserId)
+        public async Task<bool> CalculateBalanceAsync(Guid serviceKey, string aspNetUserId, int? regionId, int? terrId, int? stationId, 
+            int? groupId, int? nomId, int? usefulLife)
         {
             // регистрируем в координаторе
             var progressIndicator = new BackgroundServiceProgress
@@ -481,14 +482,43 @@ namespace SP.Service.Background
             processingLog.AppendLine("Расчет остатков Номенклатуры начат.");
 
             var person = await _masterService.GetPersonAsync(aspNetUserId);
-            var nomenclatureIdList = await _context.Nomenclatures
+            var nomenclatureQuery = _context.Nomenclatures.AsNoTracking();
+            if (groupId != null)
+            {
+                nomenclatureQuery = nomenclatureQuery.Where(x => x.NomenclatureGroupId == groupId);
+            }
+            if (nomId != null)
+            {
+                nomenclatureQuery = nomenclatureQuery.Where(x => x.Id == nomId);
+            }
+            if (usefulLife != null)
+            {
+                nomenclatureQuery = nomenclatureQuery.Where(x => x.UsefulLife == usefulLife);
+            }
+            var nomenclatureIdList = await nomenclatureQuery
                 .Where(x => x.IsActive)
                 .Select(x => x.Id)
                 .ToArrayAsync();
             int totalNomenclatures = nomenclatureIdList.Length;
             processingLog.AppendLine($"Количество Номенклатуры: {totalNomenclatures}");
 
-            var stations = await _context.GasStations
+            var stationQuery = _context.GasStations.AsNoTracking();
+            if (regionId != null)
+            {
+                stationQuery = stationQuery
+                    .Include(x => x.Territory)
+                    .Where(x => x.Territory.ParentId == regionId);
+            }
+            if (terrId != null)
+            {
+                stationQuery = stationQuery.Where(x => x.TerritoryId == terrId);
+            }
+            if (stationId != null)
+            {
+                stationQuery = stationQuery.Where(x => x.Id == stationId);
+
+            }
+            var stations = await stationQuery
                 .Select(x => new
                 {
                     x.Id,
@@ -514,11 +544,6 @@ namespace SP.Service.Background
                 // предыдущие остатки
                 var oldBalances = await _context.CalcSheets
                     .Where(x => x.GasStationId == station.Id)
-                    .Select(x => new
-                    {
-                        x.Id,
-                        x.NomenclatureId
-                    })
                     .ToArrayAsync();
                 // остатки по АЗС
                 var inventoryBalances = await _context.Inventories
@@ -537,22 +562,26 @@ namespace SP.Service.Background
                         b => b.NomenclatureId,
                         (o, b) => new
                         {
-                            o.Id,
-                            o.NomenclatureId,
-                            b.Quantity
+                            OldRecord = o,
+                            NewQuantity = b.Quantity
                         })
+                    .Where(z => z.OldRecord.Quantity != z.NewQuantity)
                     .ToArray();
                 foreach (var rec in existingBalances)
                 {
+                    DateTime now = DateTime.Now;
                     var dbBalance = new CalcSheet
                     {
-                        Id = rec.Id,
-                        Quantity = rec.Quantity,
-                        LastUpdate = DateTime.Now
+                        Id = rec.OldRecord.Id,
+                        Quantity = rec.NewQuantity,
+                        LastUpdate = now
                     };
                     _context.CalcSheets.Attach(dbBalance);
                     _context.Entry(dbBalance).Property(r => r.Quantity).IsModified = true;
                     _context.Entry(dbBalance).Property(r => r.LastUpdate).IsModified = true;
+
+                    var historyRecord = CalcSheetHistory.CreateHistoryRecord(rec.OldRecord, now);
+                    await _context.CalcSheetHistories.AddAsync(historyRecord);
                 }
 
                 await _context.SaveChangesAsync();
@@ -560,7 +589,7 @@ namespace SP.Service.Background
 
                 // добавляем новые остатки
                 var newNomenclatures = nomenclatureIdList
-                    .Where(n => !existingBalances.Any(b => b.NomenclatureId == n))
+                    .Where(n => !existingBalances.Any(b => b.OldRecord.NomenclatureId == n))
                     .ToArray();
                 var newBalances = newNomenclatures
                     .GroupJoin(inventoryBalances,
@@ -579,17 +608,27 @@ namespace SP.Service.Background
                             Quantity = y == null ? 0.0m : y.Quantity
                         })
                     .ToArray();
+                var newRecords = new List<CalcSheet>();
                 foreach (var rec in newBalances)
                 {
+                    DateTime now = DateTime.Now;
                     var newBalance = new CalcSheet
                     {
                         NomenclatureId = rec.NomenclatureId,
                         GasStationId = station.Id,
                         Quantity = rec.Quantity,
-                        LastUpdate = DateTime.Now
+                        LastUpdate = now
                     };
-                    _context.CalcSheets.Add(newBalance);
+                    newRecords.Add(newBalance);
                 }
+                await _context.CalcSheets.AddRangeAsync(newRecords);
+
+                foreach (var rec in newRecords)
+                {
+                    var historyRecord = CalcSheetHistory.CreateHistoryRecord(rec, rec.LastUpdate);
+                    await _context.CalcSheetHistories.AddAsync(historyRecord);
+                }
+
                 await _context.SaveChangesAsync();
                 processingLog.AppendLine($"Добавлено записей: {newBalances.Length}");
 

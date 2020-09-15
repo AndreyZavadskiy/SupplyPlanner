@@ -65,5 +65,6 @@ namespace SP.Data
 
         // история
         public DbSet<ActionLog> ActionLogs { get; set; }
+        public DbSet<CalcSheetHistory> CalcSheetHistories { get; set; }
     }
 }
