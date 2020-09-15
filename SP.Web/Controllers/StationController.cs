@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using SP.Core.Master;
 using SP.Service.Models;
 using SP.Service.Services;
+using SP.Web.Utility;
 
 namespace SP.Web.Controllers
 {
@@ -15,15 +17,19 @@ namespace SP.Web.Controllers
     {
         private readonly IGasStationService _gasStationService;
         private readonly IMasterService _masterService;
+        private readonly IAppLogger _appLogger;
 
-        public StationController(IGasStationService gasStationService, IMasterService masterService)
+        public StationController(IGasStationService gasStationService, IMasterService masterService, IAppLogger appLogger)
         {
             _gasStationService = gasStationService;
             _masterService = masterService;
+            _appLogger = appLogger;
         }
 
         public async Task<IActionResult> Index(int? region, int? terr)
         {
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "gasstation", "Открыт справочник АЗС.");
+
             var regions = await _masterService.SelectRegionAsync();
             ViewData["RegionList"] = new SelectList(regions, "Id", "Name").ToList();
             ViewData["SelectedRegion"] = region;
@@ -82,6 +88,9 @@ namespace SP.Web.Controllers
                 return NotFound();
             }
 
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "gasstation",
+                $"Открыта запись АЗС {station.StationNumber}");
+
             return await PrepareGasStationView(station);
         }
 
@@ -130,6 +139,11 @@ namespace SP.Web.Controllers
             return await PrepareGasStationView(model);
         }
 
+        /// <summary>
+        /// Сохранить АЗС и вернуться в список
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> EditAsync([FromForm] GasStationModel model)
         {
@@ -137,7 +151,7 @@ namespace SP.Web.Controllers
         }
 
         /// <summary>
-        /// Сохранить карточку пользователя
+        /// Сохранить АЗС
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -147,6 +161,12 @@ namespace SP.Web.Controllers
             return await SaveGasStation(model);
         }
 
+        /// <summary>
+        /// Сохранить запись АЗС
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="actionName"></param>
+        /// <returns></returns>
         private async Task<IActionResult> SaveGasStation(GasStationModel model, string actionName = null)
         {
             if (!ModelState.IsValid)
@@ -156,6 +176,7 @@ namespace SP.Web.Controllers
                 return await PrepareGasStationView(model);
             }
 
+            string actionVerb = model.Id == 0 ? "Создана" : "Изменена"; 
             var result = await _gasStationService.SaveGasStationAsync(model);
 
             if (!result.Success)
@@ -165,6 +186,9 @@ namespace SP.Web.Controllers
                 TempData["ActionMessageClass"] = "alert-danger";
                 return await PrepareGasStationView(model);
             }
+
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "gasstation",
+                $"{actionVerb} запись АЗС {model.StationNumber}");
 
             if (!string.IsNullOrWhiteSpace(actionName))
             {

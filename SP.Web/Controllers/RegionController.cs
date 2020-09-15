@@ -1,10 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SP.Service.Models;
 using SP.Service.Services;
+using SP.Web.Utility;
 using SP.Web.ViewModels;
 
 namespace SP.Web.Controllers
@@ -13,18 +15,23 @@ namespace SP.Web.Controllers
     public class RegionController : Controller
     {
         private readonly IMasterService _masterService;
+        private readonly IAppLogger _appLogger;
 
-        public RegionController(IMasterService masterService)
+        public RegionController(IMasterService masterService, IAppLogger appLogger)
         {
             _masterService = masterService;
+            _appLogger = appLogger;
         }
 
         /// <summary>
         /// Вывести форму редактирования регионов и территорий
         /// </summary>
         /// <returns></returns>
-        public async Task<IActionResult> Region()
+        [Route("[controller]/Region")]
+        public async Task<IActionResult> RegionAsync()
         {
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "region", "Открыт справочник регионов и территорий.");
+
             var regions = await _masterService.SelectRegionAsync();
             var list = new SelectList(regions, "Id", "Name").ToList();
             list.Insert(0, new SelectListItem("-- ВСЕ --", ""));
@@ -94,6 +101,9 @@ namespace SP.Web.Controllers
                 return null;
             }
 
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "region",
+                $"Cправочник регионов и территорий. Открыта запись региона {model.Name}");
+
             return View("_RegionEdit", model);
         }
 
@@ -115,9 +125,13 @@ namespace SP.Web.Controllers
                 return Content(errorMessage);
             }
 
+            string actionVerb = model.Id == 0 ? "Создан" : "Изменен";
             var result = await _masterService.SaveRegionAsync(model);
             if (result.Success)
             {
+                await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "region",
+                    $"Cправочник регионов и территорий. {actionVerb} регион {model.Name}");
+
                 return Content(result.Id.ToString());
             }
 
@@ -126,6 +140,11 @@ namespace SP.Web.Controllers
             return Content(errorMessage);
         }
 
+        /// <summary>
+        /// Вывести форму создания территории
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <returns></returns>
         public async Task<IActionResult> CreateTerritoryAsync(int parent)
         {
             var parentRegion = await _masterService.GetRegionalStructureItemAsync(parent);
@@ -147,6 +166,11 @@ namespace SP.Web.Controllers
             return View("_TerritoryEdit", model);
         }
 
+        /// <summary>
+        /// Вывести форму редактирования территории
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<IActionResult> EditTerritoryAsync(int id)
         {
             var territory = await _masterService.GetRegionalStructureItemAsync(id);
@@ -155,6 +179,10 @@ namespace SP.Web.Controllers
                 // TODO: вывести сообщение об ошибке
                 return null;
             }
+
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "region",
+                $"Cправочник регионов и территорий. Открыта запись территории {territory.Name}");
+
             var region = await _masterService.GetRegionalStructureItemAsync(territory.ParentId.Value);
             var model = new TerritoryViewModel
             {
@@ -166,6 +194,11 @@ namespace SP.Web.Controllers
 
         }
 
+        /// <summary>
+        /// Сохранить территорию
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> EditTerritoryAsync([FromForm] TerritoryViewModel model)
         {
@@ -179,9 +212,13 @@ namespace SP.Web.Controllers
                 return Content(errorMessage);
             }
 
+            string actionVerb = model.Territory.Id == 0 ? "Создана" : "Изменена";
             var result = await _masterService.SaveRegionAsync(model.Territory);
             if (result.Success)
             {
+                await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "region",
+                    $"Cправочник регионов и территорий. {actionVerb} территория {model.Territory.Name}");
+
                 return Content(result.Id.ToString());
             }
 

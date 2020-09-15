@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using SP.Data;
 using SP.Service.Models;
 using SP.Service.Services;
+using SP.Web.Utility;
 
 namespace SP.Web.Controllers
 {
@@ -17,17 +18,21 @@ namespace SP.Web.Controllers
         private readonly IUserService _userService;
         private readonly IMasterService _masterService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IAppLogger _appLogger;
 
-        public UserController(IUserService userService, IMasterService masterService, UserManager<ApplicationUser> userManager)
+        public UserController(IUserService userService, IMasterService masterService, UserManager<ApplicationUser> userManager, IAppLogger appLogger)
         {
             _userService = userService;
             _masterService = masterService;
             _userManager = userManager;
+            _appLogger = appLogger;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> IndexAsync()
         {
-            return View();
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "user", "Открыт справочник пользователей.");
+
+            return View("Index");
         }
 
         /// <summary>
@@ -70,6 +75,9 @@ namespace SP.Web.Controllers
             {
                 return NotFound();
             }
+
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "user",
+                $"Cправочник пользователей. Открыта запись код {user.Code}, {user.LastName} {user.FirstName} {user.MiddleName}");
 
             return await PrepareUserViewAsync(user);
         }
@@ -148,6 +156,7 @@ namespace SP.Web.Controllers
                 return await PrepareUserViewAsync(model);
             }
 
+            string actionVerb = model.Id == 0 ? "Создан" : "Изменен";
             var result = await _userService.SaveUserAsync(model);
             if (!result.Success)
             {
@@ -156,6 +165,10 @@ namespace SP.Web.Controllers
                 TempData["ActionMessageClass"] = "alert-danger";
                 return await PrepareUserViewAsync(model);
             }
+
+            string code = string.IsNullOrWhiteSpace(model.Code) ? model.Id.ToString() : model.Code;
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "user",
+                $"Cправочник пользователей. {actionVerb} запись код {code}, {model.LastName} {model.FirstName} {model.MiddleName}");
 
             if (!string.IsNullOrWhiteSpace(actionName))
             {

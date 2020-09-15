@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using SP.Core.Master;
 using SP.Service.Models;
 using SP.Service.Services;
+using SP.Web.Utility;
 
 namespace SP.Web.Controllers
 {
@@ -14,16 +16,20 @@ namespace SP.Web.Controllers
     {
         private readonly IInventoryService _inventoryService;
         private readonly IMasterService _masterService;
+        private readonly IAppLogger _appLogger;
 
-        public NomenclatureController(IInventoryService inventoryService, IMasterService masterService)
+        public NomenclatureController(IInventoryService inventoryService, IMasterService masterService, IAppLogger appLogger)
         {
             _inventoryService = inventoryService;
             _masterService = masterService;
+            _appLogger = appLogger;
         }
 
         [Route("[controller]/Index")]
         public async Task<IActionResult> IndexAsync()
         {
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "nomenclature", "Открыт справочник Номенклатура.");
+
             var nomenclatureGroups = await _masterService.GetDictionaryListAsync<NomenclatureGroup>();
             var groupList = new SelectList(nomenclatureGroups, "Id", "Name").ToList();
             groupList.Insert(0, new SelectListItem("-- ВСЕ --", ""));
@@ -51,6 +57,9 @@ namespace SP.Web.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var model = await _inventoryService.GetNomenclatureModelAsync(id);
+
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "nomenclature", 
+                $"Cправочник Номенклатура. Открыта запись код {model.Code}, {model.Name}");
 
             var measureUnits = await _masterService.GetDictionaryListAsync<MeasureUnit>();
             ViewData["MeasureUnitList"] = new SelectList(measureUnits, "Id", "Name").ToList(); ;
@@ -84,9 +93,13 @@ namespace SP.Web.Controllers
                 return Content(errorMessage);
             }
 
+            string actionVerb = model.Id == 0 ? "Создана" : "Изменена";
             var result = await _inventoryService.SaveNomenclatureAsync(model);
             if (result.Success)
             {
+                await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "nomenclature",
+                    $"Cправочник Номенклатура. {actionVerb} запись код {model.Code}, {model.Name}");
+
                 return Content(result.Id.ToString());
             }
 

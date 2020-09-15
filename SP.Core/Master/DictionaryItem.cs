@@ -2,7 +2,7 @@
 
 namespace SP.Core.Master
 {
-    public class DictionaryItem
+    public abstract class DictionaryItem
     {
         [Required]
         public int Id { get; set; }

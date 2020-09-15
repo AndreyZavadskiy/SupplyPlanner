@@ -15,6 +15,7 @@ using SP.Data;
 using SP.Service.Background;
 using SP.Service.Excel;
 using SP.Service.Services;
+using SP.Web.Utility;
 
 namespace SP.Web
 {
@@ -51,6 +52,8 @@ namespace SP.Web
             services.AddScoped<IInventoryService, InventoryService>();
             services.AddTransient<IBackgroundInventoryService, BackgroundInventoryService>();
             services.AddTransient<IExcelParser, ExcelParser>();
+            services.AddScoped<ILogService, LogService>();
+            services.AddScoped<IAppLogger, AppLogger>();
             services.AddControllersWithViews();
             services.AddRazorPages();
         }

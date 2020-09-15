@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SP.Core.History;
 using SP.Core.Master;
 using SP.Core.Model;
 
@@ -61,5 +62,8 @@ namespace SP.Data
         public DbSet<TradingHallOperatingMode> TradingHallOperatingModes { get; set; }
         public DbSet<TradingHallSize> TradingHallSizes { get; set; }
         public DbSet<MeasureUnit> MeasureUnits { get; set; }
+
+        // история
+        public DbSet<ActionLog> ActionLogs { get; set; }
     }
 }

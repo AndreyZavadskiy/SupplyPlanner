@@ -13,6 +13,7 @@ namespace SP.Service.Services
 {
     public interface IUserService
     {
+        Task<IEnumerable<DictionaryListItem>> GetUserNameListAsync();
         Task<IEnumerable<UserListItem>> GetUserListAsync();
         Task<UserModel> GetUserAsync(int id);
         Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveUserAsync(UserModel model);
@@ -28,6 +29,28 @@ namespace SP.Service.Services
         {
             _context = context;
             _userManager = userManager;
+        }
+
+        public async Task<IEnumerable<DictionaryListItem>> GetUserNameListAsync()
+        {
+            var persons = await _context.Persons.AsNoTracking()
+                .Select(x => new 
+                {
+                    x.Id,
+                    x.LastName,
+                    x.FirstName,
+                    x.MiddleName
+                })
+                .ToArrayAsync();
+
+            var result = persons
+                .Select(x => new DictionaryListItem
+                {
+                    Id = x.Id,
+                    Name = Person.ConcatenateFio(x.LastName, x.FirstName, x.MiddleName)
+                });
+
+            return result;
         }
 
         public async Task<IEnumerable<UserListItem>> GetUserListAsync()

@@ -162,7 +162,6 @@
                 url: url,
                 contentType: "application/json; charset=utf-8",
                 data: { "id": id },
-                dataType: "json",
                 success: function (data) {
                     $('#DictionaryModalContent').html(data);
                     $('#DictionaryModal').modal({
@@ -170,7 +169,8 @@
                         keyboard: false
                     });
                 },
-                error: function () {
+                error: function (a, b, c) {
+                    debugger;
                     alert('Ошибка открытия формы для записи справочника');
                 }
             });

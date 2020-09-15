@@ -13,6 +13,7 @@ using SP.Service.Background;
 using SP.Service.DTO;
 using SP.Service.Models;
 using SP.Service.Services;
+using SP.Web.Utility;
 using SP.Web.ViewModels;
 
 namespace SP.Web.Controllers
@@ -23,12 +24,14 @@ namespace SP.Web.Controllers
         private readonly IInventoryService _inventoryService;
         private readonly IMasterService _masterService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IAppLogger _appLogger;
 
-        public InventoryController(IInventoryService inventoryService, IMasterService masterService, UserManager<ApplicationUser> userManager)
+        public InventoryController(IInventoryService inventoryService, IMasterService masterService, UserManager<ApplicationUser> userManager, IAppLogger appLogger)
         {
             _inventoryService = inventoryService;
             _masterService = masterService;
             _userManager = userManager;
+            _appLogger = appLogger;
         }
 
         /// <summary>
@@ -61,6 +64,9 @@ namespace SP.Web.Controllers
                 return null;
             }
 
+            string fileNameList = string.Join(", ", model.Files.Select(x => x.FileName));
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory", $"Запущена загрузка остатков ТМЦ. Файлы: {fileNameList}.");
+
             // записываем во временные файлы на сервере
             var uploadedFiles = new List<UploadedFile>();
             foreach (var formFile in model.Files)
@@ -71,7 +77,7 @@ namespace SP.Web.Controllers
                 }
 
                 string filePath = Path.GetTempFileName();
-                using (var stream = System.IO.File.Create(filePath))
+                await using (var stream = System.IO.File.Create(filePath))
                 {
                     await formFile.CopyToAsync(stream);
                 }
@@ -109,6 +115,8 @@ namespace SP.Web.Controllers
         public async Task<IActionResult> AutoMergeAsync([FromForm] InventoryProcessingViewModel model,
             [FromServices] IBackgroundCoordinator coordinator)
         {
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory", $"Запущено автоматическое объединение остатков ТМЦ.");
+
             Guid serviceKey = Guid.NewGuid();
             var user = await _userManager.GetUserAsync(User);
             StartBackgroundAutoMerge(coordinator, serviceKey, user.Id);
@@ -120,8 +128,11 @@ namespace SP.Web.Controllers
         /// Отобразить форму для ручного объединения ТМЦ с Номенклатурой
         /// </summary>
         /// <returns></returns>
-        public IActionResult ManualMerge()
+        public async Task<IActionResult> ManualMergeAsync()
         {
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory", 
+                "Открыт список ТМЦ для ручного объединения с Номенклатурой.");
+
             var model = new InventoryProcessingViewModel
             {
                 ProcessingDate = DateTime.Now
@@ -163,6 +174,9 @@ namespace SP.Web.Controllers
 
             int updated = await _inventoryService.LinkInventoryToNomenclatureAsync(model.Inventories, model.Nomenclature);
 
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory", 
+                $"Объединено {updated} позиций ТМЦ с номенклатурой id {model.Nomenclature}.");
+
             return Json(new { updated });
         }
 
@@ -176,6 +190,9 @@ namespace SP.Web.Controllers
             }
 
             int updated = await _inventoryService.BlockInventoryAsync(model.Inventories);
+
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory",
+                $"Исключено {updated} позиций ТМЦ из объединения в Номенклатуру.");
 
             return Json(new { updated });
         }
@@ -198,6 +215,9 @@ namespace SP.Web.Controllers
         [Route("[controller]/CalcBalance")]
         public async Task<IActionResult> CalcBalanceAsync([FromServices] IBackgroundCoordinator coordinator)
         {
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory",
+                "Запущен расчет остатков по Номенклатуре.");
+
             Guid serviceKey = Guid.NewGuid();
             var user = await _userManager.GetUserAsync(User);
             StartBackgroundBalanceCalculation(coordinator, serviceKey, user.Id);
@@ -206,12 +226,15 @@ namespace SP.Web.Controllers
         }
 
         /// <summary>
-        /// Отобразить форму остатков ТМЦ в разрезе Номенклатуры
+        /// Отобразить форму остатков по Номенклатуре
         /// </summary>
         /// <returns></returns>
         [Route("[controller]/Balance")]
         public async Task<IActionResult> BalanceAsync()
         {
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory",
+                "Открыт список остатков по Номенклатуре.");
+
             var model = new InventoryProcessingViewModel
             {
                 ProcessingDate = DateTime.Now
@@ -261,6 +284,9 @@ namespace SP.Web.Controllers
         [Route("[controller]/Demand")]
         public async Task<IActionResult> DemandAsync()
         {
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory",
+                "Открыт список для заказа ТМЦ по Номенклатуре.");
+
             var model = new InventoryProcessingViewModel
             {
                 ProcessingDate = DateTime.Now
@@ -295,6 +321,9 @@ namespace SP.Web.Controllers
         public async Task<IActionResult> CalcOrderAsync([FromBody] int[] idList,
             [FromServices] IBackgroundCoordinator coordinator)
         {
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory",
+                "Запущен автоматический расчет заказа ТМЦ по Номенклатуре.");
+
             Guid serviceKey = Guid.NewGuid();
             var user = await _userManager.GetUserAsync(User);
             StartBackgroundOrderCalculation(coordinator, serviceKey, idList, user.Id);
@@ -346,6 +375,9 @@ namespace SP.Web.Controllers
                 return Json(new { order = 0, updated = 0 });
             }
 
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory", 
+                $"Сохранен заказ ТМЦ по Номенклатуре, количество позиций {data.Count()}.");
+
             var user = await _userManager.GetUserAsync(User);
             var person = await _masterService.GetPersonAsync(user.Id);
             var result = await _inventoryService.SaveOrderAsync(data, person.Id);
@@ -356,6 +388,9 @@ namespace SP.Web.Controllers
         [Route("[controller]/Order")]
         public async Task<IActionResult> OrderAsync()
         {
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory",
+                "Открыт список заказов ТМЦ по Номенклатуре.");
+
             var model = new InventoryProcessingViewModel
             {
                 ProcessingDate = DateTime.Now

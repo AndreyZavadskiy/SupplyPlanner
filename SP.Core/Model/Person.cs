@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.Cryptography.X509Certificates;
 
 namespace SP.Core.Model
 {
@@ -54,5 +55,12 @@ namespace SP.Core.Model
         public IEnumerable<PersonTerritory> PersonTerritories { get; set; }
 
         #endregion
+
+        public static string ConcatenateFio(string lastName, string firstName, string middleName)
+        {
+            return lastName 
+                   + (string.IsNullOrWhiteSpace(firstName) ? " " + firstName : string.Empty)
+                   + (string.IsNullOrWhiteSpace(middleName) ? " " + middleName : string.Empty);
+        }
     }
 }

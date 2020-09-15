@@ -19,6 +19,8 @@
     <Compile Remove="Migrations\20200528072704_20200528_GasStation.Designer.cs" />
     <Compile Remove="Migrations\20200610133037_20200610_Inventory.cs" />
     <Compile Remove="Migrations\20200610133037_20200610_Inventory.Designer.cs" />
+    <Compile Remove="Migrations\20200915084052_20200915_ActionLog.cs" />
+    <Compile Remove="Migrations\20200915084052_20200915_ActionLog.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
