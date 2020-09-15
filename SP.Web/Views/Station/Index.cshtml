@@ -95,6 +95,7 @@
                 regionList.prop('selectedIndex', 0);
                 region = regionList.val();
             }
+            initializeDataTable();
             changeRegion(terr);
         });
 
@@ -232,9 +233,14 @@
         }
 
         function changeRegion(terr) {
+            debugger;
             var selectedRegion = $('#RegionList').val();
             var terrList = $('#TerritoryList');
             terrList.empty();
+            if (selectedRegion === '') {
+                terrList.trigger('change');
+                return;
+            }
             var url = '/Region/LoadTerritories';
             var requestData = { parent: selectedRegion };
             $.get(url,

@@ -31,7 +31,13 @@ namespace SP.Web.Controllers
             await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "gasstation", "Открыт справочник АЗС.");
 
             var regions = await _masterService.SelectRegionAsync();
-            ViewData["RegionList"] = new SelectList(regions, "Id", "Name").ToList();
+            var list = new SelectList(regions, "Id", "Name").ToList();
+            list.Insert(0, new SelectListItem("-- ВСЕ --", ""));
+            ViewData["RegionList"] = list;
+            if (region == null && list.Count > 1)
+            {
+                region = Convert.ToInt32(list[1].Value);
+            }
             ViewData["SelectedRegion"] = region;
             ViewData["SelectedTerritory"] = terr;
 
