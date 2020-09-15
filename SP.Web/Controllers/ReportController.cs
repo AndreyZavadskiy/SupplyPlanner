@@ -33,10 +33,16 @@ namespace SP.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IEnumerable<ActionListItem>> LoadActionList(int? user, DateTime? start, DateTime? end)
+        public async Task<IActionResult> LoadActionList(int? user, DateTime? start, DateTime? end)
         {
+            if (user == null && start == null && end == null)
+            {
+                var zeroItem = new ActionListItem{ Description = "Установите фильтры для отображения данных"};
+                return Json(new { data = new[] { zeroItem } });
+            }
+
             var list = await _logService.GetActionListAsync(user, start, end);
-            return list;
+            return Json(new { data = list });
         }
     }
 }

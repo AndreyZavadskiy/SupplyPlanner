@@ -338,3 +338,15 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/SP.Service/Services/InventoryService.cs
+/SP.Service/Services
+/SP.Service/Models/GasStationIdentification.cs
+/SP.Service/Models
+/SP.Service/Excel/ExcelParser.cs
+/SP.Service/Excel/ComparisonMode.cs
+/SP.Service/Excel/ColumnDefinition.cs
+/SP.Service/Excel
+/SP.Service/DTO/UploadedFile.cs
+/SP.Service/DTO/ParsedInventory.cs
+/SP.Service/DTO
+/SP.Service/Background/BackgroundServiceProgress.cs

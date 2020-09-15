@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SP.Core.History;
+using SP.Core.Model;
 using SP.Data;
 using SP.Service.Models;
 
@@ -45,9 +47,47 @@ namespace SP.Service.Services
             return true;
         }
 
-        public Task<IEnumerable<ActionListItem>> GetActionListAsync(int? user, DateTime? start, DateTime? end)
+        public async Task<IEnumerable<ActionListItem>> GetActionListAsync(int? user, DateTime? start, DateTime? end)
         {
-            throw new NotImplementedException();
+            var query = _context.ActionLogs.AsNoTracking();
+            if (user != null)
+            {
+                query = query.Where(x => x.PersonId == user);
+            }
+            if (start != null)
+            {
+                query = query.Where(x => start <= x.ActionDate);
+            }
+            if (end != null)
+            {
+                end = end.Value.Date.AddDays(1);
+                query = query.Where(x => x.ActionDate < end);
+            }
+
+            var result = await query
+                .Include(x => x.Person)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Person.LastName,
+                    x.Person.FirstName,
+                    x.Person.MiddleName,
+                    x.ActionDate,
+                    x.Description
+                })
+                .OrderBy(z => z.ActionDate)
+                .Take(5000)
+                .ToArrayAsync();
+
+            var list = result.Select(x => new ActionListItem
+            {
+                Id = x.Id,
+                UserName = Person.ConcatenateFio(x.LastName, x.FirstName, x.MiddleName),
+                ActionDate = x.ActionDate,
+                Description = x.Description
+            });
+
+            return list;
         }
     }
 }
