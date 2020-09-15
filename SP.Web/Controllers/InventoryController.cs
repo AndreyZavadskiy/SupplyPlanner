@@ -138,6 +138,14 @@ namespace SP.Web.Controllers
                 ProcessingDate = DateTime.Now
             };
 
+            var mergeTypeList = new List<SelectListItem>{
+                new SelectListItem("-- ВСЕ --", ""),
+                new SelectListItem("Не объединенные", "1"),
+                new SelectListItem("Объединенные", "2"),
+                new SelectListItem("Исключенные", "3")
+            };
+            ViewData["MergeTypeList"] = mergeTypeList;
+
             return View("ManualMerge", model);
         }
 
@@ -146,9 +154,9 @@ namespace SP.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> LoadMergeListAsync()
+        public async Task<IActionResult> LoadMergeListAsync(int? mergeType)
         {
-            var inventoryList = await _inventoryService.GetListForManualMerge();
+            var inventoryList = await _inventoryService.GetListForManualMerge(mergeType);
 
             return Json(new { data = inventoryList });
         }

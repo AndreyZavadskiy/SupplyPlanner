@@ -17,7 +17,7 @@ namespace SP.Service.Services
     {
         Task<bool> PurgeStageInventoryAsync(int personId);
         Task<(bool Success, IEnumerable<string> Errors)> SaveStageInventoryAsync(StageInventory[] data, Guid? serviceKey, int personId);
-        Task<IEnumerable<MergingInventory>> GetListForManualMerge();
+        Task<IEnumerable<MergingInventory>> GetListForManualMerge(int? mergeType);
         Task<NomenclatureModel> GetNomenclatureModelAsync(int id);
         Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveNomenclatureAsync(NomenclatureModel model);
         Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync();
@@ -119,12 +119,26 @@ namespace SP.Service.Services
         /// Получить список ТМЦ для ручного объединения в Номенклатуру
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<MergingInventory>> GetListForManualMerge()
+        public async Task<IEnumerable<MergingInventory>> GetListForManualMerge(int? mergeType)
         {
-            var mergingList = await _context.Inventories
+            var query = _context.Inventories.AsNoTracking();
+            switch (mergeType)
+            {
+                case 1:
+                    query = query.Where(x => !x.NomenclatureId.HasValue && !x.IsBlocked);
+                    break;
+                case 2:
+                    query = query.Where(x => x.NomenclatureId.HasValue && !x.IsBlocked);
+                    break;
+                case 3:
+                    query = query.Where(x => x.IsBlocked);
+                    break;
+            }
+
+            var mergingList = await query
                 .Include(x => x.MeasureUnit)
                 .Include(x => x.GasStation)
-                .Where(x => !x.NomenclatureId.HasValue && !x.IsBlocked)
+                .Include(x => x.Nomenclature)
                 .Select(x => new MergingInventory
                 {
                     Id = x.Id,
@@ -134,9 +148,9 @@ namespace SP.Service.Services
                     MeasureUnitName = x.MeasureUnit.Name,
                     GasStationId = x.GasStationId,
                     StationNumber = x.GasStation.StationNumber,
-                    NomenclatureId = null,
-                    NomenclatureCode = null,
-                    NomenclatureName = null,
+                    NomenclatureId = x.NomenclatureId,
+                    NomenclatureCode = x.Nomenclature.Code,
+                    NomenclatureName = x.Nomenclature.Name,
                     Active = x.IsBlocked ? "0" : "1"
                 })
                 .ToArrayAsync();

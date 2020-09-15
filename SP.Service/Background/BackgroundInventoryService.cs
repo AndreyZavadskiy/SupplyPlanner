@@ -51,8 +51,8 @@ namespace SP.Service.Background
             _parser = new ExcelParser();
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
             var options = optionsBuilder
-                //.UseSqlServer("Server=(local);Database=SupplyPlanner;Trusted_Connection=True;MultipleActiveResultSets=true")
-                .UseSqlServer("Server=.\\SQLEXPRESS;Database=SupplyPlanner;User Id=sp;Password=SupplyPl@nner;MultipleActiveResultSets=true")
+                .UseSqlServer("Server=(local);Database=SupplyPlanner;Trusted_Connection=True;MultipleActiveResultSets=true")
+                //.UseSqlServer("Server=.\\SQLEXPRESS;Database=SupplyPlanner;User Id=sp;Password=SupplyPl@nner;MultipleActiveResultSets=true")
                 .UseLoggerFactory(ApplicationDbContext.ApplicationDbLoggerFactory)
                 .EnableDetailedErrors()
                 .EnableSensitiveDataLogging()
