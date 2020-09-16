@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SP.Core.History;
+using SP.Core.Log;
 using SP.Core.Master;
 using SP.Core.Model;
 
@@ -65,6 +66,7 @@ namespace SP.Data
 
         // история
         public DbSet<ActionLog> ActionLogs { get; set; }
+        public DbSet<ChangeLog> ChangeLogs { get; set; }
         public DbSet<CalcSheetHistory> CalcSheetHistories { get; set; }
     }
 }

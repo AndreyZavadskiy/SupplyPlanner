@@ -2,11 +2,14 @@
 
 namespace SP.Service.Models
 {
-    public class ActionListItem
+    public class ChangeListItem
     {
         public int Id { get; set; }
         public string UserName { get; set; }
-        public DateTime ActionDate { get; set; }
-        public string Description { get; set; }
+        public DateTime ChangeDate { get; set; }
+        public string EntityName { get; set; }
+        public int RecordId { get; set; }
+        public string OldValue { get; set; }
+        public string NewValue { get; set; }
     }
 }

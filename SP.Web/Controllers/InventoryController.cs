@@ -227,8 +227,6 @@ namespace SP.Web.Controllers
         public async Task<IActionResult> CalcBalanceAsync(int? region, int? terr, int? station, int? group, int? nom, int? useful,
             [FromServices] IBackgroundCoordinator coordinator)
         {
-            Debugger.Break();
-
             await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory",
                 "Запущен расчет остатков по Номенклатуре.");
 

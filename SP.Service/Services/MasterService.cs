@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using SP.Core.Log;
 using SP.Core.Master;
 using SP.Core.Model;
 using SP.Data;
@@ -89,9 +90,10 @@ namespace SP.Service.Services
                     Name = model.Name,
                     IsActive = !model.Inactive
                 };
+
                 await _context.Set<T>().AddAsync(newItem);
             }
-            else
+            else if (dbItem.Name != model.Name || dbItem.IsActive != model.Inactive)
             {
                 dbItem.Name = model.Name;
                 dbItem.IsActive = !model.Inactive;
