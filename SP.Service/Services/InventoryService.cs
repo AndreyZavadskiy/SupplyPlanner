@@ -21,7 +21,7 @@ namespace SP.Service.Services
         Task<NomenclatureModel> GetNomenclatureModelAsync(int id);
         Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveNomenclatureAsync(NomenclatureModel model);
         Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync();
-        Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int groupId);
+        Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int? groupId, bool longterm);
         Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId);
         Task<int> BlockInventoryAsync(int[] inventoryIdList);
         Task<IEnumerable<BalanceListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom);
@@ -219,9 +219,18 @@ namespace SP.Service.Services
         /// </summary>
         /// <param name="groupId"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int groupId)
+        public async Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int? groupId, bool longterm)
         {
-            var list = await _context.Nomenclatures
+            var query = _context.Nomenclatures.AsNoTracking();
+            if (groupId != null)
+            {
+                query = query.Where(x => x.NomenclatureGroupId == groupId);
+            }
+            if (longterm)
+            {
+                query = query.Where(x => x.UsefulLife > 12);
+            }
+            var list = await query
                 .Select(x => new DictionaryListItem
                 {
                     Id = x.Id,

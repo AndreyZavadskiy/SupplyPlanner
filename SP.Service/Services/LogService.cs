@@ -16,7 +16,9 @@ namespace SP.Service.Services
         Task<bool> SaveActionAsync(string userId, DateTime date, string category, string description);
         Task<IEnumerable<ActionListItem>> GetActionListAsync(int? user, DateTime? start, DateTime? end);
 
-        Task<IEnumerable<BalanceReportListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group,
+        Task<IEnumerable<CalcSheetReportListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group,
+            int? nom, DateTime? start, DateTime? end);
+        Task<IEnumerable<CalcSheetReportListItem>> GetExceedPlanListAsync(int? region, int? terr, int? station, int? group,
             int? nom, DateTime? start, DateTime? end);
     }
 
@@ -94,7 +96,7 @@ namespace SP.Service.Services
             return list;
         }
 
-        public async Task<IEnumerable<BalanceReportListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom, DateTime? start, DateTime? end)
+        public async Task<IEnumerable<CalcSheetReportListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom, DateTime? start, DateTime? end)
         {
             var query = _context.CalcSheetHistories.AsNoTracking();
             if (station != null)
@@ -130,7 +132,7 @@ namespace SP.Service.Services
                 .Include(x => x.Nomenclature.NomenclatureGroup)
                 .Include(x => x.GasStation)
                 .Where(x => x.Nomenclature.UsefulLife > 12)
-                .Select(x => new BalanceReportListItem
+                .Select(x => new CalcSheetReportListItem
                 {
                     NomenclatureGroupName = x.Nomenclature.NomenclatureGroup.Name,
                     NomenclatureName = x.Nomenclature.Name,
@@ -142,6 +144,55 @@ namespace SP.Service.Services
 
             return list;
         }
+
+        public async Task<IEnumerable<CalcSheetReportListItem>> GetExceedPlanListAsync(int? region, int? terr, int? station, int? group, int? nom, DateTime? start, DateTime? end)
+        {
+            var query = _context.CalcSheetHistories.AsNoTracking();
+            if (station != null)
+            {
+                query = query.Where(x => x.GasStationId == station);
+            }
+            else if (terr != null)
+            {
+                query = query
+                    .Include(x => x.GasStation)
+                    .Where(x => x.GasStation.TerritoryId == terr);
+            }
+            else if (region != null)
+            {
+                query = query
+                    .Include(x => x.GasStation)
+                    .Include(x => x.GasStation.Territory)
+                    .Where(x => x.GasStation.Territory.ParentId == region);
+            }
+            if (nom != null)
+            {
+                query = query.Where(x => x.NomenclatureId == nom);
+            }
+            else if (group != null)
+            {
+                query = query
+                    .Include(x => x.Nomenclature)
+                    .Where(x => x.Nomenclature.NomenclatureGroupId == group);
+            }
+
+            var list = await query
+                .Include(x => x.Nomenclature)
+                .Include(x => x.Nomenclature.NomenclatureGroup)
+                .Include(x => x.GasStation)
+                .Where(x => x.Quantity > x.Plan)
+                .Select(x => new CalcSheetReportListItem
+                {
+                    NomenclatureGroupName = x.Nomenclature.NomenclatureGroup.Name,
+                    NomenclatureName = x.Nomenclature.Name,
+                    StationNumber = x.GasStation.StationNumber,
+                    Date = x.EffectiveDate,
+                    Plan = x.Plan,
+                    Quantity = x.Quantity
+                })
+                .ToArrayAsync();
+
+            return list;
+        }
     }
 }
- 

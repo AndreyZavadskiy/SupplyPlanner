@@ -83,6 +83,43 @@ namespace SP.Web.Controllers
             return Json(new { data = list });
         }
 
+        public async Task<IActionResult> ExceedPlanReportAsync()
+        {
+            await LoadEssentialDictionaries();
+
+            return View("ExceedPlanReport");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> LoadExceedPlanList(int? region, int? terr, int? station, int? group, int? nom, DateTime? start, DateTime? end)
+        {
+            if (region == null && terr == null && station == null && group == null && nom == null && start == null && end == null)
+            {
+                var zeroItem = new
+                {
+                    groupName = string.Empty,
+                    nomenclatureName = "Установите фильтры для отображения данных",
+                    stationNumber = string.Empty,
+                    actionDate = (DateTime?)null,
+                    plan = (decimal?)null,
+                    quantity = (decimal?)null
+                };
+                return Json(new { data = new[] { zeroItem } });
+            }
+
+            var data = await _logService.GetExceedPlanListAsync(region, terr, station, group, nom, start, end);
+            var list = data.Select(x => new
+            {
+                groupName = x.NomenclatureGroupName,
+                nomenclatureName = x.NomenclatureName,
+                stationNumber = x.StationNumber,
+                actionDate = x.Date,
+                plan = x.Plan,
+                quantity = x.Quantity
+            });
+            return Json(new { data = list });
+        }
+
         private async Task LoadEssentialDictionaries()
         {
             var regions = await _masterService.SelectRegionAsync();
