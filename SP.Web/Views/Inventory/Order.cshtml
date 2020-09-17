@@ -47,7 +47,6 @@
                 select: {
                     style: 'single'
                 },
-                stateSave: true,
                 lengthMenu: [
                     [10, 25, 50, 100, -1],
                     [10, 25, 50, 100, 'Все']
@@ -69,7 +68,7 @@
                     },
                     {
                         targets: 1,
-                        render: $.fn.dataTable.render.moment('YYYY-MM-DDTHH:mm:ss', 'DD.MM.YYYY HH:mm:ss')
+                        render: $.fn.dataTable.render.moment('YYYY-MM-DDTHH:mm:ss.SSSSSS', 'DD.MM.YYYY HH:mm:ss')
                     }
                 ],
                 dom:
@@ -90,7 +89,6 @@
                     url: '/lib/datatables/i18n/russian.json'
                 },
                 rowId: 'id',
-                stateSave: true,
                 lengthMenu: [
                     [10, 25, 50, 100, -1],
                     [10, 25, 50, 100, 'Все']

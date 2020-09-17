@@ -40,6 +40,10 @@
     padding-left: 0; 
 }
 
+.modal-body {
+    max-width: 600px;
+}
+
 /*  DataTables  */
 div.dt-action-group {
     margin-bottom: 1rem;

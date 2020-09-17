@@ -84,7 +84,6 @@
                 rowId: 'id',
                 scrollX: true,
                 order: [[3, "asc"]],
-                stateSave: true,
                 lengthMenu: [
                     [10, 25, 50, 100, -1],
                     [10, 25, 50, 100, "Все"]
@@ -189,7 +188,7 @@
                     ]
             });
             // default filter
-            dt.columns(2).search('1').draw(false);
+            $('#NomenclatureGrid').DataTable().columns(2).search('1').draw(false);
 
         });
 

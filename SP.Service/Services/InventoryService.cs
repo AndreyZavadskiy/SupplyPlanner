@@ -22,6 +22,7 @@ namespace SP.Service.Services
         Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveNomenclatureAsync(NomenclatureModel model);
         Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync();
         Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int? groupId, bool longterm);
+        Task<IEnumerable<NomenclatureInventory>> GetNomenclatureInventoryListAsync(int id);
         Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId);
         Task<int> BlockInventoryAsync(int[] inventoryIdList);
         Task<IEnumerable<BalanceListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom);
@@ -235,6 +236,23 @@ namespace SP.Service.Services
                 {
                     Id = x.Id,
                     Name = x.Name
+                })
+                .ToArrayAsync();
+
+            return list;
+        }
+
+        public async Task<IEnumerable<NomenclatureInventory>> GetNomenclatureInventoryListAsync(int id)
+        {
+            var list = await _context.Inventories
+                .Include(x => x.Nomenclature)
+                .Include(x => x.GasStation)
+                .Where(x => x.NomenclatureId == id)
+                .Select(x => new NomenclatureInventory
+                {
+                    Code = x.Nomenclature.Code ?? x.NomenclatureId.ToString(),
+                    Name = x.Nomenclature.Name,
+                    StationNumber = x.GasStation.StationNumber
                 })
                 .ToArrayAsync();
 

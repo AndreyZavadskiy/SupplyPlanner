@@ -172,7 +172,7 @@ namespace SP.Web.Controllers
         {
             if (user == null && start == null && end == null)
             {
-                var zeroItem = new ActionListItem { Description = "Установите фильтры для отображения данных" };
+                var zeroItem = new ChangeListItem { OldValue = "Установите фильтры для отображения данных" };
                 return Json(new { data = new[] { zeroItem } });
             }
 

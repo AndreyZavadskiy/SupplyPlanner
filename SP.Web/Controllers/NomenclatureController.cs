@@ -107,5 +107,13 @@ namespace SP.Web.Controllers
 
             return Content(errorMessage);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> LoadInventoryList(int id)
+        {
+            var list = await _inventoryService.GetNomenclatureInventoryListAsync(id);
+
+            return Json(new { data = list });
+        }
     }
 }

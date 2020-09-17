@@ -27,7 +27,7 @@
 <section>
     <div class="col-xl-12">
         <hr class="section-separate" />
-        <table id="ActionReportGrid" class="table table-striped table-bordered nowrap" width="100%" cellspacing="0">
+        <table id="ChangeReportGrid" class="table table-striped table-bordered nowrap" width="100%" cellspacing="0">
             <thead>
                 <tr>
                     <th class="exportable-column">Пользователь</th>
@@ -48,11 +48,10 @@
         $(document).ready(function() {
             var d = new Date();
             var todayString = ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
-            $('#ActionReportGrid').DataTable({
+            $('#ChangeReportGrid').DataTable({
                 language: {
                     url: '/lib/datatables/i18n/russian.json'
                 },
-                stateSave: true,
                 lengthMenu: [
                     [10, 25, 50, 100, -1],
                     [10, 25, 50, 100, 'Все']
@@ -70,7 +69,7 @@
                 columns: [
                     { data: 'userName' },
                     { data: 'actionDate' },
-                    { data: 'tableName' },
+                    { data: 'entityName' },
                     { data: 'recordId' },
                     { data: 'oldValue' },
                     { data: 'newValue' }
@@ -97,7 +96,7 @@
                         titleAttr: "Показать отчетные данные",
                         className: 'dt-action-button btn btn-primary',
                         action: function (e, dt, node, config) {
-                            $('#ActionReportGrid').DataTable().ajax.reload();
+                            $('#ChangeReportGrid').DataTable().ajax.reload();
                         }
                     },
                     {

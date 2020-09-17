@@ -160,7 +160,6 @@
                     selector: 'td:first-child'
                 },
                 order: [[2, "asc"]],
-                stateSave: true,
                 lengthMenu: [
                     [10, 25, 50, 100, -1],
                     [10, 25, 50, 100, "Все"]
@@ -270,7 +269,7 @@
             $(".selectAll").on("click",
                 function(e) {
                     if ($(this).is(":checked")) {
-                        dt.rows().select({ page: 'current' });
+                        dt.rows({ page: 'current' }).select();
                     } else {
                         dt.rows().deselect();
                     }

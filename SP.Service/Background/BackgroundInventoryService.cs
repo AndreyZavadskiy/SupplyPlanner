@@ -51,8 +51,8 @@ namespace SP.Service.Background
             _parser = new ExcelParser();
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
             var options = optionsBuilder
-                .UseSqlServer("Server=(local);Database=SupplyPlanner;Trusted_Connection=True;MultipleActiveResultSets=true")
-                //.UseSqlServer("Server=.\\SQLEXPRESS;Database=SupplyPlanner;User Id=sp;Password=SupplyPl@nner;MultipleActiveResultSets=true")
+                //.UseSqlServer("Server=(local);Database=SupplyPlanner;Trusted_Connection=True;MultipleActiveResultSets=true")
+                .UseSqlServer("Server=.\\SQLEXPRESS;Database=SupplyPlanner;User Id=sp;Password=SupplyPl@nner;MultipleActiveResultSets=true")
                 .UseLoggerFactory(ApplicationDbContext.ApplicationDbLoggerFactory)
                 .EnableDetailedErrors()
                 .EnableSensitiveDataLogging()
@@ -541,11 +541,11 @@ namespace SP.Service.Background
                 processingLog.AppendLine($"АЗС {station.StationNumber}");
 
                 // предыдущие остатки
-                var oldBalances = await _context.CalcSheets
+                var oldBalances = await _context.CalcSheets.AsNoTracking()
                     .Where(x => x.GasStationId == station.Id)
                     .ToArrayAsync();
                 // остатки по АЗС
-                var inventoryBalances = await _context.Inventories
+                var inventoryBalances = await _context.Inventories.AsNoTracking()
                     .Where(x => x.GasStationId == station.Id && x.NomenclatureId.HasValue && !x.IsBlocked)
                     .GroupBy(x => x.NomenclatureId)
                     .Select(x => new
@@ -758,10 +758,10 @@ namespace SP.Service.Background
                     { "salearea", gasStation.TradingHallSize.Name.ToLower() },
                     { "totalarm", gasStation.CashboxTotal },
                     { "totaltrk", gasStation.FuelDispenserTotal },
-                    { "avgcheck", gasStation.ChequePerDay },
+                    { "avgcheck", Convert.ToDouble(gasStation.ChequePerDay) },
                     { "totalclienttoiletroom", gasStation.ClientRestroomTotal },
                     { "tambour", gasStation.HasJointRestroomEntrance },
-                    { "monthincome", gasStation.RevenueAvg },
+                    { "monthincome", Convert.ToDouble(gasStation.RevenueAvg) },
                     { "sibilla", gasStation.HasSibilla },
                     { "bakery", gasStation.HasBakery },
                     { "cakes", gasStation.HasCakes },
@@ -770,8 +770,8 @@ namespace SP.Service.Background
                     { "kitchen", gasStation.HasKitchen },
                     { "coffeemachine", gasStation.CoffeeMachineTotal },
                     { "totalpersonal", gasStation.PersonnelPerDay },
-                    { "avgbandlength", gasStation.ChequeBandLengthPerDay },
-                    { "imagecoef", gasStation.RepresentativenessFactor }
+                    { "avgbandlength", Convert.ToDouble(gasStation.ChequeBandLengthPerDay) },
+                    { "imagecoef", Convert.ToDouble(gasStation.RepresentativenessFactor) }
                 };
 
                 try

@@ -155,7 +155,6 @@
                     style: 'multi',
                     selector: 'td:first-child'
                 },
-                stateSave: true,
                 lengthMenu: [
                     [10, 25, 50, 100, -1],
                     [10, 25, 50, 100, 'Все']
@@ -402,7 +401,7 @@
         }
 
         function calcDemand() {
-            var url = "/Inventory/calcDemand";
+            var url = "/Inventory/CalcOrder";
             var dt = $("#DemandGrid").DataTable();
             var rows = dt.rows({ selected: true }).data();
             if (rows.length === 0) {
