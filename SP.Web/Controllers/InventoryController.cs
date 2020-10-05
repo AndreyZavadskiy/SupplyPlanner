@@ -380,7 +380,7 @@ namespace SP.Web.Controllers
 
         [HttpPost]
         [Route("[controller]/SaveOrder")]
-        public async Task<IActionResult> SaveOrderAsync([FromBody] IEnumerable<OrderQuantity> data)
+        public async Task<IActionResult> SaveOrderAsync(int orderType, bool balance, [FromBody] IEnumerable<OrderQuantity> data)
         {
             if (data == null || !data.Any())
             {
@@ -392,7 +392,7 @@ namespace SP.Web.Controllers
 
             var user = await _userManager.GetUserAsync(User);
             var person = await _masterService.GetPersonAsync(user.Id);
-            var result = await _inventoryService.SaveOrderAsync(data, person.Id);
+            var result = await _inventoryService.SaveOrderAsync(orderType, balance, data, person.Id);
 
             return Json(new { order = result.OrderNumber, updated = result.RecordCount });
         }

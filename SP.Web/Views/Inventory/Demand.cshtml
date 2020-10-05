@@ -15,6 +15,12 @@
                 <span asp-validation-for="ProcessingDate" class="text-danger"></span>
             </div>
         </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row form-check col-8">
+                <input id="WithBalances" type="checkbox" class="col-1" />
+                Учитывать остатки для ТМЦ с СПИ более 12 месяцев
+            </div>
+        </div>
     </div>
 
     <div class="col-xl-12">
@@ -224,11 +230,19 @@
                         }
                     },
                     {
-                        text: 'Заказать',
-                        titleAttr: 'Сделать заказ ТМЦ',
+                        text: 'Плановая поставка',
+                        titleAttr: 'Плановая поставка ТМЦ с СПИ не более 12 месяцев',
                         className: 'dt-action-button btn btn-primary',
                         action: function () {
-                            makeOrder();
+                            makeOrder(1);
+                        }
+                    },
+                    {
+                        text: 'Заказать',
+                        titleAttr: 'Заказ ТМЦ',
+                        className: 'dt-action-button btn btn-primary',
+                        action: function () {
+                            makeOrder(2);
                         }
                     },
                     {
@@ -515,8 +529,12 @@
             });
         }
 
-        function makeOrder() {
-            var url = '/Inventory/SaveOrder';
+        function makeOrder(orderType) {
+            var withBalance = 'false';
+            if ($('#WithBalances').is(':checked')) {
+                withBalance = 'true';
+            }
+            var url = '/Inventory/SaveOrder?orderType=' + orderType + '&balance=' + withBalance;
 
             var dt = $('#DemandGrid').DataTable();
             var rows = dt.rows({ selected: true });
@@ -527,7 +545,11 @@
             var requestData = [];
             rows.every(function(rowIdx, tableLoop, rowLoop) {
                 var data = this.data();
-                requestData.push({ id: data.id, quantity : data.orderQuantity });
+                requestData.push({
+                    id: data.id,
+                    plan: data.plan,
+                    quantity: data.orderQuantity
+                });
             });
 
             $.ajax({

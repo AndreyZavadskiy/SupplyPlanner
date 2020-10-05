@@ -50,6 +50,7 @@ namespace SP.Service.Background
             _coordinator = coordinator;
             _parser = new ExcelParser();
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+            // TODO использовать appsettings.json
             var options = optionsBuilder
                 //.UseSqlServer("Server=(local);Database=SupplyPlanner;Trusted_Connection=True;MultipleActiveResultSets=true")
                 .UseSqlServer("Server=.\\SQLEXPRESS;Database=SupplyPlanner;User Id=sp;Password=SupplyPl@nner;MultipleActiveResultSets=true")

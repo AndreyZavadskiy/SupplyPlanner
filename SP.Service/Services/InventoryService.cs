@@ -30,7 +30,7 @@ namespace SP.Service.Services
         Task<IEnumerable<OrderModel>> GetOrderListAsync();
         Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(int id);
         Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, int[] idList);
-        Task<(int OrderNumber, int RecordCount)> SaveOrderAsync(IEnumerable<OrderQuantity> data, int personId);
+        Task<(int OrderNumber, int RecordCount)> SaveOrderAsync(int orderType, bool withBalance, IEnumerable<OrderQuantity> data, int personId);
     }
 
     public class InventoryService : IInventoryService
@@ -568,7 +568,7 @@ namespace SP.Service.Services
         /// <param name="data"></param>
         /// <param name="personId"></param>
         /// <returns></returns>
-        public async Task<(int OrderNumber, int RecordCount)> SaveOrderAsync(IEnumerable<OrderQuantity> data, int personId)
+        public async Task<(int OrderNumber, int RecordCount)> SaveOrderAsync(int orderType, bool withBalance, IEnumerable<OrderQuantity> data, int personId)
         {
             if (data == null || !data.Any())
             {
@@ -583,18 +583,42 @@ namespace SP.Service.Services
                     PersonId = personId
                 };
 
-                var orderDetails = _context.CalcSheets.AsEnumerable()
-                    .Join(data,
-                        b => b.Id,
-                        d => d.Id,
-                        (b, d) => new OrderDetail
-                        {
-                            Order = order,
-                            NomenclatureId = b.NomenclatureId,
-                            GasStationId = b.GasStationId,
-                            Quantity = d.Quantity
-                        })
-                    .ToArray();
+                OrderDetail[] orderDetails;
+                if (orderType == 1)
+                { 
+                    orderDetails = _context.CalcSheets
+                        .Include(b => b.Nomenclature)
+                        .Where(b => b.Nomenclature.UsefulLife <= 12)
+                        .AsEnumerable()
+                        .Join(data,
+                            b => b.Id,
+                            d => d.Id,
+                            (b, d) => new OrderDetail
+                            {
+                                Order = order,
+                                NomenclatureId = b.NomenclatureId,
+                                GasStationId = b.GasStationId,
+                                Quantity = d.Plan
+                            })
+                        .ToArray();
+                }
+                else
+                {
+                    orderDetails = _context.CalcSheets
+                        .Include(b => b.Nomenclature)
+                        .AsEnumerable()
+                        .Join(data,
+                            b => b.Id,
+                            d => d.Id,
+                            (b, d) => new OrderDetail
+                            {
+                                Order = order,
+                                NomenclatureId = b.NomenclatureId,
+                                GasStationId = b.GasStationId,
+                                Quantity = withBalance ? d.Quantity : d.Plan
+                            })
+                        .ToArray();
+                }
 
                 await _context.Orders.AddAsync(order);
                 await _context.OrderDetails.AddRangeAsync(orderDetails);
