@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using Microsoft.Extensions.Options;
 
 namespace SP.Service.Background
 {
     public interface IBackgroundCoordinator
     {
+        DatabaseOptions Options { get; }
         void AddOrUpdate(BackgroundServiceProgress progress);
         BackgroundServiceProgress Get(Guid key);
         bool Remove(Guid key);
@@ -17,6 +19,13 @@ namespace SP.Service.Background
     /// </summary>
     public class BackgroundCoordinator : IBackgroundCoordinator
     {
+        public DatabaseOptions Options { get; }
+
+        public BackgroundCoordinator(IOptions<DatabaseOptions> databaseOptions)
+        {
+            Options = databaseOptions.Value;
+        }
+
         private readonly ConcurrentDictionary<Guid, BackgroundServiceProgress> _services = new ConcurrentDictionary<Guid, BackgroundServiceProgress>();
 
         public void AddOrUpdate(BackgroundServiceProgress progress)

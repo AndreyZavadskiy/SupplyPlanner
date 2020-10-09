@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using CodingSeb.ExpressionEvaluator;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
+using SP.Core.Enum;
 using SP.Core.Master;
 using SP.Core.Model;
 using SP.Data;
@@ -22,7 +23,7 @@ namespace SP.Service.Background
         Task<bool> UploadAsync(Guid serviceKey, List<UploadedFile> files, string aspNetUserId);
         Task<bool> AutoMergeAsync(Guid serviceKey, string aspNetUserId);
         Task<bool> CalculateBalanceAsync(Guid serviceKey, string aspNetUserId, int? regionId, int? terrId, int? stationId,
-            int? groupId, int? nomId, int? usefulLife);
+            int? groupId, int? nomId, int[] usefulLife);
         Task<bool> CalculateOrderAsync(Guid serviceKey, int[] idList, string aspNetUserId);
     }
 
@@ -35,25 +36,13 @@ namespace SP.Service.Background
         private readonly IInventoryService _inventoryService;
         private readonly ApplicationDbContext _context;
 
-        public BackgroundInventoryService(IBackgroundCoordinator coordinator, IExcelParser parser, 
-            IMasterService masterService, IGasStationService stationService, IInventoryService inventoryService)
-        {
-            _coordinator = coordinator;
-            _parser = parser;
-            _masterService = masterService;
-            _stationService = stationService;
-            _inventoryService = inventoryService;
-        }
-
         public BackgroundInventoryService(IBackgroundCoordinator coordinator)
         {
             _coordinator = coordinator;
             _parser = new ExcelParser();
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-            // TODO использовать appsettings.json
             var options = optionsBuilder
-                //.UseSqlServer("Server=(local);Database=SupplyPlanner;Trusted_Connection=True;MultipleActiveResultSets=true")
-                .UseSqlServer("Server=.\\SQLEXPRESS;Database=SupplyPlanner;User Id=sp;Password=SupplyPl@nner;MultipleActiveResultSets=true")
+                .UseSqlServer(coordinator.Options.DefaultConnection)
                 .UseLoggerFactory(ApplicationDbContext.ApplicationDbLoggerFactory)
                 .EnableDetailedErrors()
                 .EnableSensitiveDataLogging()
@@ -81,18 +70,19 @@ namespace SP.Service.Background
             };
             
             _coordinator.AddOrUpdate(progressIndicator);
-
-            var person = await _masterService.GetPersonAsync(aspNetUserId);
-
-            int totalFiles = files.Count;
-            int fileCount = 1;
             StringBuilder processingLog = new StringBuilder();
 
-            foreach (var file in files)
+            try
             {
-                string stepMessageTemplate = "Парсинг файла [" + fileCount + "/" + totalFiles + "]: \"{0}\", лист: \"{1}\"";
-                try
+                var person = await _masterService.GetPersonAsync(aspNetUserId);
+
+                int totalFiles = files.Count;
+                int fileCount = 1;
+
+                foreach (var file in files)
                 {
+                    string stepMessageTemplate =
+                        "Парсинг файла [" + fileCount + "/" + totalFiles + "]: \"{0}\", лист: \"{1}\"";
                     List<ParsedInventory> parsedData = null;
                     // парсинг
                     using (var p = new ExcelPackage(file.FileInfo))
@@ -118,8 +108,8 @@ namespace SP.Service.Background
                             processingLog.AppendLine(stepMessage);
 
                             var wsColumns = colDefs
-                                    .Where(x => x.ColumnIndex != null)
-                                    .ToArray();
+                                .Where(x => x.ColumnIndex != null)
+                                .ToArray();
 
                             int lastRow = ws.Dimension.End.Row;
                             parsedData = new List<ParsedInventory>(lastRow - headerRow);
@@ -129,7 +119,8 @@ namespace SP.Service.Background
                                 var parsedRowData = _parser.ParseDataRow(ws, wsColumns, r);
                                 if (parsedRowData?.Count > 0)
                                 {
-                                    if (decimal.TryParse(parsedRowData["Quantity"], NumberStyles.Number, CultureInfo.CurrentCulture, out decimal qty))
+                                    if (decimal.TryParse(parsedRowData["Quantity"], NumberStyles.Number,
+                                        CultureInfo.CurrentCulture, out decimal qty))
                                     {
                                         var parsedInventory = new ParsedInventory
                                         {
@@ -144,7 +135,7 @@ namespace SP.Service.Background
                                         parsedData.Add(parsedInventory);
                                     }
                                 }
-                                
+
                                 if (r % 100 == 0)
                                 {
                                     parsingProgress.Progress = 100.0m * r / lastRow;
@@ -189,9 +180,12 @@ namespace SP.Service.Background
                                 processingLog.AppendLine("Обнаружены АЗС, которые отсутствуют в справочнике:");
                                 foreach (var st in emptyStations)
                                 {
-                                    processingLog.AppendLine($"Код: {st.StationCodeSAP}, Наименование: {st.StationPetronicsName}");
+                                    processingLog.AppendLine(
+                                        $"Код: {st.StationCodeSAP}, Наименование: {st.StationPetronicsName}");
                                 }
-                                processingLog.AppendLine("Вышеуказанные АЗС пропущены. Добавьте их в справочник и выполните загрузку остатков заново.");
+
+                                processingLog.AppendLine(
+                                    "Вышеуказанные АЗС пропущены. Добавьте их в справочник и выполните загрузку остатков заново.");
                             }
 
                             // стыковка справочника единиц измерения
@@ -226,9 +220,11 @@ namespace SP.Service.Background
 
                             if (emptyMeasureUnits.Any())
                             {
-                                processingLog.AppendLine("Обнаружены единицы измерения, которые отсутствуют в справочнике:");
+                                processingLog.AppendLine(
+                                    "Обнаружены единицы измерения, которые отсутствуют в справочнике:");
                                 processingLog.AppendLine(string.Join(", ", emptyMeasureUnits));
-                                processingLog.AppendLine("ТМЦ с вышеуказанным единицами измерения пропущены. Добавьте их в справочник и выполните загрузку остатков заново.");
+                                processingLog.AppendLine(
+                                    "ТМЦ с вышеуказанным единицами измерения пропущены. Добавьте их в справочник и выполните загрузку остатков заново.");
                             }
 
                             var inventoryData = dataWithMeasureUnits
@@ -251,7 +247,8 @@ namespace SP.Service.Background
                                 processingLog.AppendLine("Удаляем предыдущие остатки ТМЦ.");
                                 await _inventoryService.PurgeStageInventoryAsync(person.Id);
                                 processingLog.AppendLine("Выполняем сохранение остатков ТМЦ.");
-                                await _inventoryService.SaveStageInventoryAsync(inventoryData, serviceKey, person.Id);
+                                await _inventoryService.SaveStageInventoryAsync(inventoryData, serviceKey,
+                                    person.Id);
                                 processingLog.AppendLine($"Сохранено {inventoryData.Length} записей.");
                             }
                             else
@@ -261,36 +258,37 @@ namespace SP.Service.Background
                         }
                     }
 
+                    fileCount++;
                 }
-                catch (Exception ex)
+
+                var successFinalProgress = new BackgroundServiceProgress
                 {
-                    processingLog.AppendLine("Ошибка загрузки остатков ТМЦ. Проверьте лог приложения.");
+                    Key = serviceKey,
+                    Status = BackgroundServiceStatus.RanToCompletion,
+                    Step = "Загрузка завершена",
+                    Progress = 100,
+                    Log = processingLog.ToString()
+                };
 
-                    var badFinalProgress = new BackgroundServiceProgress
-                    {
-                        Key = serviceKey,
-                        Status = BackgroundServiceStatus.Faulted,
-                        Step = "Ошибка выполнения",
-                        Progress = 100,
-                        Log = processingLog.ToString()
-                    };
-                    _coordinator.AddOrUpdate(badFinalProgress);
-
-                    return false;
-                }
-
-                fileCount++;
+                _coordinator.AddOrUpdate(successFinalProgress);
             }
-
-            var successFinalProgress = new BackgroundServiceProgress
+            catch (Exception ex)
             {
-                Key = serviceKey,
-                Status = BackgroundServiceStatus.RanToCompletion,
-                Step = "Загрузка завершена",
-                Progress = 100,
-                Log = processingLog.ToString()
-            };
-            _coordinator.AddOrUpdate(successFinalProgress);
+                processingLog.AppendLine(ex.Message);
+                processingLog.AppendLine("Ошибка загрузки остатков ТМЦ. Проверьте лог приложения.");
+
+                var badFinalProgress = new BackgroundServiceProgress
+                {
+                    Key = serviceKey,
+                    Status = BackgroundServiceStatus.Faulted,
+                    Step = "Ошибка выполнения",
+                    Progress = 100,
+                    Log = processingLog.ToString()
+                };
+                _coordinator.AddOrUpdate(badFinalProgress);
+
+                return false;
+            }
 
             return true;
         }
@@ -368,21 +366,88 @@ namespace SP.Service.Background
             };
 
             _coordinator.AddOrUpdate(progressIndicator);
-
-            var person = await _masterService.GetPersonAsync(aspNetUserId);
             StringBuilder processingLog = new StringBuilder();
 
-            var data = await _context.Inventories
-                .Where(x => !x.IsBlocked && !x.NomenclatureId.HasValue)
-                .ToArrayAsync();
-            int totalRows = data.Length;
-
-            processingLog.AppendLine($"Найдено {totalRows} записей для автоматического объединения.");
-
-            if (totalRows == 0)
+            try
             {
-                processingLog.AppendLine("Выполнение завершено.");
-                var successNothingProgress = new BackgroundServiceProgress
+                var person = await _masterService.GetPersonAsync(aspNetUserId);
+
+                var data = await _context.Inventories
+                    .Where(x => !x.IsBlocked && !x.NomenclatureId.HasValue)
+                    .ToArrayAsync();
+                int totalRows = data.Length;
+
+                processingLog.AppendLine($"Найдено {totalRows} записей для автоматического объединения.");
+
+                if (totalRows == 0)
+                {
+                    processingLog.AppendLine("Выполнение завершено.");
+                    var successNothingProgress = new BackgroundServiceProgress
+                    {
+                        Key = serviceKey,
+                        Status = BackgroundServiceStatus.RanToCompletion,
+                        Step = "Загрузка завершена",
+                        Progress = 100,
+                        Log = processingLog.ToString()
+                    };
+                    _coordinator.AddOrUpdate(successNothingProgress);
+
+                    return true;
+                }
+
+                int currentRow = 0,
+                    linkedRows = 0;
+                while (true)
+                {
+                    var portion = data
+                        .Skip(currentRow)
+                        .Take(100)
+                        .ToArray();
+                    if (portion.Length == 0)
+                    {
+                        break;
+                    }
+
+                    // проверка по коду и наименованию в Номенклатуре
+                    var linkedInventories = _context.Nomenclatures.AsEnumerable()
+                        .Join(portion,
+                            n => n.PetronicsCode,
+                            p => p.Code,
+                            (n, p) => new
+                            {
+                                Inventory = p,
+                                NomenclatureId = n.Id,
+                                PetronicsName = n.PetronicsName
+                            }
+                        )
+                        .Where(z => z.Inventory.Name == z.PetronicsName)
+                        .ToArray();
+
+                    foreach (var rec in linkedInventories)
+                    {
+                        var dbRecord = rec.Inventory;
+                        dbRecord.NomenclatureId = rec.NomenclatureId;
+                        _context.Inventories.Attach(dbRecord);
+                        _context.Entry(dbRecord).Property(r => r.NomenclatureId).IsModified = true;
+                    }
+
+                    // TODO проверка по коду Петроникса в Номенклатуре
+                    // TODO проверка по наименованию в Номенклатуре
+                    // TODO проверка по коду и наименованию в ТМЦ, если есть аналогичная привязка и наименования в ТМЦ и Номенклатуре различаются
+
+                    await _context.SaveChangesAsync();
+
+                    linkedRows += linkedInventories.Length;
+
+                    currentRow += 100;
+                    progressIndicator.Progress = currentRow / totalRows;
+                    _coordinator.AddOrUpdate(progressIndicator);
+                }
+
+                processingLog.AppendLine($"Обработано {totalRows} записей ТМЦ.");
+                processingLog.AppendLine($"Состыковано {linkedRows} записей ТМЦ с Номенклатурой.");
+
+                var successFinalProgress = new BackgroundServiceProgress
                 {
                     Key = serviceKey,
                     Status = BackgroundServiceStatus.RanToCompletion,
@@ -390,72 +455,25 @@ namespace SP.Service.Background
                     Progress = 100,
                     Log = processingLog.ToString()
                 };
-                _coordinator.AddOrUpdate(successNothingProgress);
-
-                return true;
+                _coordinator.AddOrUpdate(successFinalProgress);
             }
-
-            int currentRow = 0,
-                linkedRows = 0;
-            while (true)
+            catch (Exception ex)
             {
-                var portion = data
-                    .Skip(currentRow)
-                    .Take(100)
-                    .ToArray();
-                if (portion.Length == 0)
+                processingLog.AppendLine(ex.Message);
+                processingLog.AppendLine("Ошибка автоматического объединения ТМЦ. Проверьте лог приложения.");
+
+                var badFinalProgress = new BackgroundServiceProgress
                 {
-                    break;
-                }
+                    Key = serviceKey,
+                    Status = BackgroundServiceStatus.Faulted,
+                    Step = "Ошибка выполнения",
+                    Progress = 100,
+                    Log = processingLog.ToString()
+                };
+                _coordinator.AddOrUpdate(badFinalProgress);
 
-                // проверка по коду и наименованию в Номенклатуре
-                var linkedInventories = _context.Nomenclatures.AsEnumerable()
-                    .Join(portion,
-                        n => n.PetronicsCode,
-                        p => p.Code, 
-                        (n, p) => new
-                        {
-                            Inventory = p,
-                            NomenclatureId = n.Id,
-                            PetronicsName = n.PetronicsName
-                        }
-                    )
-                    .Where(z => z.Inventory.Name == z.PetronicsName)
-                    .ToArray();
-
-                foreach (var rec in linkedInventories)
-                {
-                    var dbRecord = rec.Inventory;
-                    dbRecord.NomenclatureId = rec.NomenclatureId;
-                    _context.Inventories.Attach(dbRecord);
-                    _context.Entry(dbRecord).Property(r => r.NomenclatureId).IsModified = true;
-                }
-
-                // TODO проверка по коду Петроникса в Номенклатуре
-                // TODO проверка по наименованию в Номенклатуре
-                // TODO проверка по коду и наименованию в ТМЦ, если есть аналогичная привязка и наименования в ТМЦ и Номенклатуре различаются
-
-                await _context.SaveChangesAsync();
-
-                linkedRows += linkedInventories.Length;
-
-                currentRow += 100;
-                progressIndicator.Progress = currentRow / totalRows;
-                _coordinator.AddOrUpdate(progressIndicator);
+                return false;
             }
-
-            processingLog.AppendLine($"Обработано {totalRows} записей ТМЦ.");
-            processingLog.AppendLine($"Состыковано {linkedRows} записей ТМЦ с Номенклатурой.");
-
-            var successFinalProgress = new BackgroundServiceProgress
-            {
-                Key = serviceKey,
-                Status = BackgroundServiceStatus.RanToCompletion,
-                Step = "Загрузка завершена",
-                Progress = 100,
-                Log = processingLog.ToString()
-            };
-            _coordinator.AddOrUpdate(successFinalProgress);
 
             return true;
         }
@@ -467,7 +485,7 @@ namespace SP.Service.Background
         /// <param name="aspNetUserId"></param>
         /// <returns></returns>
         public async Task<bool> CalculateBalanceAsync(Guid serviceKey, string aspNetUserId, int? regionId, int? terrId, int? stationId, 
-            int? groupId, int? nomId, int? usefulLife)
+            int? groupId, int? nomId, int[] usefulLife)
         {
             // регистрируем в координаторе
             var progressIndicator = new BackgroundServiceProgress
@@ -478,176 +496,211 @@ namespace SP.Service.Background
             };
 
             _coordinator.AddOrUpdate(progressIndicator);
-
             StringBuilder processingLog = new StringBuilder();
-            processingLog.AppendLine("Расчет остатков Номенклатуры начат.");
 
-            var person = await _masterService.GetPersonAsync(aspNetUserId);
-            var nomenclatureQuery = _context.Nomenclatures.AsNoTracking();
-            if (nomId != null)
+            try
             {
-                nomenclatureQuery = nomenclatureQuery.Where(x => x.Id == nomId);
-            }
-            else if (groupId != null)
-            {
-                nomenclatureQuery = nomenclatureQuery.Where(x => x.NomenclatureGroupId == groupId);
-            }
-            if (usefulLife != null)
-            {
-                nomenclatureQuery = nomenclatureQuery.Where(x => x.UsefulLife == usefulLife);
-            }
-            var nomenclatureIdList = await nomenclatureQuery
-                .Where(x => x.IsActive)
-                .Select(x => x.Id)
-                .ToArrayAsync();
-            int totalNomenclatures = nomenclatureIdList.Length;
-            processingLog.AppendLine($"Количество Номенклатуры: {totalNomenclatures}");
+                processingLog.AppendLine("Расчет остатков Номенклатуры начат.");
 
-            var stationQuery = _context.GasStations.AsNoTracking();
-            if (stationId != null)
-            {
-                stationQuery = stationQuery.Where(x => x.Id == stationId);
-            }
-            else if (terrId != null)
-            {
-                stationQuery = stationQuery.Where(x => x.TerritoryId == terrId);
-            }
-            else if (regionId != null)
-            {
-                stationQuery = stationQuery
-                    .Include(x => x.Territory)
-                    .Where(x => x.Territory.ParentId == regionId);
-            }
-            var stations = await stationQuery
-                .Select(x => new
+                var person = await _masterService.GetPersonAsync(aspNetUserId);
+                var nomenclatureQuery = _context.Nomenclatures.AsNoTracking();
+                if (nomId != null)
                 {
-                    x.Id,
-                    x.StationNumber
-                })
-                .ToArrayAsync();
-            int totalStations = stations.Length;
-            processingLog.AppendLine($"Количество АЗС: {totalStations}");
+                    nomenclatureQuery = nomenclatureQuery.Where(x => x.Id == nomId);
+                }
+                else if (groupId != null)
+                {
+                    nomenclatureQuery = nomenclatureQuery.Where(x => x.NomenclatureGroupId == groupId);
+                }
 
-            int currentStation = 1;
-            // кол-в остатков для расчета = кол-во номенклатуры * кол-во АЗС
-            int totalRows = totalNomenclatures * totalStations;
-            int currentRow = 0;
+                foreach (var r in usefulLife)
+                {
+                    switch ((UsefulLifeRange)r)
+                    {
+                        case UsefulLifeRange.LessThanYear:
+                            nomenclatureQuery = nomenclatureQuery.Where(x => x.UsefulLife < 12);
+                            break;
+                        case UsefulLifeRange.Year:
+                            nomenclatureQuery = nomenclatureQuery.Where(x => x.UsefulLife == 12);
+                            break;
+                        case UsefulLifeRange.GreaterThanYear:
+                            nomenclatureQuery = nomenclatureQuery.Where(x => x.UsefulLife > 12);
+                            break;
+                    }
+                }
 
-            progressIndicator.Status = BackgroundServiceStatus.Running;
-
-            foreach (var station in stations)
-            {
-                progressIndicator.Step = $"АЗС {station.StationNumber} : {currentStation} из {totalStations}";
-                _coordinator.AddOrUpdate(progressIndicator);
-                processingLog.AppendLine($"АЗС {station.StationNumber}");
-
-                // предыдущие остатки
-                var oldBalances = await _context.CalcSheets.AsNoTracking()
-                    .Where(x => x.GasStationId == station.Id)
+                var nomenclatureIdList = await nomenclatureQuery
+                    .Where(x => x.IsActive)
+                    .Select(x => x.Id)
                     .ToArrayAsync();
-                // остатки по АЗС
-                var inventoryBalances = await _context.Inventories.AsNoTracking()
-                    .Where(x => x.GasStationId == station.Id && x.NomenclatureId.HasValue && !x.IsBlocked)
-                    .GroupBy(x => x.NomenclatureId)
+                int totalNomenclatures = nomenclatureIdList.Length;
+                processingLog.AppendLine($"Количество Номенклатуры: {totalNomenclatures}");
+
+                var stationQuery = _context.GasStations.AsNoTracking();
+                if (stationId != null)
+                {
+                    stationQuery = stationQuery.Where(x => x.Id == stationId);
+                }
+                else if (terrId != null)
+                {
+                    stationQuery = stationQuery.Where(x => x.TerritoryId == terrId);
+                }
+                else if (regionId != null)
+                {
+                    stationQuery = stationQuery
+                        .Include(x => x.Territory)
+                        .Where(x => x.Territory.ParentId == regionId);
+                }
+
+                var stations = await stationQuery
                     .Select(x => new
                     {
-                        NomenclatureId = x.Key,
-                        Quantity = x.Sum(i => i.Quantity)
+                        x.Id,
+                        x.StationNumber
                     })
                     .ToArrayAsync();
-                // обновляем существующие остатки
-                var existingBalances = oldBalances
-                    .Join(inventoryBalances,
-                        o => o.NomenclatureId,
-                        b => b.NomenclatureId,
-                        (o, b) => new
-                        {
-                            OldRecord = o,
-                            NewQuantity = b.Quantity
-                        })
-                    .Where(z => z.OldRecord.Quantity != z.NewQuantity)
-                    .ToArray();
-                foreach (var rec in existingBalances)
+                int totalStations = stations.Length;
+                processingLog.AppendLine($"Количество АЗС: {totalStations}");
+
+                int currentStation = 1;
+                // кол-в остатков для расчета = кол-во номенклатуры * кол-во АЗС
+                int totalRows = totalNomenclatures * totalStations;
+                int currentRow = 0;
+
+                progressIndicator.Status = BackgroundServiceStatus.Running;
+
+                foreach (var station in stations)
                 {
-                    DateTime now = DateTime.Now;
-                    var dbBalance = new CalcSheet
+                    progressIndicator.Step = $"АЗС {station.StationNumber} : {currentStation} из {totalStations}";
+                    _coordinator.AddOrUpdate(progressIndicator);
+                    processingLog.AppendLine($"АЗС {station.StationNumber}");
+
+                    // предыдущие остатки
+                    var oldBalances = await _context.CalcSheets.AsNoTracking()
+                        .Where(x => x.GasStationId == station.Id)
+                        .ToArrayAsync();
+                    // остатки по АЗС
+                    var inventoryBalances = await _context.Inventories.AsNoTracking()
+                        .Where(x => x.GasStationId == station.Id && x.NomenclatureId.HasValue && !x.IsBlocked)
+                        .GroupBy(x => x.NomenclatureId)
+                        .Select(x => new
+                        {
+                            NomenclatureId = x.Key,
+                            Quantity = x.Sum(i => i.Quantity)
+                        })
+                        .ToArrayAsync();
+                    // обновляем существующие остатки
+                    var existingBalances = oldBalances
+                        .Join(inventoryBalances,
+                            o => o.NomenclatureId,
+                            b => b.NomenclatureId,
+                            (o, b) => new
+                            {
+                                OldRecord = o,
+                                NewQuantity = b.Quantity
+                            })
+                        .Where(z => z.OldRecord.Quantity != z.NewQuantity)
+                        .ToArray();
+                    foreach (var rec in existingBalances)
                     {
-                        Id = rec.OldRecord.Id,
-                        Quantity = rec.NewQuantity,
-                        LastUpdate = now
-                    };
-                    _context.CalcSheets.Attach(dbBalance);
-                    _context.Entry(dbBalance).Property(r => r.Quantity).IsModified = true;
-                    _context.Entry(dbBalance).Property(r => r.LastUpdate).IsModified = true;
-
-                    var historyRecord = CalcSheetHistory.CreateHistoryRecord(rec.OldRecord, now);
-                    await _context.CalcSheetHistories.AddAsync(historyRecord);
-                }
-
-                await _context.SaveChangesAsync();
-                processingLog.AppendLine($"Обновлено записей: {existingBalances.Length}");
-
-                // добавляем новые остатки
-                var newNomenclatures = nomenclatureIdList
-                    .Where(n => !existingBalances.Any(b => b.OldRecord.NomenclatureId == n))
-                    .ToArray();
-                var newBalances = newNomenclatures
-                    .GroupJoin(inventoryBalances,
-                        n => n,
-                        i => i.NomenclatureId,
-                        (n, i) => new
+                        DateTime now = DateTime.Now;
+                        var dbBalance = new CalcSheet
                         {
-                            NomenclatureId = n,
-                            Balance = i
-                        })
-                    .SelectMany(
-                        x => x.Balance.DefaultIfEmpty(),
-                        (x, y) => new
-                        {
-                            x.NomenclatureId,
-                            Quantity = y == null ? 0.0m : y.Quantity
-                        })
-                    .ToArray();
-                var newRecords = new List<CalcSheet>();
-                foreach (var rec in newBalances)
-                {
-                    DateTime now = DateTime.Now;
-                    var newBalance = new CalcSheet
+                            Id = rec.OldRecord.Id,
+                            Quantity = rec.NewQuantity,
+                            LastUpdate = now
+                        };
+                        _context.CalcSheets.Attach(dbBalance);
+                        _context.Entry(dbBalance).Property(r => r.Quantity).IsModified = true;
+                        _context.Entry(dbBalance).Property(r => r.LastUpdate).IsModified = true;
+
+                        var historyRecord = CalcSheetHistory.CreateHistoryRecord(rec.OldRecord, now);
+                        await _context.CalcSheetHistories.AddAsync(historyRecord);
+                    }
+
+                    await _context.SaveChangesAsync();
+                    processingLog.AppendLine($"Обновлено записей: {existingBalances.Length}");
+
+                    // добавляем новые остатки
+                    var newNomenclatures = nomenclatureIdList
+                        .Where(n => !existingBalances.Any(b => b.OldRecord.NomenclatureId == n))
+                        .ToArray();
+                    var newBalances = newNomenclatures
+                        .GroupJoin(inventoryBalances,
+                            n => n,
+                            i => i.NomenclatureId,
+                            (n, i) => new
+                            {
+                                NomenclatureId = n,
+                                Balance = i
+                            })
+                        .SelectMany(
+                            x => x.Balance.DefaultIfEmpty(),
+                            (x, y) => new
+                            {
+                                x.NomenclatureId,
+                                Quantity = y == null ? 0.0m : y.Quantity
+                            })
+                        .ToArray();
+                    var newRecords = new List<CalcSheet>();
+                    foreach (var rec in newBalances)
                     {
-                        NomenclatureId = rec.NomenclatureId,
-                        GasStationId = station.Id,
-                        Quantity = rec.Quantity,
-                        LastUpdate = now
-                    };
-                    newRecords.Add(newBalance);
-                }
-                await _context.CalcSheets.AddRangeAsync(newRecords);
+                        DateTime now = DateTime.Now;
+                        var newBalance = new CalcSheet
+                        {
+                            NomenclatureId = rec.NomenclatureId,
+                            GasStationId = station.Id,
+                            Quantity = rec.Quantity,
+                            LastUpdate = now
+                        };
+                        newRecords.Add(newBalance);
+                    }
 
-                foreach (var rec in newRecords)
+                    await _context.CalcSheets.AddRangeAsync(newRecords);
+
+                    foreach (var rec in newRecords)
+                    {
+                        var historyRecord = CalcSheetHistory.CreateHistoryRecord(rec, rec.LastUpdate);
+                        await _context.CalcSheetHistories.AddAsync(historyRecord);
+                    }
+
+                    await _context.SaveChangesAsync();
+                    processingLog.AppendLine($"Добавлено записей: {newBalances.Length}");
+
+                    currentRow += totalNomenclatures;
+                    currentStation++;
+                    progressIndicator.Progress = 100.0m * currentRow / totalRows;
+                    _coordinator.AddOrUpdate(progressIndicator);
+                }
+
+                processingLog.AppendLine($"Расчет остатков Номенклатуры завершен");
+                var successFinalProgress = new BackgroundServiceProgress
                 {
-                    var historyRecord = CalcSheetHistory.CreateHistoryRecord(rec, rec.LastUpdate);
-                    await _context.CalcSheetHistories.AddAsync(historyRecord);
-                }
-
-                await _context.SaveChangesAsync();
-                processingLog.AppendLine($"Добавлено записей: {newBalances.Length}");
-
-                currentRow += totalNomenclatures;
-                currentStation++;
-                progressIndicator.Progress = 100.0m * currentRow / totalRows;
-                _coordinator.AddOrUpdate(progressIndicator);
+                    Key = serviceKey,
+                    Status = BackgroundServiceStatus.RanToCompletion,
+                    Step = "Расчет остатков завершен",
+                    Progress = 100,
+                    Log = processingLog.ToString()
+                };
+                _coordinator.AddOrUpdate(successFinalProgress);
             }
-
-            processingLog.AppendLine($"Расчет остатков Номенклатуры завершен");
-            var successFinalProgress = new BackgroundServiceProgress
+            catch (Exception ex)
             {
-                Key = serviceKey,
-                Status = BackgroundServiceStatus.RanToCompletion,
-                Step = "Расчет остатков завершен",
-                Progress = 100,
-                Log = processingLog.ToString()
-            };
-            _coordinator.AddOrUpdate(successFinalProgress);
+                processingLog.AppendLine(ex.Message);
+                processingLog.AppendLine("Ошибка автоматического объединения ТМЦ. Проверьте лог приложения.");
+
+                var badFinalProgress = new BackgroundServiceProgress
+                {
+                    Key = serviceKey,
+                    Status = BackgroundServiceStatus.Faulted,
+                    Step = "Ошибка выполнения",
+                    Progress = 100,
+                    Log = processingLog.ToString()
+                };
+                _coordinator.AddOrUpdate(badFinalProgress);
+
+                return false;
+            }
 
             return true;
         }
@@ -670,51 +723,71 @@ namespace SP.Service.Background
             };
 
             _coordinator.AddOrUpdate(progressIndicator);
-
             StringBuilder processingLog = new StringBuilder();
-            processingLog.AppendLine("Расчет заказа ТМЦ начат.");
 
-            var person = await _masterService.GetPersonAsync(aspNetUserId);
-
-            int currentRow = 0;
-            int totalRows = idList.Length;
-
-            progressIndicator.Status = BackgroundServiceStatus.Running;
-            _coordinator.AddOrUpdate(progressIndicator);
-
-            while (true)
+            try
             {
-                var portion = idList
-                    .Skip(currentRow)
-                    .Take(100)
-                    .ToArray();
-                if (portion.Length == 0)
-                {
-                    break;
-                }
+                processingLog.AppendLine("Расчет потребности в заказе ТМЦ начат.");
 
-                foreach (var id in portion)
-                {
-                    await CalculateSingleOrder(id);
-                }
+                var person = await _masterService.GetPersonAsync(aspNetUserId);
 
-                await _context.SaveChangesAsync();
+                int currentRow = 0;
+                int totalRows = idList.Length;
 
-                currentRow += 100;
-                progressIndicator.Progress = 100.0m * currentRow / totalRows;
+                progressIndicator.Status = BackgroundServiceStatus.Running;
                 _coordinator.AddOrUpdate(progressIndicator);
-            }
 
-            processingLog.AppendLine($"Расчет заказа ТМЦ завершен");
-            var successFinalProgress = new BackgroundServiceProgress
+                while (true)
+                {
+                    var portion = idList
+                        .Skip(currentRow)
+                        .Take(100)
+                        .ToArray();
+                    if (portion.Length == 0)
+                    {
+                        break;
+                    }
+
+                    foreach (var id in portion)
+                    {
+                        await CalculateSingleOrder(id);
+                    }
+
+                    await _context.SaveChangesAsync();
+
+                    currentRow += 100;
+                    progressIndicator.Progress = 100.0m * currentRow / totalRows;
+                    _coordinator.AddOrUpdate(progressIndicator);
+                }
+
+                processingLog.AppendLine($"Расчет потребности в заказе ТМЦ завершен");
+                var successFinalProgress = new BackgroundServiceProgress
+                {
+                    Key = serviceKey,
+                    Status = BackgroundServiceStatus.RanToCompletion,
+                    Step = "Расчет потребности в заказе ТМЦ завершен",
+                    Progress = 100,
+                    Log = processingLog.ToString()
+                };
+                _coordinator.AddOrUpdate(successFinalProgress);
+            }
+            catch (Exception ex)
             {
-                Key = serviceKey,
-                Status = BackgroundServiceStatus.RanToCompletion,
-                Step = "Расчет заказа ТМЦ завершен",
-                Progress = 100,
-                Log = processingLog.ToString()
-            };
-            _coordinator.AddOrUpdate(successFinalProgress);
+                processingLog.AppendLine(ex.Message);
+                processingLog.AppendLine("Ошибка расчета потребности в заказе ТМЦ. Проверьте лог приложения.");
+
+                var badFinalProgress = new BackgroundServiceProgress
+                {
+                    Key = serviceKey,
+                    Status = BackgroundServiceStatus.Faulted,
+                    Step = "Ошибка выполнения",
+                    Progress = 100,
+                    Log = processingLog.ToString()
+                };
+                _coordinator.AddOrUpdate(badFinalProgress);
+
+                return false;
+            }
 
             return true;
         }

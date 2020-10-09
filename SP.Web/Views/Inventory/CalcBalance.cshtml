@@ -41,8 +41,9 @@
                 <select id="GasStationList" class="col-8"></select>
             </div>
             <div class="form-group row col-6">
-                <label for="UsefulLife" class="control-label col-4">СПИ</label>
-                <input id="UsefulLife" type="number" class="form-control col-4" />
+                <label for="UserfulLifeList" class="control-label col-4">СПИ</label>
+                <select id="UserfulLifeList" multiple="multiple" data-placeholder="Выберите значения..."
+                        asp-items="ViewBag.UserfulLifeList" class="col-8"></select>
             </div>
         </div>
         <div class="form-row button-row">
@@ -89,6 +90,8 @@
     <script>
         var intervalId;
         $(document).ready(function () {
+            $('#UserfulLifeList').chosen();
+
             $('#submit').on('click', function (evt) {
                 evt.preventDefault();
                 var hasErrors = false;
@@ -104,7 +107,7 @@
                     station: $('#GasStationList').val(),
                     group: $('#NomenclatureGroupList').val(),
                     nom: $('#NomenclatureList').val(),
-                    useful: $('#UsefulLife').val()
+                    useful: $('#UsefulLife').val().join()
                 };
                 console.log(data);
 

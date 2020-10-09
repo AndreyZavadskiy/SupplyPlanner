@@ -25,7 +25,7 @@ namespace SP.Service.Services
 
         Task<RegionalStructureModel> GetRegionalStructureItemAsync(int id);
         Task<IEnumerable<DictionaryListItem>> SelectRegionAsync();
-        Task<IEnumerable<DictionaryListItem>> SelectTerritoryAsync(int? parent);
+        Task<IEnumerable<DictionaryListItem>> SelectTerritoryAsync(int[] regions);
         Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveRegionAsync(RegionalStructureModel model);
         Task<IEnumerable<TerritoryListItem>> GetTerritoryListAsync();
 
@@ -160,9 +160,9 @@ namespace SP.Service.Services
             return list;
         }
 
-        public async Task<IEnumerable<DictionaryListItem>> SelectTerritoryAsync(int? parent)
+        public async Task<IEnumerable<DictionaryListItem>> SelectTerritoryAsync(int[] regions)
         {
-            if (parent == null)
+            if (regions == null)
             {
                 var fullList = await _context.RegionStructure.AsNoTracking()
                     .Where(x => x.ParentId.HasValue )
@@ -179,7 +179,7 @@ namespace SP.Service.Services
             }
 
             var list = await _context.RegionStructure.AsNoTracking()
-                .Where(x => x.ParentId == parent)
+                .Where(x => x.ParentId != null && regions.Contains(x.ParentId.Value))
                 .Select(x => new DictionaryListItem
                 {
                     Id = x.Id,

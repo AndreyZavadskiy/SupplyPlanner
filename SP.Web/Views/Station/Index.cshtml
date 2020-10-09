@@ -5,15 +5,18 @@
 <h1>Справочник АЗС</h1>
 
 <section>
-    <div class="col-xl-9">
+    <div class="col-xl-12">
         <div class="zero-gutters">
-            <div class="form-group row col-6">
-                <label for="RegionList" class="control-label zero-gutters col-3">Регион</label>
-                <select id="RegionList" asp-items="ViewBag.RegionList" class="col-9" onchange="changeRegion();"></select>
+            <div class="form-group row col-12">
+                <label for="RegionList" class="control-label zero-gutters col-1">Регион</label>
+                <select id="RegionList" multiple="multiple" data-placeholder="Выберите регионы..."
+                        asp-items="ViewBag.RegionList" class="col-11" onchange="changeRegion();">
+                </select>
             </div>
-            <div class="form-group row col-6">
-                <label for="TerritoryList" class="control-label zero-gutters col-3">Территория</label>
-                <select id="TerritoryList" class="col-9" onchange="changeTerritory();"></select>
+            <div class="form-group row col-12">
+                <label for="TerritoryList" class="control-label zero-gutters col-1">Территория</label>
+                <select id="TerritoryList" multiple="multiple"  data-placeholder="Выберите территории..."
+                        class="col-11" onchange="changeTerritory();"></select>
             </div>
         </div>
     </div>
@@ -90,11 +93,10 @@
             terr = '@ViewData["SelectedTerritory"]';
             var regionList = $('#RegionList');
             if (region) {
-                regionList.val(region);
-            } else {
-                regionList.prop('selectedIndex', 0);
-                region = regionList.val();
+                // TODO: восстановление выбранных элементов
             }
+            $('#RegionList').chosen();
+            $('#TerritoryList').chosen();
             initializeDataTable();
             changeRegion(terr);
         });
@@ -116,12 +118,13 @@
                 fixedColumns: {
                     leftColumns: 7
                 },
+                processing: true,
                 ajax: {
                     url: '/Station/LoadList',
                     type: 'POST',
                     data: function (d) {
-                        d.region = $('#RegionList').val();
-                        d.terr = $('#TerritoryList').val();
+                        d.region = $('#RegionList').val().join();
+                        d.terr = $('#TerritoryList').val().join();
                     },
                     dataType: 'json'
                 },
@@ -232,16 +235,16 @@
         }
 
         function changeRegion(terr) {
-            debugger;
             var selectedRegion = $('#RegionList').val();
             var terrList = $('#TerritoryList');
             terrList.empty();
             if (selectedRegion === '') {
+                terrList.trigger("chosen:updated");
                 terrList.trigger('change');
                 return;
             }
             var url = '/Region/LoadTerritories';
-            var requestData = { parent: selectedRegion };
+            var requestData = { parent: selectedRegion.join() };
             $.get(url,
                 requestData,
                 function (data) {
@@ -255,15 +258,15 @@
                         });
 
                     if (terr) {
-                        terrList.val(terr);
-                    } else {
-                        terrList.prop('selectedIndex', 0);
+                        // TODO: восстановление выбранных элементов
                     }
+                    terrList.trigger("chosen:updated");
                     terrList.trigger('change');
                 });
         }
 
         function changeTerritory() {
+            debugger;
             if ($.fn.DataTable.isDataTable('#StationGrid')) {
                 $('#StationGrid').DataTable().ajax.reload();
             } else {

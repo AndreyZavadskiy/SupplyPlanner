@@ -26,18 +26,14 @@ namespace SP.Web.Controllers
             _appLogger = appLogger;
         }
 
-        public async Task<IActionResult> Index(int? region, int? terr)
+        public async Task<IActionResult> Index(string region, string terr)
         {
             await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "gasstation", "Открыт справочник АЗС.");
 
             var regions = await _masterService.SelectRegionAsync();
             var list = new SelectList(regions, "Id", "Name").ToList();
-            list.Insert(0, new SelectListItem("-- ВСЕ --", ""));
+            list.Add(new SelectListItem("ВСЕ", Int32.MaxValue.ToString()));
             ViewData["RegionList"] = list;
-            if (region == null && list.Count > 1)
-            {
-                region = Convert.ToInt32(list[1].Value);
-            }
             ViewData["SelectedRegion"] = region;
             ViewData["SelectedTerritory"] = terr;
 
@@ -45,16 +41,21 @@ namespace SP.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoadList(int? region, int? terr)
+        public async Task<IActionResult> LoadList(string region, string terr)
         {
-            var stations = await GetGasStationListItems(region, terr);
+            int[] regions = region.SplitToIntArray();
+            int[] territories = terr.SplitToIntArray();
+
+            var stations = await GetGasStationListItems(regions, territories);
 
             return Json(new { data = stations });
         }
 
-        public async Task<IActionResult> LoadStations(int? region, int? terr)
+        public async Task<IActionResult> LoadStations(string region, string terr)
         {
-            var list = await GetGasStationListItems(region, terr);
+            int[] regions = region.SplitToIntArray();
+            int[] territories = terr.SplitToIntArray();
+            var list = await GetGasStationListItems(regions, territories);
             var stations = list
                 .Select(x => new DictionaryListItem
                 {
@@ -65,20 +66,20 @@ namespace SP.Web.Controllers
             return Json(stations);
         }
 
-        private async Task<IEnumerable<GasStationListItem>> GetGasStationListItems(int? region, int? terr)
+        private async Task<IEnumerable<GasStationListItem>> GetGasStationListItems(int[] regions, int[] territories)
         {
             IEnumerable<GasStationListItem> stations;
-            if (region == null)
-            {
-                stations = await _gasStationService.GetGasStationListAsync(null);
-            }
-            else if (terr == null)
+            if (regions == null && territories == null)
             {
                 stations = new GasStationListItem[0];
             }
+            else if (regions != null && regions.Contains(Int32.MaxValue))
+            {
+                stations = await _gasStationService.GetGasStationListAsync(null, null);
+            }
             else
             {
-                stations = await _gasStationService.GetGasStationListAsync(terr);
+                stations = await _gasStationService.GetGasStationListAsync(regions, territories);
             }
 
             return stations;
@@ -104,7 +105,7 @@ namespace SP.Web.Controllers
         {
             var regionList = await _masterService.SelectRegionAsync();
             ViewData["RegionList"] = new SelectList(regionList, "Id", "Name");
-            var territoryList = await _masterService.SelectTerritoryAsync(model.RegionId);
+            var territoryList = await _masterService.SelectTerritoryAsync(new int[] { model.RegionId });
             ViewData["TerritoryList"] = new SelectList(territoryList, "Id", "Name");
             var settlementList = await _masterService.GetDictionaryListAsync<Settlement>();
             ViewData["SettlementList"] = new SelectList(settlementList, "Id", "Name");

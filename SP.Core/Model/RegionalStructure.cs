@@ -27,5 +27,8 @@ namespace SP.Core.Model
         /// Является активным
         /// </summary>
         public bool IsActive { get; set; }
+
+        [ForeignKey("ParentId")]
+        public RegionalStructure Parent { get; set; }
     }
 }

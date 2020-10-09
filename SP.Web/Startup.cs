@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SP.Data;
+using SP.Service;
 using SP.Service.Background;
 using SP.Service.Excel;
 using SP.Service.Services;
@@ -45,6 +46,7 @@ namespace SP.Web
                 })
                 .AddRoles<ApplicationRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+            services.Configure<DatabaseOptions>(Configuration.GetSection("ConnectionStrings"));
             services.AddSingleton<IBackgroundCoordinator, BackgroundCoordinator>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IMasterService, MasterService>();

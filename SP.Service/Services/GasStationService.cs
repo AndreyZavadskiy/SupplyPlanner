@@ -12,7 +12,7 @@ namespace SP.Service.Services
 {
     public interface IGasStationService
     {
-        Task<IEnumerable<GasStationListItem>> GetGasStationListAsync(int? territoryId);
+        Task<IEnumerable<GasStationListItem>> GetGasStationListAsync(int[] regions, int[] territories);
         Task<IEnumerable<GasStationIdentification>> GetGasStationIdentificationListAsync();
         Task<GasStationModel> GetGasStationAsync(int id);
         Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveGasStationAsync(GasStationModel model);
@@ -27,62 +27,74 @@ namespace SP.Service.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<GasStationListItem>> GetGasStationListAsync(int? territoryId)
+        public async Task<IEnumerable<GasStationListItem>> GetGasStationListAsync(int[] regions, int[] territories)
         {
-            var query = _context.GasStations.AsNoTracking();
-            if (territoryId != null)
+            var query = _context.GasStations.AsNoTracking()
+                .Include(x => x.Territory)
+                .Include(x => x.Territory.Parent)
+                .Include(x => x.Settlement)
+                .Include(x => x.StationLocation)
+                .Include(x => x.StationStatus)
+                .Include(x => x.ServiceLevel)
+                .Include(x => x.OperatorRoomFormat)
+                .Include(x => x.ManagementSystem)
+                .Include(x => x.TradingHallOperatingMode)
+                .Include(x => x.ClientRestroom)
+                .Include(x => x.CashboxLocation)
+                .Include(x => x.TradingHallSize)
+                .AsQueryable();
+            if (regions != null)
             {
-                query = query.Where(x => x.TerritoryId == territoryId.Value);
+                var regionTerritories = _context.RegionStructure.AsEnumerable()
+                    .Where(x => x.ParentId != null && regions.Contains(x.ParentId.Value))
+                    .Select(x => x.Id)
+                    .ToArray();
+                query = query.Where(x => regionTerritories.Contains(x.TerritoryId));
+            }
+            if (territories != null)
+            {
+                query = query.Where(x => territories.Contains(x.TerritoryId));
             }
 
-            var stations = await query
-                .Join(_context.RegionStructure.AsNoTracking(),
-                    s => s.Territory.ParentId,
-                    r => r.Id,
-                    (s, r) => new
-                    {
-                        Station = s,
-                        RegionId = r.Id,
-                        RegionName = r.Name
-                    })
+            var stations = query.AsEnumerable()
                 .Select(x => new GasStationListItem
                 {
-                    Id = x.Station.Id,
-                    RegionId = x.RegionId,
-                    RegionName = x.RegionName,
-                    TerritoryId = x.Station.TerritoryId,
-                    TerritoryName = x.Station.Territory.Name,
-                    CodeKSSS = x.Station.CodeKSSS,
-                    CodeSAP = x.Station.CodeSAP,
-                    StationNumber = x.Station.StationNumber,
-                    SettlementName = x.Station.Settlement.Name,
-                    Address = x.Station.Address,
-                    StationLocationName = x.Station.StationLocation.Name,
-                    StationStatusName = x.Station.StationStatus.Name,
-                    ServiceLevelName = x.Station.ServiceLevel.Name,
-                    OperatorRoomFormatName = x.Station.OperatorRoomFormat.Name,
-                    ManagementSystemName = x.Station.ManagementSystem.Name,
-                    TradingHallOperatingModeName = x.Station.TradingHallOperatingMode.Name,
-                    ClientRestroomName = x.Station.ClientRestroom.Name,
-                    CashboxLocationName = x.Station.CashboxLocation.Name,
-                    TradingHallSizeName = x.Station.TradingHallSize.Name,
-                    CashboxTotal = x.Station.CashboxTotal,
-                    PersonnelPerDay = x.Station.PersonnelPerDay,
-                    FuelDispenserTotal = x.Station.FuelDispenserTotal,
-                    ClientRestroomTotal = x.Station.ClientRestroomTotal,
-                    TradingHallArea = x.Station.TradingHallArea,
-                    ChequePerDay = x.Station.ChequePerDay,
-                    RevenueAvg = x.Station.RevenueAvg,
-                    HasSibilla = x.Station.HasSibilla,
-                    HasBakery = x.Station.HasBakery,
-                    HasCakes = x.Station.HasCakes,
-                    DeepFryTotal = x.Station.DeepFryTotal,
-                    HasMarmite = x.Station.HasMarmite,
-                    HasKitchen = x.Station.HasKitchen,
-                    CoffeeMachineTotal = x.Station.CoffeeMachineTotal,
-                    DishWashingMachineTotal = x.Station.DishWashingMachineTotal
+                    Id = x.Id,
+                    RegionId = x.Territory.ParentId.Value,
+                    RegionName = x.Territory.Parent?.Name,
+                    TerritoryId = x.TerritoryId,
+                    TerritoryName = x.Territory?.Name,
+                    CodeKSSS = x.CodeKSSS,
+                    CodeSAP = x.CodeSAP,
+                    StationNumber = x.StationNumber,
+                    SettlementName = x.Settlement?.Name,
+                    Address = x.Address,
+                    StationLocationName = x.StationLocation?.Name,
+                    StationStatusName = x.StationStatus?.Name,
+                    ServiceLevelName = x.ServiceLevel?.Name,
+                    OperatorRoomFormatName = x.OperatorRoomFormat?.Name,
+                    ManagementSystemName = x.ManagementSystem?.Name,
+                    TradingHallOperatingModeName = x.TradingHallOperatingMode?.Name,
+                    ClientRestroomName = x.ClientRestroom?.Name,
+                    CashboxLocationName = x.CashboxLocation?.Name,
+                    TradingHallSizeName = x.TradingHallSize?.Name,
+                    CashboxTotal = x.CashboxTotal,
+                    PersonnelPerDay = x.PersonnelPerDay,
+                    FuelDispenserTotal = x.FuelDispenserTotal,
+                    ClientRestroomTotal = x.ClientRestroomTotal,
+                    TradingHallArea = x.TradingHallArea,
+                    ChequePerDay = x.ChequePerDay,
+                    RevenueAvg = x.RevenueAvg,
+                    HasSibilla = x.HasSibilla,
+                    HasBakery = x.HasBakery,
+                    HasCakes = x.HasCakes,
+                    DeepFryTotal = x.DeepFryTotal,
+                    HasMarmite = x.HasMarmite,
+                    HasKitchen = x.HasKitchen,
+                    CoffeeMachineTotal = x.CoffeeMachineTotal,
+                    DishWashingMachineTotal = x.DishWashingMachineTotal
                 })
-                .ToArrayAsync();
+                .ToArray();
 
             return stations;
         }

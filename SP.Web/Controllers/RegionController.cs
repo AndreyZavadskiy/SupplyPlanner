@@ -57,9 +57,10 @@ namespace SP.Web.Controllers
         /// </summary>
         /// <param name="parent"></param>
         /// <returns></returns>
-        public async Task<IActionResult> LoadTerritoriesAsync(int? parent)
+        public async Task<IActionResult> LoadTerritoriesAsync(string parent)
         {
-            var territories = await _masterService.SelectTerritoryAsync(parent);
+            var regions = parent.SplitToIntArray();
+            var territories = await _masterService.SelectTerritoryAsync(regions);
 
             return Json(territories);
         }

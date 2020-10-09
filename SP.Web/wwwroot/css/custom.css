@@ -74,6 +74,10 @@ ul.pagination > li:first-child {
     background-color: whitesmoke;
 }
 
+.dataTables_processing {
+    background-color: #6c757d !important;
+}
+
 /*  dropdown menu   */
 /* Dropdown Button */
 .dropbtn {

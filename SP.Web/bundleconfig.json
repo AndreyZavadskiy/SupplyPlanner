@@ -2,6 +2,7 @@
   {
     "outputFileName": "wwwroot/bundles/site.bundle.css",
     "inputFiles": [
+      "wwwroot/lib/chosen/chosen.css",
       "wwwroot/css/site.css",
       "wwwroot/css/custom.css"
     ]
@@ -9,6 +10,7 @@
   {
     "outputFileName": "wwwroot/bundles/site.bundle.js",
     "inputFiles": [
+      "wwwroot/lib/chosen/chosen.jquery.js",
       "wwwroot/js/site.js"
     ],
     "sourceMap": false
