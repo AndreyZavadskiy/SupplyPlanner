@@ -15,7 +15,7 @@
             </div>
             <div class="form-group row col-12">
                 <label for="TerritoryList" class="control-label zero-gutters col-1">Территория</label>
-                <select id="TerritoryList" multiple="multiple"  data-placeholder="Выберите территории..."
+                <select id="TerritoryList" multiple="multiple" data-placeholder="Выберите территории..."
                         class="col-11" onchange="changeTerritory();"></select>
             </div>
         </div>
@@ -89,16 +89,16 @@
         var region;
         var terr;
         $(document).ready(function () {
-            region = '@ViewData["SelectedRegion"]';
-            terr = '@ViewData["SelectedTerritory"]';
+            var regions = '@ViewData["SelectedRegions"]';
+            var terrs = '@ViewData["SelectedTerritories"]';
             var regionList = $('#RegionList');
-            if (region) {
-                // TODO: восстановление выбранных элементов
+            if (regions) {
+                selectOptions(regionList, regions);
             }
-            $('#RegionList').chosen();
+            regionList.chosen();
             $('#TerritoryList').chosen();
             initializeDataTable();
-            changeRegion(terr);
+            changeRegion(terrs);
         });
 
         function initializeDataTable() {
@@ -123,8 +123,8 @@
                     url: '/Station/LoadList',
                     type: 'POST',
                     data: function (d) {
-                        d.region = $('#RegionList').val().join();
-                        d.terr = $('#TerritoryList').val().join();
+                        d.regions = $('#RegionList').val().join();
+                        d.terrs = $('#TerritoryList').val().join();
                     },
                     dataType: 'json'
                 },
@@ -133,7 +133,8 @@
                     { defaultContent: '' },
                     {
                         render: function (data, type, full, meta) {
-                            return '<a href="/Station/' + full.id + '"><img src="/images/pencil-square.svg"/></a>';
+                            var url = '/Station/' + full.id + '?regions=' + $('#RegionList').val().join() + '&terrs=' + $('#TerritoryList').val().join();
+                            return '<a href="' + url + '"><img src="/images/pencil-square.svg"/></a>';
                         }
                     },
                     { data: 'regionId' },
@@ -235,16 +236,17 @@
         }
 
         function changeRegion(terr) {
-            var selectedRegion = $('#RegionList').val();
             var terrList = $('#TerritoryList');
+            var selectedRegions = $('#RegionList').val();
+            var selectedTerrs = terr ? terr : terrList.val().join();
             terrList.empty();
-            if (selectedRegion === '') {
+            if (selectedRegions.length === 0) {
                 terrList.trigger("chosen:updated");
                 terrList.trigger('change');
                 return;
             }
             var url = '/Region/LoadTerritories';
-            var requestData = { parent: selectedRegion.join() };
+            var requestData = { parent: selectedRegions.join() };
             $.get(url,
                 requestData,
                 function (data) {
@@ -257,28 +259,34 @@
                                 }));
                         });
 
-                    if (terr) {
-                        // TODO: восстановление выбранных элементов
-                    }
+                    selectOptions(terrList, selectedTerrs);
                     terrList.trigger("chosen:updated");
                     terrList.trigger('change');
                 });
         }
 
         function changeTerritory() {
-            debugger;
             if ($.fn.DataTable.isDataTable('#StationGrid')) {
                 $('#StationGrid').DataTable().ajax.reload();
             } else {
                 initializeDataTable();
             }
 
-            terr = $('#TerritoryList').val();
-            history.replaceState(null, '', '/Station?region=' + $('#RegionList').val() + '&terr=' + terr);
+            history.replaceState(null, '', '/Station?regions=' + $('#RegionList').val().join() + '&terrs=' + $('#TerritoryList').val().join());
         }
 
         function createGasStation() {
-            window.location = '/Station/Create?region=' + $('#RegionList').val() + '&terr=' + $('#TerritoryList').val();
+            window.location = '/Station/Create?regions=' + $('#RegionList').val().join() + '&terrs=' + $('#TerritoryList').val().join();
+        }
+
+        function selectOptions(control, values) {
+            if (values.length === 0) {
+                $(control).val('');
+                return;
+            }
+
+            var selected = values.split(',');
+            $(control).val(selected);
         }
     </script>
 }

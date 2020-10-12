@@ -26,27 +26,27 @@ namespace SP.Web.Controllers
             _appLogger = appLogger;
         }
 
-        public async Task<IActionResult> Index(string region, string terr)
+        public async Task<IActionResult> Index(string regions, string terrs)
         {
             await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "gasstation", "Открыт справочник АЗС.");
 
-            var regions = await _masterService.SelectRegionAsync();
-            var list = new SelectList(regions, "Id", "Name").ToList();
+            var regionList = await _masterService.SelectRegionAsync();
+            var list = new SelectList(regionList, "Id", "Name").ToList();
             list.Add(new SelectListItem("ВСЕ", Int32.MaxValue.ToString()));
             ViewData["RegionList"] = list;
-            ViewData["SelectedRegion"] = region;
-            ViewData["SelectedTerritory"] = terr;
+            ViewData["SelectedRegions"] = regions;
+            ViewData["SelectedTerritories"] = terrs;
 
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoadList(string region, string terr)
+        public async Task<IActionResult> LoadList(string regions, string terrs)
         {
-            int[] regions = region.SplitToIntArray();
-            int[] territories = terr.SplitToIntArray();
+            int[] regionIdList = regions.SplitToIntArray();
+            int[] terrIdList = terrs.SplitToIntArray();
 
-            var stations = await GetGasStationListItems(regions, territories);
+            var stations = await GetGasStationListItems(regionIdList, terrIdList);
 
             return Json(new { data = stations });
         }
@@ -87,7 +87,7 @@ namespace SP.Web.Controllers
 
         [Route("Station/{id}")]
 
-        public async Task<IActionResult> GetAsync(int id)
+        public async Task<IActionResult> GetAsync(int id, string regions, string terrs)
         {
             var station = await _gasStationService.GetGasStationAsync(id);
             if (station == null)
@@ -98,10 +98,10 @@ namespace SP.Web.Controllers
             await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "gasstation",
                 $"Открыта запись АЗС {station.StationNumber}");
 
-            return await PrepareGasStationView(station);
+            return await PrepareGasStationView(station, regions, terrs);
         }
 
-        private async Task<IActionResult> PrepareGasStationView(GasStationModel model)
+        private async Task<IActionResult> PrepareGasStationView(GasStationModel model, string regions, string terrs)
         {
             var regionList = await _masterService.SelectRegionAsync();
             ViewData["RegionList"] = new SelectList(regionList, "Id", "Name");
@@ -128,22 +128,17 @@ namespace SP.Web.Controllers
             var tradingHallSizeList = await _masterService.GetDictionaryListAsync<TradingHallSize>();
             ViewData["TradingHallSizeList"] = new SelectList(tradingHallSizeList, "Id", "Name");
 
-            ViewData["SelectedRegion"] = model.RegionId;
-            ViewData["SelectedTerritory"] = model.TerritoryId;
+            ViewData["SelectedRegions"] = regions;
+            ViewData["SelectedTerritories"] = terrs;
 
             return View("GasStation", model);
         }
 
         [Route("Station/Create")]
-        public async Task<IActionResult> CreateAsync(int region, int terr)
+        public async Task<IActionResult> CreateAsync(string regions, string terrs)
         {
-            var model = new GasStationModel
-            {
-                RegionId = region,
-                TerritoryId = terr
-            };
-
-            return await PrepareGasStationView(model);
+            var model = new GasStationModel();
+            return await PrepareGasStationView(model, regions, terrs);
         }
 
         /// <summary>
@@ -152,9 +147,9 @@ namespace SP.Web.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> EditAsync([FromForm] GasStationModel model)
+        public async Task<IActionResult> EditAsync([FromForm] GasStationModel model, [FromForm] string regions, [FromForm] string terrs)
         {
-            return await SaveGasStation(model, actionName: "Index");
+            return await SaveGasStation(model, regions, terrs, actionName: "Index");
         }
 
         /// <summary>
@@ -163,9 +158,9 @@ namespace SP.Web.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> SaveAsync([FromForm] GasStationModel model)
+        public async Task<IActionResult> SaveAsync([FromForm] GasStationModel model, [FromForm] string regions, [FromForm] string terrs)
         {
-            return await SaveGasStation(model);
+            return await SaveGasStation(model, regions, terrs);
         }
 
         /// <summary>
@@ -174,13 +169,13 @@ namespace SP.Web.Controllers
         /// <param name="model"></param>
         /// <param name="actionName"></param>
         /// <returns></returns>
-        private async Task<IActionResult> SaveGasStation(GasStationModel model, string actionName = null)
+        private async Task<IActionResult> SaveGasStation(GasStationModel model, string regions, string terrs, string actionName = null)
         {
             if (!ModelState.IsValid)
             {
                 TempData["ActionMessage"] = "Проверьте правильность заполнения полей.";
                 TempData["ActionMessageClass"] = "alert-danger";
-                return await PrepareGasStationView(model);
+                return await PrepareGasStationView(model, regions, terrs);
             }
 
             string actionVerb = model.Id == 0 ? "Создана" : "Изменена"; 
@@ -191,7 +186,7 @@ namespace SP.Web.Controllers
                 string errorMessage = string.Join("<br/>", result.Errors);
                 TempData["ActionMessage"] = $"Ошибки при сохранении записи:<br/>{errorMessage}";
                 TempData["ActionMessageClass"] = "alert-danger";
-                return await PrepareGasStationView(model);
+                return await PrepareGasStationView(model, regions, terrs);
             }
 
             await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "gasstation",
@@ -199,13 +194,13 @@ namespace SP.Web.Controllers
 
             if (!string.IsNullOrWhiteSpace(actionName))
             {
-                return Redirect($"/Station?region={model.RegionId}&terr={model.TerritoryId}");
+                return Redirect($"/Station?regions={regions}&terrs={terrs}");
             }
 
             TempData["ActionMessage"] = "Запись сохранена в базе данных.";
             TempData["ActionMessageClass"] = "alert-info";
 
-            return Redirect($"/Station/{result.Id}");
+            return Redirect($"/Station/{result.Id}?regions={regions}&terrs={terrs}");
         }
     }
 }

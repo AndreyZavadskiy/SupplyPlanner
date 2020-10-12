@@ -513,22 +513,26 @@ namespace SP.Service.Background
                     nomenclatureQuery = nomenclatureQuery.Where(x => x.NomenclatureGroupId == groupId);
                 }
 
-                foreach (var r in usefulLife)
+                if (usefulLife != null)
                 {
-                    switch ((UsefulLifeRange)r)
+                    foreach (var r in usefulLife)
                     {
-                        case UsefulLifeRange.LessThanYear:
-                            nomenclatureQuery = nomenclatureQuery.Where(x => x.UsefulLife < 12);
-                            break;
-                        case UsefulLifeRange.Year:
-                            nomenclatureQuery = nomenclatureQuery.Where(x => x.UsefulLife == 12);
-                            break;
-                        case UsefulLifeRange.GreaterThanYear:
-                            nomenclatureQuery = nomenclatureQuery.Where(x => x.UsefulLife > 12);
-                            break;
+                        switch ((UsefulLifeRange) r)
+                        {
+                            case UsefulLifeRange.LessThanYear:
+                                nomenclatureQuery = nomenclatureQuery.Where(x => x.UsefulLife < 12);
+                                break;
+                            case UsefulLifeRange.Year:
+                                nomenclatureQuery = nomenclatureQuery.Where(x => x.UsefulLife == 12);
+                                break;
+                            case UsefulLifeRange.GreaterThanYear:
+                                nomenclatureQuery = nomenclatureQuery.Where(x => x.UsefulLife > 12);
+                                break;
+                        }
                     }
                 }
 
+                // список id всей активной номенклатуры
                 var nomenclatureIdList = await nomenclatureQuery
                     .Where(x => x.IsActive)
                     .Select(x => x.Id)
@@ -623,7 +627,11 @@ namespace SP.Service.Background
 
                     // добавляем новые остатки
                     var newNomenclatures = nomenclatureIdList
-                        .Where(n => !existingBalances.Any(b => b.OldRecord.NomenclatureId == n))
+                        .Except(
+                            _context.CalcSheets
+                                .Where(x => x.GasStationId == station.Id)
+                                .Select(x => x.NomenclatureId)
+                            )
                         .ToArray();
                     var newBalances = newNomenclatures
                         .GroupJoin(inventoryBalances,

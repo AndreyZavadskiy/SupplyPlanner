@@ -1,5 +1,5 @@
 {
-  "processing": "Подождите...",
+  "processing": "<div class='spinner'>Подождите...</div>",
   "search": "Поиск:",
   "lengthMenu": "Показать _MENU_ записей",
   "info": "Записи с _START_ до _END_ из _TOTAL_ записей",
@@ -35,5 +35,5 @@
       "0": "Фильтры",
       "_": "Фильтры (%d)"
     }
-  } 
+  }
 }

@@ -7,7 +7,7 @@
 
 <h1>Карточка пользователя</h1>
 
-<form asp-action="Edit" method="post">
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
     <input type="hidden" asp-for="Id" />
     <div class="zero-gutters col-xl-9">
         <div id="action-message" class="alert alert-row @actionMessageClass">
@@ -238,16 +238,30 @@
             <button asp-action="Save" class="btn btn-success">Сохранить</button>
             <a class="btn btn-secondary" style="color: white;" onclick="goBack();">Вернуться</a>
         </div>
+        <input type="hidden" id="regions" name="regions"/>
+        <input type="hidden" id="terrs" name="terrs"/>
     </div>
 </form>
 
 @section Scripts
 {
     <script>
+        $(document).ready(function() {
+            var regions = '@ViewData["SelectedRegions"]';
+            if (regions === '') regions = getParameterByName('regions');
+            $('#regions').val(regions);
+            var terrs = '@ViewData["SelectedTerritories"]';
+            if (terrs === '') terrs = getParameterByName('terrs');
+            $('#terrs').val(terrs);
+        });
+        function getParameterByName(name) {
+            var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+            return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+        }
         function goBack() {
-            var region = '@ViewBag.SelectedRegion';
-            var terr = '@ViewBag.SelectedTerritory';
-            window.location = '/Station/Index?region=' + region + '&terr=' + terr;
+            var region = '@ViewBag.SelectedRegions';
+            var terr = '@ViewBag.SelectedTerritories';
+            window.location = '/Station/Index?regions=' + region + '&terrs=' + terr;
         }
     </script>
 }
