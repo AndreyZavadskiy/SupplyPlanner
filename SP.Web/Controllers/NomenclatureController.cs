@@ -40,9 +40,9 @@ namespace SP.Web.Controllers
 
         [HttpPost]
         [Route("[controller]/LoadList")]
-        public async Task<IActionResult> LoadListAsync()
+        public async Task<IActionResult> LoadListAsync(int? group)
         {
-            var list = await _inventoryService.GetNomenclatureListAsync();
+            var list = await _inventoryService.GetNomenclatureListAsync(group);
 
             return Json(new { data = list });
         }

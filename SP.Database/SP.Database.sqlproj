@@ -67,6 +67,7 @@
     <Folder Include="log\" />
     <Folder Include="log\Tables\" />
     <Folder Include="Security\" />
+    <Folder Include="dbo\Stored Procedures" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\PersonTerritory.sql" />
@@ -105,5 +106,7 @@
     <Build Include="Security\dic.sql" />
     <Build Include="Security\log.sql" />
     <Build Include="Security\stage.sql" />
+    <Build Include="dbo\Stored Procedures\MergeStageToInventory.sql" />
+    <Build Include="dbo\Stored Procedures\LinkInventoryWithNomenclature.sql" />
   </ItemGroup>
 </Project>

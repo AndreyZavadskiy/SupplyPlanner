@@ -92,6 +92,9 @@
                 ajax: {
                     url: '/Nomenclature/LoadList',
                     type: 'POST',
+                    data: function (d) {
+                        d.group = $('#NomenclatureGroupList').val();
+                    },
                     dataType: 'json'
                 },
                 columns: [
@@ -150,43 +153,43 @@
                 ],
                 dom:
                     "<'row'<'col-sm-12 col-md-6 dt-action-group'B>>" +
-                    "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                    "<'row'<'col-sm-12'tr>>" +
-                    "<'row'<'col-sm-12 col-md-6'i>>" +
-                    "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
+                        "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                        "<'row'<'col-sm-12'tr>>" +
+                        "<'row'<'col-sm-12 col-md-6'i>>" +
+                        "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
                 buttons:
-                    [
-                        {
-                            text: 'Добавить',
-                            titleAttr: "Создать новую номенклатуру",
-                            className: 'dt-action-button',
-                            action: function (e, dt, node, config) {
-                                createNomenclature();
-                            }
-                        },
-                        {
-                            text: 'Excel',
-                            titleAttr: "Выгрузить таблицу в Excel",
-                            className: 'dt-action-button',
-                            extend: 'excel',
-                            title: 'Список пользователей',
-                            messageTop: 'Дата выгрузки ' + todayString,
-                            exportOptions: {
-                                columns: '.exportable-column',
-                                modifier: { search: 'applied' }
-                            }
-                        },
-                        {
-                            text: 'Фильтры',
-                            className: 'dt-action-button filter-button',
-                            action: function (e, dt, node, config) {
-                                $('#FilterModal').modal({
-                                    backdrop: 'static',
-                                    keyboard: false
-                                });
-                            }
+                [
+                    {
+                        text: 'Добавить',
+                        titleAttr: "Создать новую номенклатуру",
+                        className: 'dt-action-button',
+                        action: function (e, dt, node, config) {
+                            createNomenclature();
                         }
-                    ]
+                    },
+                    {
+                        text: 'Excel',
+                        titleAttr: "Выгрузить таблицу в Excel",
+                        className: 'dt-action-button',
+                        extend: 'excel',
+                        title: 'Список пользователей',
+                        messageTop: 'Дата выгрузки ' + todayString,
+                        exportOptions: {
+                            columns: '.exportable-column',
+                            modifier: { search: 'applied' }
+                        }
+                    },
+                    {
+                        text: 'Фильтры',
+                        className: 'dt-action-button filter-button',
+                        action: function (e, dt, node, config) {
+                            $('#FilterModal').modal({
+                                backdrop: 'static',
+                                keyboard: false
+                            });
+                        }
+                    }
+                ]
             });
             // default filter
             $('#NomenclatureGrid').DataTable().columns(2).search('1').draw(false);
@@ -207,7 +210,7 @@
             if (searchGroup !== '') {
                 isEnabled = true;
             }
-            dt.columns(3).search(searchGroup).draw(false);
+            dt.ajax.reload();
 
             if (isEnabled) $('.filter-button').addClass('filter-enabled');
             else $('.filter-button').removeClass('filter-enabled');

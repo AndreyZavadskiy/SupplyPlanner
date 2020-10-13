@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using EFCore.BulkExtensions;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SP.Core.Model;
 using SP.Data;
@@ -20,7 +21,7 @@ namespace SP.Service.Services
         Task<IEnumerable<MergingInventory>> GetListForManualMerge(int? mergeType);
         Task<NomenclatureModel> GetNomenclatureModelAsync(int id);
         Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveNomenclatureAsync(NomenclatureModel model);
-        Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync();
+        Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync(int? groupId);
         Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int? groupId, bool longterm);
         Task<IEnumerable<NomenclatureInventory>> GetNomenclatureInventoryListAsync(int id);
         Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId);
@@ -51,9 +52,9 @@ namespace SP.Service.Services
         /// <returns></returns>
         public async Task<bool> PurgeStageInventoryAsync(int personId)
         {
-            await _context.StageInventories
-                .Where(x => x.PersonId == personId)
-                .BatchDeleteAsync();
+            string sqlStatement = "DELETE FROM stage.Inventory WHERE PersonId = @PersonId;";
+            var p1 = new SqlParameter("@PersonId", personId);
+            int deleted = await _context.Database.ExecuteSqlRawAsync(sqlStatement, p1);
             return true;
         }
 
@@ -73,7 +74,7 @@ namespace SP.Service.Services
 
             int currentRow = 0,
                 totalRows = data.Length;
-            string stepMessage = "Сохранение остатков ТМЦ в базу данных";
+            string stepMessage = "[1/2] Сохранение остатков ТМЦ в базу данных";
             UpdateProgress(serviceKey, stepMessage, 0);
 
             // сохраняем в stage
@@ -81,7 +82,7 @@ namespace SP.Service.Services
             {
                 var portion = data
                     .Skip(currentRow)
-                    .Take(100)
+                    .Take(250)
                     .ToArray();
                 if (portion.Length == 0)
                 {
@@ -90,102 +91,21 @@ namespace SP.Service.Services
 
                 await _context.StageInventories.AddRangeAsync(portion);
                 await _context.SaveChangesAsync();
-                currentRow += 100;
-                UpdateProgress(serviceKey, stepMessage, 50.0m * currentRow / totalRows);
+                currentRow += 250;
+                UpdateProgress(serviceKey, stepMessage, 100.0m * currentRow / totalRows);
             }
 
             // переносим в основную таблицу
-            currentRow = 0;
-            while (true)
+            UpdateProgress(serviceKey, "[1/2] Обновление остатков ТМЦ в базе данных", 100.0m * currentRow / totalRows);
+            var p1 = new SqlParameter("@PersonId", personId);
+            var p2 = new SqlParameter("@Rows", SqlDbType.Int)
             {
-                //var portion = _context.StageInventories
-                //    .Where(x => x.PersonId == personId)
-                //    .Skip(currentRow)
-                //    .Take(100)
-                //    .ToArray();
-                //if (portion.Length == 0)
-                //{
-                //    break;
-                //}
-
-                int processedCount = await UpdateInventory(currentRow, 500, personId);
-                if (processedCount == 0)
-                {
-                    break;
-                }
-                currentRow += processedCount;
-                UpdateProgress(serviceKey, stepMessage, 50.0m + 50.0m * currentRow / totalRows);
-            }
+                Direction = ParameterDirection.Output
+            };
+            await _context.Database.ExecuteSqlRawAsync("dbo.MergeStageToInventory @PersonId, @Rows OUT", p1, p2);
+            Debug.WriteLine(p2.Value.ToString());
 
             return (true, null);
-        }
-
-        /// <summary>
-        /// Перенести данные по ТМЦ из stage-таблицы в основную
-        /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        private async Task<int> UpdateInventory(int skip, int batchSize, int personId)
-        {
-            // объединение с Inventory
-            var joinedRecords = _context.StageInventories
-                .Where(s => s.PersonId == personId).AsNoTracking()
-                .OrderBy(s => s.Id)
-                .Skip(skip)
-                .Take(batchSize)
-                .GroupJoin(_context.Inventories.AsNoTracking(),
-                    s => new { s.GasStationId, s.Code },
-                    i => new { i.GasStationId, i.Code },
-                    (s, i) => new
-                    {
-                        StageInventory = s,
-                        Inventory = i
-                    })
-                .SelectMany(
-                    x => x.Inventory.DefaultIfEmpty(),
-                    (x, y) => new
-                    {
-                        StageInventory = x.StageInventory,
-                        Inventory = y
-                    })
-                .ToArray();
-
-            if (joinedRecords.Length == 0)
-            {
-                return 0;
-            }
-
-            var existingRecords = joinedRecords
-                .Where(x => x.Inventory != null);
-            foreach (var rec in existingRecords)
-            {
-                var dbRecord = rec.Inventory;
-                dbRecord.Quantity = rec.StageInventory.Quantity;
-                dbRecord.LastUpdate = DateTime.Now;
-                _context.Inventories.Attach(dbRecord);
-                _context.Entry(dbRecord).Property(r => r.Quantity).IsModified = true;
-                _context.Entry(dbRecord).Property(r => r.LastUpdate).IsModified = true;
-            }
-
-            await _context.SaveChangesAsync();
-
-            // добавляем новые
-            var newRecords = joinedRecords
-                .Where(x => x.Inventory == null)
-                .Select(x => new Inventory
-                {
-                    Code = x.StageInventory.Code,
-                    Name = x.StageInventory.Name,
-                    GasStationId = x.StageInventory.GasStationId,
-                    MeasureUnitId = x.StageInventory.MeasureUnitId,
-                    Quantity = x.StageInventory.Quantity,
-                    LastUpdate = DateTime.Now
-                })
-                .ToArray();
-            await _context.Inventories.AddRangeAsync(newRecords);
-            await _context.SaveChangesAsync();
-
-            return joinedRecords.Length;
         }
 
         /// <summary>
@@ -264,11 +184,18 @@ namespace SP.Service.Services
         /// Получить список Номенклатуры для просмотра
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync()
+        public async Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync(int? groupId)
         {
-            var list = await _context.Nomenclatures
+            var query = _context.Nomenclatures
                 .Include(x => x.MeasureUnit)
                 .Include(x => x.NomenclatureGroup)
+                .AsNoTracking();
+            if (groupId != null)
+            {
+                query = query.Where(x => x.NomenclatureGroupId == groupId);
+            }
+
+            var list = await query
                 .Select(x => new NomenclatureListItem
                 {
                     Id = x.Id,
@@ -440,15 +367,16 @@ namespace SP.Service.Services
         /// <returns></returns>
         public async Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId)
         {
-            int updated = await _context.Inventories
-                .Where(x => inventoryIdList.Contains(x.Id))
-                .BatchUpdateAsync(x => new Inventory
-                {
-                    NomenclatureId = nomenclatureId,
-                    IsBlocked = false
-                });
+            throw new NotImplementedException();
+            //int updated = await _context.Inventories
+            //    .Where(x => inventoryIdList.Contains(x.Id))
+            //    .BatchUpdateAsync(x => new Inventory
+            //    {
+            //        NomenclatureId = nomenclatureId,
+            //        IsBlocked = false
+            //    });
 
-            return updated;
+            //return updated;
         }
 
         /// <summary>
@@ -458,15 +386,16 @@ namespace SP.Service.Services
         /// <returns></returns>
         public async Task<int> BlockInventoryAsync(int[] inventoryIdList)
         {
-            int updated = await _context.Inventories
-                .Where(x => inventoryIdList.Contains(x.Id))
-                .BatchUpdateAsync(x => new Inventory
-                {
-                    NomenclatureId = null,
-                    IsBlocked = true
-                });
+            throw new NotImplementedException();
+            //int updated = await _context.Inventories
+            //    .Where(x => inventoryIdList.Contains(x.Id))
+            //    .BatchUpdateAsync(x => new Inventory
+            //    {
+            //        NomenclatureId = null,
+            //        IsBlocked = true
+            //    });
 
-            return updated;
+            //return updated;
         }
 
         /// <summary>
@@ -525,7 +454,7 @@ namespace SP.Service.Services
 
                 return list;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Debugger.Break();
             }
@@ -582,7 +511,7 @@ namespace SP.Service.Services
 
                 return orderList;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Debugger.Break();
             }
@@ -704,7 +633,7 @@ namespace SP.Service.Services
 
                 return (order.Id, saved);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Debugger.Break();
             }

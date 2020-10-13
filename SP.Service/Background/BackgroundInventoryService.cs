@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CodingSeb.ExpressionEvaluator;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using SP.Core.Enum;
@@ -82,8 +84,7 @@ namespace SP.Service.Background
 
                 foreach (var file in files)
                 {
-                    string stepMessageTemplate =
-                        "Парсинг файла [" + fileCount + "/" + totalFiles + "]: \"{0}\", лист: \"{1}\"";
+                    string stepMessageTemplate = "Парсинг файла [" + fileCount + "/" + totalFiles + "]: \"{0}\", лист: \"{1}\"";
                     List<ParsedInventory> parsedData = null;
                     // парсинг
                     using (var p = new ExcelPackage(file.FileInfo))
@@ -187,12 +188,10 @@ namespace SP.Service.Background
                                 processingLog.AppendLine("Обнаружены АЗС, которые отсутствуют в справочнике:");
                                 foreach (var st in emptyStations)
                                 {
-                                    processingLog.AppendLine(
-                                        $"Код: {st.StationCodeSAP}, Наименование: {st.StationPetronicsName}");
+                                    processingLog.AppendLine($"Код: {st.StationCodeSAP}, Наименование: {st.StationPetronicsName}");
                                 }
 
-                                processingLog.AppendLine(
-                                    "Вышеуказанные АЗС пропущены. Добавьте их в справочник и выполните загрузку остатков заново.");
+                                processingLog.AppendLine("Вышеуказанные АЗС пропущены. Добавьте их в справочник и выполните загрузку остатков заново.");
                             }
 
                             // стыковка справочника единиц измерения
@@ -376,15 +375,18 @@ namespace SP.Service.Background
 
             _coordinator.AddOrUpdate(progressIndicator);
             StringBuilder processingLog = new StringBuilder();
+            Stopwatch sw = new Stopwatch();
 
             try
             {
                 var person = await _masterService.GetPersonAsync(aspNetUserId);
 
-                var data = await _context.Inventories
+                sw.Start();
+                var totalRows = await _context.Inventories
                     .Where(x => !x.IsBlocked && !x.NomenclatureId.HasValue)
-                    .ToArrayAsync();
-                int totalRows = data.Length;
+                    .CountAsync();
+                sw.Stop();
+                Debug.WriteLine($"Найдены неприкрепленные ТМЦ за {sw.ElapsedMilliseconds} мс");
 
                 processingLog.AppendLine($"Найдено {totalRows} записей для автоматического объединения.");
 
@@ -404,57 +406,19 @@ namespace SP.Service.Background
                     return true;
                 }
 
-                int currentRow = 0,
-                    linkedRows = 0;
-                while (true)
+                var p1 = new SqlParameter("@PersonId", person.Id);
+                var p2 = new SqlParameter("@Rows", SqlDbType.Int)
                 {
-                    var portion = data
-                        .Skip(currentRow)
-                        .Take(100)
-                        .ToArray();
-                    if (portion.Length == 0)
-                    {
-                        break;
-                    }
+                    Direction = ParameterDirection.Output
+                };
+                sw.Restart();
+                await _context.Database.ExecuteSqlRawAsync("dbo.LinkInventoryWithNomenclature @PersonId, @Rows OUT", p1, p2);
+                sw.Stop();
+                Debug.WriteLine($"Автоматическое объдинение ТМЦ {sw.ElapsedMilliseconds} мс");
 
-                    // проверка по коду и наименованию в Номенклатуре
-                    var linkedInventories = _context.Nomenclatures.AsEnumerable()
-                        .Join(portion,
-                            n => n.PetronicsCode,
-                            p => p.Code,
-                            (n, p) => new
-                            {
-                                Inventory = p,
-                                NomenclatureId = n.Id,
-                                PetronicsName = n.PetronicsName
-                            }
-                        )
-                        .Where(z => z.Inventory.Name == z.PetronicsName)
-                        .ToArray();
-
-                    foreach (var rec in linkedInventories)
-                    {
-                        var dbRecord = rec.Inventory;
-                        dbRecord.NomenclatureId = rec.NomenclatureId;
-                        _context.Inventories.Attach(dbRecord);
-                        _context.Entry(dbRecord).Property(r => r.NomenclatureId).IsModified = true;
-                    }
-
-                    // TODO проверка по коду Петроникса в Номенклатуре
-                    // TODO проверка по наименованию в Номенклатуре
-                    // TODO проверка по коду и наименованию в ТМЦ, если есть аналогичная привязка и наименования в ТМЦ и Номенклатуре различаются
-
-                    await _context.SaveChangesAsync();
-
-                    linkedRows += linkedInventories.Length;
-
-                    currentRow += 100;
-                    progressIndicator.Progress = currentRow / totalRows;
-                    _coordinator.AddOrUpdate(progressIndicator);
-                }
 
                 processingLog.AppendLine($"Обработано {totalRows} записей ТМЦ.");
-                processingLog.AppendLine($"Состыковано {linkedRows} записей ТМЦ с Номенклатурой.");
+                processingLog.AppendLine($"Состыковано {p2.Value} записей ТМЦ с Номенклатурой.");
 
                 var successFinalProgress = new BackgroundServiceProgress
                 {
@@ -554,11 +518,11 @@ namespace SP.Service.Background
                 {
                     stationQuery = stationQuery.Where(x => x.Id == stationId);
                 }
-                else if (terrs.Length > 0)
+                else if (terrs?.Length > 0)
                 {
                     stationQuery = stationQuery.Where(x => terrs.Contains(x.TerritoryId));
                 }
-                else if (regions.Length > 0)
+                else if (regions?.Length > 0)
                 {
                     stationQuery = stationQuery
                         .Include(x => x.Territory)
@@ -873,7 +837,7 @@ namespace SP.Service.Background
                         throw new ArithmeticException($"Некорректная формула: {nomBalance.Formula}");
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     Debugger.Break();
                 }
