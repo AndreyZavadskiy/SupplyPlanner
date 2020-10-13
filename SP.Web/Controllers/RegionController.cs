@@ -34,8 +34,6 @@ namespace SP.Web.Controllers
 
             var regions = await _masterService.SelectRegionAsync();
             var list = new SelectList(regions, "Id", "Name").ToList();
-            list.Insert(0, new SelectListItem("-- ВСЕ --", ""));
-
             ViewData["RegionList"] = list;
 
             return View("Region");
@@ -57,10 +55,10 @@ namespace SP.Web.Controllers
         /// </summary>
         /// <param name="parent"></param>
         /// <returns></returns>
-        public async Task<IActionResult> LoadTerritoriesAsync(string parent)
+        public async Task<IActionResult> LoadTerritoriesAsync(string regions)
         {
-            var regions = parent.SplitToIntArray();
-            var territories = await _masterService.SelectTerritoryAsync(regions);
+            var regionIdList = regions.SplitToIntArray();
+            var territories = await _masterService.SelectTerritoryAsync(regionIdList);
 
             return Json(territories);
         }

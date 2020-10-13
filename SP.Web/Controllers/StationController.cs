@@ -51,11 +51,11 @@ namespace SP.Web.Controllers
             return Json(new { data = stations });
         }
 
-        public async Task<IActionResult> LoadStations(string region, string terr)
+        public async Task<IActionResult> LoadStations(string regions, string terrs)
         {
-            int[] regions = region.SplitToIntArray();
-            int[] territories = terr.SplitToIntArray();
-            var list = await GetGasStationListItems(regions, territories);
+            int[] regionIdList = regions.SplitToIntArray();
+            int[] terrIdList = terrs.SplitToIntArray();
+            var list = await GetGasStationListItems(regionIdList, terrIdList);
             var stations = list
                 .Select(x => new DictionaryListItem
                 {
@@ -72,10 +72,6 @@ namespace SP.Web.Controllers
             if (regions == null && territories == null)
             {
                 stations = new GasStationListItem[0];
-            }
-            else if (regions != null && regions.Contains(Int32.MaxValue))
-            {
-                stations = await _gasStationService.GetGasStationListAsync(null, null);
             }
             else
             {

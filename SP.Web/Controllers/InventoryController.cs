@@ -141,10 +141,10 @@ namespace SP.Web.Controllers
             };
 
             var mergeTypeList = new List<SelectListItem>{
-                new SelectListItem("-- ВСЕ --", ""),
                 new SelectListItem("Не объединенные", "1"),
                 new SelectListItem("Объединенные", "2"),
-                new SelectListItem("Исключенные", "3")
+                new SelectListItem("Исключенные", "3"),
+                new SelectListItem("-- ВСЕ --", int.MaxValue.ToString())
             };
             ViewData["MergeTypeList"] = mergeTypeList;
 
@@ -231,7 +231,7 @@ namespace SP.Web.Controllers
 
         [HttpPost]
         [Route("[controller]/CalcBalance")]
-        public async Task<IActionResult> CalcBalanceAsync(int? region, int? terr, int? station, int? group, int? nom, string useful,
+        public async Task<IActionResult> CalcBalanceAsync(string regions, string terrs, int? station, int? group, int? nom, string usefuls,
             [FromServices] IBackgroundCoordinator coordinator)
         {
             await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory",
@@ -239,8 +239,10 @@ namespace SP.Web.Controllers
 
             Guid serviceKey = Guid.NewGuid();
             var user = await _userManager.GetUserAsync(User);
-            int[] usefulRanges = useful.SplitToIntArray();
-            StartBackgroundBalanceCalculation(coordinator, serviceKey, user.Id, region, terr, station, group, nom, usefulRanges);
+            int[] regionIdList = regions.SplitToIntArray();
+            int[] terrIdList = terrs.SplitToIntArray();
+            int[] usefulIdList = usefuls.SplitToIntArray();
+            StartBackgroundBalanceCalculation(coordinator, serviceKey, user.Id, regionIdList, terrIdList, station, group, nom, usefulIdList);
 
             return Json(new { Key = serviceKey });
         }
@@ -269,12 +271,11 @@ namespace SP.Web.Controllers
         {
             var regions = await _masterService.SelectRegionAsync();
             var list = new SelectList(regions, "Id", "Name").ToList();
-            list.Insert(0, new SelectListItem("-- ВСЕ --", ""));
             ViewData["RegionList"] = list;
 
             var nomenclatureGroups = await _masterService.GetDictionaryListAsync<NomenclatureGroup>();
             var groupList = new SelectList(nomenclatureGroups, "Id", "Name").ToList();
-            groupList.Insert(0, new SelectListItem("-- ВСЕ --", ""));
+            groupList.Insert(0, new SelectListItem(string.Empty, string.Empty));
             ViewData["NomenclatureGroupList"] = groupList;
         }
 
@@ -508,12 +509,12 @@ namespace SP.Web.Controllers
         }
 
         private void StartBackgroundBalanceCalculation(IBackgroundCoordinator coordinator, Guid serviceKey, string aspNetUserId,
-            int? region, int? terr, int? station, int? group, int? nom, int[] usefulRange)
+            int[] regions, int[] terrs, int? station, int? group, int? nom, int[] usefulRange)
         {
             Task.Run(async () =>
             {
                 var service = new BackgroundInventoryService(coordinator);
-                await service.CalculateBalanceAsync(serviceKey, aspNetUserId, region, terr, station, group, nom, usefulRange);
+                await service.CalculateBalanceAsync(serviceKey, aspNetUserId, regions, terrs, station, group, nom, usefulRange);
             });
         }
 

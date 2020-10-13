@@ -7,18 +7,18 @@
 <h1>Автоматическое объединение ТМЦ в Номенклатуру</h1>
 
 <form method="post" enctype="multipart/form-data">
-    <div class="zero-gutters col-xl-9">
+    <div class="zero-gutters col-xl-12">
         <div class="form-row zero-gutters">
             <div class="form-group row col-4">
-                <label asp-for="ProcessingDate" class="control-label col-6"></label>
-                <input asp-for="ProcessingDate" type="date" class="form-control col-6" />
+                <label asp-for="ProcessingDate" class="control-label col-4"></label>
+                <input asp-for="ProcessingDate" type="date" class="form-control col-6" readonly="readonly"/>
                 <span asp-validation-for="ProcessingDate" class="text-danger"></span>
             </div>
         </div>
         <div class="form-row button-row">
             <button id="submit" class="btn btn-primary">Выполнить</button>
             <a href='@Url.Action("ManualMerge", "Inventory")' class="btn btn-success">Перейти на следующий шаг</a>
-            <a href='@Url.Action("AutoMerge", "Inventory")' class="btn btn-secondary">Вернуться назад</a>
+            <a href='@Url.Action("Upload", "Inventory")' class="btn btn-secondary">Вернуться назад</a>
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-4">

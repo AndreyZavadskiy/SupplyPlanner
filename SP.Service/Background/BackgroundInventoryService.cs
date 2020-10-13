@@ -22,7 +22,7 @@ namespace SP.Service.Background
     {
         Task<bool> UploadAsync(Guid serviceKey, List<UploadedFile> files, string aspNetUserId);
         Task<bool> AutoMergeAsync(Guid serviceKey, string aspNetUserId);
-        Task<bool> CalculateBalanceAsync(Guid serviceKey, string aspNetUserId, int? regionId, int? terrId, int? stationId,
+        Task<bool> CalculateBalanceAsync(Guid serviceKey, string aspNetUserId, int[] regions, int[] terrs, int? stationId,
             int? groupId, int? nomId, int[] usefulLife);
         Task<bool> CalculateOrderAsync(Guid serviceKey, int[] idList, string aspNetUserId);
     }
@@ -68,9 +68,10 @@ namespace SP.Service.Background
                 Status = BackgroundServiceStatus.Created,
                 Progress = 0
             };
-            
+
             _coordinator.AddOrUpdate(progressIndicator);
             StringBuilder processingLog = new StringBuilder();
+            Stopwatch sw = new Stopwatch();
 
             try
             {
@@ -111,6 +112,7 @@ namespace SP.Service.Background
                                 .Where(x => x.ColumnIndex != null)
                                 .ToArray();
 
+                            sw.Start();
                             int lastRow = ws.Dimension.End.Row;
                             parsedData = new List<ParsedInventory>(lastRow - headerRow);
                             // извлекаем данные из листа Excel и сохраняем в списке
@@ -142,10 +144,13 @@ namespace SP.Service.Background
                                     _coordinator.AddOrUpdate(parsingProgress);
                                 }
                             }
+                            sw.Stop();
+                            Debug.WriteLine($"Парсинг Excel файла {sw.ElapsedMilliseconds} мс");
 
                             var stations = await _stationService.GetGasStationIdentificationListAsync();
                             var measureUnits = await _masterService.GetDictionaryListAsync<MeasureUnit>();
                             // стыковка справочника АЗС
+                            sw.Restart();
                             var dataWithStation = parsedData
                                 .GroupJoin(stations,
                                     d => d.StationCodeSAP,
@@ -168,10 +173,12 @@ namespace SP.Service.Background
                                         Quantity = x.Data.Quantity
                                     })
                                 .ToArray();
+                            sw.Stop();
+                            Debug.WriteLine($"Объединение со справочником АЗС {sw.ElapsedMilliseconds} мс");
 
                             var emptyStations = dataWithStation
                                 .Where(x => x.GasStationId == null)
-                                .Select(x => new {x.StationCodeSAP, x.StationPetronicsName})
+                                .Select(x => new { x.StationCodeSAP, x.StationPetronicsName })
                                 .Distinct()
                                 .OrderBy(z => z.StationCodeSAP);
 
@@ -189,6 +196,7 @@ namespace SP.Service.Background
                             }
 
                             // стыковка справочника единиц измерения
+                            sw.Restart();
                             var dataWithMeasureUnits = dataWithStation
                                 .GroupJoin(measureUnits,
                                     d => d.MeasureUnitName,
@@ -212,6 +220,8 @@ namespace SP.Service.Background
                                         Quantity = x.Data.Quantity
                                     })
                                 .ToArray();
+                            sw.Stop();
+                            Debug.WriteLine($"Объединение со справочником единиц измерения {sw.ElapsedMilliseconds} мс");
 
                             var emptyMeasureUnits = dataWithMeasureUnits
                                 .Where(x => x.MeasureUnitId == null)
@@ -220,11 +230,9 @@ namespace SP.Service.Background
 
                             if (emptyMeasureUnits.Any())
                             {
-                                processingLog.AppendLine(
-                                    "Обнаружены единицы измерения, которые отсутствуют в справочнике:");
+                                processingLog.AppendLine("Обнаружены единицы измерения, которые отсутствуют в справочнике:");
                                 processingLog.AppendLine(string.Join(", ", emptyMeasureUnits));
-                                processingLog.AppendLine(
-                                    "ТМЦ с вышеуказанным единицами измерения пропущены. Добавьте их в справочник и выполните загрузку остатков заново.");
+                                processingLog.AppendLine("ТМЦ с вышеуказанным единицами измерения пропущены. Добавьте их в справочник и выполните загрузку остатков заново.");
                             }
 
                             var inventoryData = dataWithMeasureUnits
@@ -244,11 +252,12 @@ namespace SP.Service.Background
                             if (inventoryData.Any())
                             {
                                 // пакетное сохранение в БД
-                                processingLog.AppendLine("Удаляем предыдущие остатки ТМЦ.");
-                                await _inventoryService.PurgeStageInventoryAsync(person.Id);
                                 processingLog.AppendLine("Выполняем сохранение остатков ТМЦ.");
-                                await _inventoryService.SaveStageInventoryAsync(inventoryData, serviceKey,
-                                    person.Id);
+                                sw.Restart();
+                                await _inventoryService.PurgeStageInventoryAsync(person.Id);
+                                await _inventoryService.SaveStageInventoryAsync(inventoryData, serviceKey, person.Id);
+                                sw.Stop();
+                                Debug.WriteLine($"Сохранение загруженных записей {sw.ElapsedMilliseconds} мс");
                                 processingLog.AppendLine($"Сохранено {inventoryData.Length} записей.");
                             }
                             else
@@ -314,14 +323,14 @@ namespace SP.Service.Background
                     Title = "Склад Петроникс",
                     TitleComparisonMode = ComparisonMode.StartsWith,
                     DefaultIndex = 2
-                },                
+                },
                 new ColumnDefinition
                 {
                     Name = "InventoryCode",
                     Title = "Код ТМЦ",
                     TitleComparisonMode = ComparisonMode.Equals,
                     DefaultIndex = 5
-                },                
+                },
                 new ColumnDefinition
                 {
                     Name = "InventoryName",
@@ -484,7 +493,7 @@ namespace SP.Service.Background
         /// <param name="serviceKey"></param>
         /// <param name="aspNetUserId"></param>
         /// <returns></returns>
-        public async Task<bool> CalculateBalanceAsync(Guid serviceKey, string aspNetUserId, int? regionId, int? terrId, int? stationId, 
+        public async Task<bool> CalculateBalanceAsync(Guid serviceKey, string aspNetUserId, int[] regions, int[] terrs, int? stationId,
             int? groupId, int? nomId, int[] usefulLife)
         {
             // регистрируем в координаторе
@@ -517,7 +526,7 @@ namespace SP.Service.Background
                 {
                     foreach (var r in usefulLife)
                     {
-                        switch ((UsefulLifeRange) r)
+                        switch ((UsefulLifeRange)r)
                         {
                             case UsefulLifeRange.LessThanYear:
                                 nomenclatureQuery = nomenclatureQuery.Where(x => x.UsefulLife < 12);
@@ -545,15 +554,15 @@ namespace SP.Service.Background
                 {
                     stationQuery = stationQuery.Where(x => x.Id == stationId);
                 }
-                else if (terrId != null)
+                else if (terrs.Length > 0)
                 {
-                    stationQuery = stationQuery.Where(x => x.TerritoryId == terrId);
+                    stationQuery = stationQuery.Where(x => terrs.Contains(x.TerritoryId));
                 }
-                else if (regionId != null)
+                else if (regions.Length > 0)
                 {
                     stationQuery = stationQuery
                         .Include(x => x.Territory)
-                        .Where(x => x.Territory.ParentId == regionId);
+                        .Where(x => x.Territory.ParentId != null && regions.Contains(x.Territory.ParentId.Value));
                 }
 
                 var stations = await stationQuery

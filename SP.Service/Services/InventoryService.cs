@@ -58,7 +58,7 @@ namespace SP.Service.Services
         }
 
         /// <summary>
-        /// Сохранить данные по ТМЦ в stage-таблице
+        /// Сохранить данные по ТМЦ
         /// </summary>
         /// <param name="data"></param>
         /// <param name="serviceKey"></param>
@@ -98,22 +98,94 @@ namespace SP.Service.Services
             currentRow = 0;
             while (true)
             {
-                var portion = _context.StageInventories
-                    .Where(x => x.PersonId == personId)
-                    .Skip(currentRow)
-                    .Take(100)
-                    .ToArray();
-                if (portion.Length == 0)
+                //var portion = _context.StageInventories
+                //    .Where(x => x.PersonId == personId)
+                //    .Skip(currentRow)
+                //    .Take(100)
+                //    .ToArray();
+                //if (portion.Length == 0)
+                //{
+                //    break;
+                //}
+
+                int processedCount = await UpdateInventory(currentRow, 500, personId);
+                if (processedCount == 0)
                 {
                     break;
                 }
-
-                await UpdateInventory(portion);
-                currentRow += 100;
+                currentRow += processedCount;
                 UpdateProgress(serviceKey, stepMessage, 50.0m + 50.0m * currentRow / totalRows);
             }
 
             return (true, null);
+        }
+
+        /// <summary>
+        /// Перенести данные по ТМЦ из stage-таблицы в основную
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        private async Task<int> UpdateInventory(int skip, int batchSize, int personId)
+        {
+            // объединение с Inventory
+            var joinedRecords = _context.StageInventories
+                .Where(s => s.PersonId == personId).AsNoTracking()
+                .OrderBy(s => s.Id)
+                .Skip(skip)
+                .Take(batchSize)
+                .GroupJoin(_context.Inventories.AsNoTracking(),
+                    s => new { s.GasStationId, s.Code },
+                    i => new { i.GasStationId, i.Code },
+                    (s, i) => new
+                    {
+                        StageInventory = s,
+                        Inventory = i
+                    })
+                .SelectMany(
+                    x => x.Inventory.DefaultIfEmpty(),
+                    (x, y) => new
+                    {
+                        StageInventory = x.StageInventory,
+                        Inventory = y
+                    })
+                .ToArray();
+
+            if (joinedRecords.Length == 0)
+            {
+                return 0;
+            }
+
+            var existingRecords = joinedRecords
+                .Where(x => x.Inventory != null);
+            foreach (var rec in existingRecords)
+            {
+                var dbRecord = rec.Inventory;
+                dbRecord.Quantity = rec.StageInventory.Quantity;
+                dbRecord.LastUpdate = DateTime.Now;
+                _context.Inventories.Attach(dbRecord);
+                _context.Entry(dbRecord).Property(r => r.Quantity).IsModified = true;
+                _context.Entry(dbRecord).Property(r => r.LastUpdate).IsModified = true;
+            }
+
+            await _context.SaveChangesAsync();
+
+            // добавляем новые
+            var newRecords = joinedRecords
+                .Where(x => x.Inventory == null)
+                .Select(x => new Inventory
+                {
+                    Code = x.StageInventory.Code,
+                    Name = x.StageInventory.Name,
+                    GasStationId = x.StageInventory.GasStationId,
+                    MeasureUnitId = x.StageInventory.MeasureUnitId,
+                    Quantity = x.StageInventory.Quantity,
+                    LastUpdate = DateTime.Now
+                })
+                .ToArray();
+            await _context.Inventories.AddRangeAsync(newRecords);
+            await _context.SaveChangesAsync();
+
+            return joinedRecords.Length;
         }
 
         /// <summary>
@@ -489,18 +561,18 @@ namespace SP.Service.Services
 
                 var orderList = await query
                     .Select(x => new DemandListItem
-                        {
-                            Id = x.Id,
-                            Code = x.Nomenclature.Code ?? x.Nomenclature.Id.ToString(),
-                            Name = x.Nomenclature.Name,
-                            GasStationName = x.GasStation.StationNumber,
-                            Quantity = x.Quantity,
-                            MeasureUnitName = x.Nomenclature.MeasureUnit.Name,
-                            FixedAmount = x.FixedAmount,
-                            Formula = x.Formula,
-                            Plan = x.Plan,
-                            OrderQuantity = x.Plan - x.Quantity
-                        })
+                    {
+                        Id = x.Id,
+                        Code = x.Nomenclature.Code ?? x.Nomenclature.Id.ToString(),
+                        Name = x.Nomenclature.Name,
+                        GasStationName = x.GasStation.StationNumber,
+                        Quantity = x.Quantity,
+                        MeasureUnitName = x.Nomenclature.MeasureUnit.Name,
+                        FixedAmount = x.FixedAmount,
+                        Formula = x.Formula,
+                        Plan = x.Plan,
+                        OrderQuantity = x.Plan - x.Quantity
+                    })
                     .ToArrayAsync();
 
                 return orderList;
@@ -585,7 +657,7 @@ namespace SP.Service.Services
 
                 OrderDetail[] orderDetails;
                 if (orderType == 1)
-                { 
+                {
                     orderDetails = _context.CalcSheets
                         .Include(b => b.Nomenclature)
                         .Where(b => b.Nomenclature.UsefulLife <= 12)
@@ -674,54 +746,6 @@ namespace SP.Service.Services
                 })
                 .ToArrayAsync();
             return list;
-        }
-
-        /// <summary>
-        /// Перенести данные по ТМЦ из stage-таблицы в основную
-        /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        private async Task UpdateInventory(IEnumerable<StageInventory> data)
-        {
-            // обновляем существующие записи
-            var existingRecords = _context.Inventories.AsEnumerable()
-                .Join(data,
-                    i => new { i.GasStationId, i.Code },
-                    d => new { d.GasStationId, d.Code },
-                    (i, d) => new
-                    {
-                        Inventory = i,
-                        StageInventory = d
-                    })
-                .ToArray();
-
-            foreach (var rec in existingRecords)
-            {
-                var dbRecord = rec.Inventory;
-                dbRecord.Quantity = rec.StageInventory.Quantity;
-                dbRecord.LastUpdate = DateTime.Now;
-                _context.Inventories.Attach(dbRecord);
-                _context.Entry(dbRecord).Property(r => r.Quantity).IsModified = true;
-                _context.Entry(dbRecord).Property(r => r.LastUpdate).IsModified = true;
-            }
-
-            await _context.SaveChangesAsync();
-
-            // добавляем новые
-            var newRecords = data
-                .Where(d => !_context.Inventories.Any(i => i.GasStationId == d.GasStationId && i.Code == d.Code))
-                .Select(d => new Inventory
-                {
-                    Code = d.Code,
-                    Name = d.Name,
-                    GasStationId = d.GasStationId,
-                    MeasureUnitId = d.MeasureUnitId,
-                    Quantity = d.Quantity,
-                    LastUpdate = DateTime.Now
-                })
-                .ToArray();
-            await _context.Inventories.AddRangeAsync(newRecords);
-            await _context.SaveChangesAsync();
         }
 
         private void UpdateProgress(Guid? serviceKey, string stepMessage, decimal progress)

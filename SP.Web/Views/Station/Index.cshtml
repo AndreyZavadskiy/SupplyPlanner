@@ -10,13 +10,17 @@
             <div class="form-group row col-12">
                 <label for="RegionList" class="control-label zero-gutters col-1">Регион</label>
                 <select id="RegionList" multiple="multiple" data-placeholder="Выберите регионы..."
-                        asp-items="ViewBag.RegionList" class="col-11" onchange="changeRegion();">
+                        asp-items="ViewBag.RegionList" class="col-10" onchange="changeRegion();">
                 </select>
+                <a onclick="chosenSelectAll('RegionList');"><img src="/images/check-all.svg" class="icon-button" /></a>
+                <a onclick="chosenDeselectAll('RegionList');"><img src="/images/x.svg" class="icon-button" /></a>
             </div>
             <div class="form-group row col-12">
                 <label for="TerritoryList" class="control-label zero-gutters col-1">Территория</label>
                 <select id="TerritoryList" multiple="multiple" data-placeholder="Выберите территории..."
-                        class="col-11" onchange="changeTerritory();"></select>
+                        class="col-10" onchange="changeTerritory();"></select>
+                <a title="Выделить все" onclick="chosenSelectAll('TerritoryList');"><img src="/images/check-all.svg" class="icon-button" /></a>
+                <a title="Снять все" onclick="chosenDeselectAll('TerritoryList');"><img src="/images/x.svg" class="icon-button" /></a>
             </div>
         </div>
     </div>
@@ -246,7 +250,7 @@
                 return;
             }
             var url = '/Region/LoadTerritories';
-            var requestData = { parent: selectedRegions.join() };
+            var requestData = { regions: selectedRegions.join() };
             $.get(url,
                 requestData,
                 function (data) {
@@ -277,6 +281,18 @@
 
         function createGasStation() {
             window.location = '/Station/Create?regions=' + $('#RegionList').val().join() + '&terrs=' + $('#TerritoryList').val().join();
+        }
+
+        function chosenSelectAll(controlId) {
+            $('#' + controlId + ' option').prop('selected', true);
+            $('#' + controlId).trigger("chosen:updated");
+            if (controlId === 'RegionList') changeRegion();
+            else if (controlId === 'TerritoryList') changeTerritory();
+        }
+
+        function chosenDeselectAll(controlId) {
+            $('#' + controlId + ' option').prop('selected', false);
+            $('#' + controlId).trigger("chosen:updated");
         }
 
         function selectOptions(control, values) {

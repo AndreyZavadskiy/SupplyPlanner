@@ -7,18 +7,18 @@
 <h1>Загрузка остатков ТМЦ</h1>
 
 <form id="MainForm" method="post" enctype="multipart/form-data">
-    <div class="zero-gutters col-xl-9">
+    <div class="zero-gutters col-xl-12">
         <div class="form-row zero-gutters">
             <div class="form-group row col-4">
-                <label asp-for="ProcessingDate" class="control-label col-6"></label>
-                <input asp-for="ProcessingDate" type="date" class="form-control col-6" />
+                <label asp-for="ProcessingDate" class="control-label col-4"></label>
+                <input asp-for="ProcessingDate" type="date" class="form-control col-6" readonly="readonly" />
                 <span asp-validation-for="ProcessingDate" class="text-danger"></span>
             </div>
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-8">
-                <label asp-for="Files" class="control-label col-3"></label>
-                <input asp-for="Files" type="file" multiple class="form-control-file col-9" />
+                <label asp-for="Files" class="control-label col-2"></label>
+                <input asp-for="Files" type="file" multiple class="form-control-file col-10" />
                 <span asp-validation-for="Files" class="text-danger"></span>
             </div>
         </div>

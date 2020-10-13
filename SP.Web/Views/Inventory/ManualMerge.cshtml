@@ -4,23 +4,19 @@
 }
 <h1>Ручное объединение ТМЦ в Номенклатуру</h1>
 <form method="post" enctype="multipart/form-data">
-    <div class="zero-gutters col-xl-9">
+    <div class="zero-gutters col-xl-12">
         <div class="form-row zero-gutters">
             <div class="form-group row col-4">
-                <label asp-for="ProcessingDate" class="control-label col-6"></label>
-                <input asp-for="ProcessingDate" type="date" class="form-control col-6" />
+                <label asp-for="ProcessingDate" class="control-label col-4"></label>
+                <input asp-for="ProcessingDate" type="date" class="form-control col-6" readonly="readonly"/>
                 <span asp-validation-for="ProcessingDate" class="text-danger"></span>
             </div>
         </div>
         <div class="form-row zero-gutters">
-            <div class="form-group row col-6">
-                <label for="MergeTypeList" class="control-label zero-gutters col-3">Фильтр</label>
-                <select id="MergeTypeList" asp-items="ViewBag.MergeTypeList" class="col-9" onchange="reloadTable()"></select>
+            <div class="form-group row col-8">
+                <label for="MergeTypeList" class="control-label col-2">Фильтр</label>
+                <select id="MergeTypeList" asp-items="ViewBag.MergeTypeList" class="col-6" onchange="reloadTable()"></select>
             </div>
-        </div>
-        <div class="form-row button-row">
-            <a href='@Url.Action("CalcBalance", "Inventory")' class="btn btn-success">Перейти на следующий шаг</a>
-            <a href='@Url.Action("Upload", "Inventory")' class="btn btn-secondary">Вернуться назад</a>
         </div>
     </div>
 </form>
@@ -164,6 +160,7 @@
                     [10, 25, 50, 100, -1],
                     [10, 25, 50, 100, "Все"]
                 ],
+                processing: true,
                 ajax: {
                     url: '/Inventory/LoadMergeList',
                     type: 'POST',
@@ -225,7 +222,7 @@
                     }
                 ],
                 dom:
-                    "<'row'<'col-sm-12 col-md-6 dt-action-group'B>>" +
+                    "<'row'<'col-sm-12 col-md-12 dt-action-group'B>>" +
                         "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
                         "<'row'<'col-sm-12'tr>>" +
                         "<'row'<'col-sm-12 col-md-6'i>>" +
@@ -235,7 +232,7 @@
                     {
                         text: 'Привязать отмеченные',
                         titleAttr: "Привязать отмеченные записи к Номенклатуре",
-                        className: 'dt-action-button',
+                        className: 'dt-action-button btn btn-primary',
                         action: function(e, dt, node, config) {
                             selectedInventories = dt.rows({ selected: true }).data().pluck('id').toArray();
                             loadNomenclatureModal();
@@ -244,10 +241,24 @@
                     {
                         text: 'Исключить отмеченные',
                         titleAttr: "Не привязывать отмеченные записи к Номенклатуре и исключить из дальнейшего рассмотрения",
-                        className: 'dt-action-button',
+                        className: 'dt-action-button btn btn-primary',
                         action: function(e, dt, node, config) {
                             selectedInventories = dt.rows({ selected: true }).data().pluck('id').toArray();
                             blockSelectedInventories();
+                        }
+                    },
+                    {
+                        text: 'Перейти на следующий шаг',
+                        className: 'dt-action-button btn btn-success',
+                        action: function() {
+                            window.location = '@Url.Action("CalcBalance", "Inventory")';
+                        }
+                    },
+                    {
+                        text: 'Вернуться назад',
+                        className: 'dt-action-button btn btn-secondary',
+                        action: function() {
+                            window.location = '@Url.Action("AutoMerge", "Inventory")';
                         }
                     },
                     {
