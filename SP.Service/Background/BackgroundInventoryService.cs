@@ -682,7 +682,7 @@ namespace SP.Service.Background
                     }
 
                     await _context.SaveChangesAsync();
-                    processingLog.AppendLine($"Добавлено записей: {newBalances.Length}");
+                    //processingLog.AppendLine($"Добавлено записей: {newBalances.Length}");
 
                     currentRow += totalNomenclatures;
                     currentStation++;

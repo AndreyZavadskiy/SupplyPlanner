@@ -25,8 +25,8 @@ namespace SP.Service.Services
         Task<IEnumerable<NomenclatureInventory>> GetNomenclatureInventoryListAsync(int id);
         Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId);
         Task<int> BlockInventoryAsync(int[] inventoryIdList);
-        Task<IEnumerable<BalanceListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom);
-        Task<IEnumerable<DemandListItem>> GetDemandListAsync(int? region, int? terr, int? station, int? group, int? nom);
+        Task<IEnumerable<BalanceListItem>> GetBalanceListAsync(int[] regions, int[] terrs, int? station, int? group, int? nom, bool zero);
+        Task<IEnumerable<DemandListItem>> GetDemandListAsync(int[] regions, int[] terrs, int? station, int? group, int? nom);
         Task<IEnumerable<OrderModel>> GetOrderListAsync();
         Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(int id);
         Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, int[] idList);
@@ -478,7 +478,7 @@ namespace SP.Service.Services
         /// <param name="group"></param>
         /// <param name="nom"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<BalanceListItem>> GetBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom)
+        public async Task<IEnumerable<BalanceListItem>> GetBalanceListAsync(int[] regions, int[] terrs, int? station, int? group, int? nom, bool hideZero)
         {
             try
             {
@@ -487,13 +487,13 @@ namespace SP.Service.Services
                 {
                     query = query.Where(x => x.GasStationId == station);
                 }
-                else if (terr.HasValue)
+                else if (terrs?.Length > 0)
                 {
-                    query = query.Where(x => x.GasStation.TerritoryId == terr);
+                    query = query.Where(x => terrs.Contains(x.GasStation.TerritoryId));
                 }
-                else if (region.HasValue)
+                else if (regions?.Length > 0)
                 {
-                    query = query.Where(x => x.GasStation.Territory.ParentId == region);
+                    query = query.Where(x => x.GasStation.Territory.ParentId != null && regions.Contains(x.GasStation.Territory.ParentId.Value));
                 }
 
                 if (nom.HasValue)
@@ -503,6 +503,11 @@ namespace SP.Service.Services
                 else if (group.HasValue)
                 {
                     query = query.Where(x => x.Nomenclature.NomenclatureGroupId == group);
+                }
+
+                if (hideZero)
+                {
+                    query = query.Where(x => x.Quantity != 0);
                 }
 
                 var list = await query
@@ -532,7 +537,7 @@ namespace SP.Service.Services
         /// Получить список остатков и потребности по Номенклатуре для просмотра
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<DemandListItem>> GetDemandListAsync(int? region, int? terr, int? station, int? group, int? nom)
+        public async Task<IEnumerable<DemandListItem>> GetDemandListAsync(int[] regions, int[] terrs, int? station, int? group, int? nom)
         {
             try
             {
@@ -541,13 +546,13 @@ namespace SP.Service.Services
                 {
                     query = query.Where(x => x.GasStationId == station);
                 }
-                else if (terr.HasValue)
+                else if (terrs?.Length > 0)
                 {
-                    query = query.Where(x => x.GasStation.TerritoryId == terr);
+                    query = query.Where(x => terrs.Contains(x.GasStation.TerritoryId));
                 }
-                else if (region.HasValue)
+                else if (regions?.Length > 0)
                 {
-                    query = query.Where(x => x.GasStation.Territory.ParentId == region);
+                    query = query.Where(x => x.GasStation.Territory.ParentId != null && regions.Contains(x.GasStation.Territory.ParentId.Value));
                 }
 
                 if (nom.HasValue)
@@ -662,7 +667,7 @@ namespace SP.Service.Services
                         .Include(b => b.Nomenclature)
                         .Where(b => b.Nomenclature.UsefulLife <= 12)
                         .AsEnumerable()
-                        .Join(data,
+                        .Join(data.Where(d => d.Plan != 0),
                             b => b.Id,
                             d => d.Id,
                             (b, d) => new OrderDetail
@@ -689,6 +694,7 @@ namespace SP.Service.Services
                                 GasStationId = b.GasStationId,
                                 Quantity = withBalance ? d.Quantity : d.Plan
                             })
+                        .Where(z => z.Quantity != 0)
                         .ToArray();
                 }
 

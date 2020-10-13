@@ -289,15 +289,17 @@ namespace SP.Web.Controllers
         /// <param name="nom"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> LoadBalanceListAsync(int? region, int? terr, int? station, int? group, int? nom)
+        public async Task<IActionResult> LoadBalanceListAsync(string regions, string terrs, int? station, int? group, int? nom, bool zero)
         {
-            if (region == null && terr == null && group == null)
+            if (string.IsNullOrWhiteSpace(regions) && string.IsNullOrWhiteSpace(terrs) && group == null)
             {
                 var zeroItem = new BalanceListItem { Name = "Установите фильтры для отображения данных" };
                 return Json(new { data = new[] { zeroItem } });
             }
 
-            var list = await _inventoryService.GetBalanceListAsync(region, terr, station, group, nom);
+            int[] regionIdList = regions.SplitToIntArray();
+            int[] terrIdList = terrs.SplitToIntArray();
+            var list = await _inventoryService.GetBalanceListAsync(regionIdList, terrIdList, station, group, nom, zero);
 
             return Json(new { data = list });
         }
@@ -319,15 +321,17 @@ namespace SP.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoadDemandList(int? region, int? terr, int? station, int? group, int? nom)
+        public async Task<IActionResult> LoadDemandList(string regions, string terrs, int? station, int? group, int? nom)
         {
-            if (region == null && terr == null && group == null)
+            if (string.IsNullOrWhiteSpace(regions) && string.IsNullOrWhiteSpace(terrs) && group == null)
             {
                 var zeroItem = new DemandListItem { Name = "Установите фильтры для отображения данных" };
                 return Json(new { data = new[] { zeroItem } });
             }
 
-            var list = await _inventoryService.GetDemandListAsync(region, terr, station, group, nom);
+            int[] regionIdList = regions.SplitToIntArray();
+            int[] terrIdList = terrs.SplitToIntArray();
+            var list = await _inventoryService.GetDemandListAsync(regionIdList, terrIdList, station, group, nom);
             return Json(new { data = list });
         }
 
