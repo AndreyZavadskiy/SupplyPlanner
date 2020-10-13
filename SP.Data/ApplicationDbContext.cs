@@ -37,6 +37,14 @@ namespace SP.Data
                     .OnDelete(DeleteBehavior.Restrict)
                     .IsRequired();
             });
+            
+            // уникальные индексы
+            modelBuilder.Entity<Inventory>()
+                .HasIndex(x => new {x.GasStationId, x.Code})
+                .IsUnique();
+            modelBuilder.Entity<CalcSheet>()
+                .HasIndex(x => new {x.GasStationId, x.NomenclatureId})
+                .IsUnique();
         }
 
         // таблицы с данными

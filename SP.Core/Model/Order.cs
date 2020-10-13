@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using SP.Core.Enum;
 
 namespace SP.Core.Model
 {
@@ -22,6 +23,10 @@ namespace SP.Core.Model
         /// Сотрудник, сделавший заказ
         /// </summary>
         public int PersonId { get; set; }
+        /// <summary>
+        /// Тип заказа
+        /// </summary>
+        public OrderType OrderType { get; set; }
 
         #region Navigation properties
 

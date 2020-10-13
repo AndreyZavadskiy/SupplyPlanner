@@ -1,4 +1,6 @@
-﻿namespace SP.Service.Models
+﻿using System;
+
+namespace SP.Service.Models
 {
     /// <summary>
     /// Расчетный лист для вывода остатков и потребности
@@ -45,5 +47,13 @@
         /// Количество для заказа
         /// </summary>
         public decimal OrderQuantity { get; set; }
+        /// <summary>
+        /// Количество последнего заказа
+        /// </summary>
+        public decimal LastQuantity { get; set; }
+        /// <summary>
+        /// Дата последнего заказа
+        /// </summary>
+        public DateTime? LastOrderDate { get; set; }
     }
 }

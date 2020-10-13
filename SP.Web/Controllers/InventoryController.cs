@@ -320,6 +320,23 @@ namespace SP.Web.Controllers
             return View("Demand", model);
         }
 
+        [Route("[controller]/FixedDemand")]
+        public async Task<IActionResult> FixedDemandAsync()
+        {
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory",
+                "Открыт список для плановой поставки ТМЦ по Номенклатуре.");
+
+            var model = new InventoryProcessingViewModel
+            {
+                ProcessingDate = DateTime.Now
+            };
+
+            await LoadEssentialDictionaries();
+
+            return View("FixedDemand", model);
+        }
+
+
         [HttpPost]
         public async Task<IActionResult> LoadDemandList(string regions, string terrs, int? station, int? group, int? nom)
         {

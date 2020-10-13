@@ -6,10 +6,10 @@
     <title>@ViewData["Title"] - Supply Planner</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <environment include="Development">
-        <link rel="stylesheet" href="~/lib/chosen/chosen.css"/>
-        <link rel="stylesheet" href="~/bundles/dt.bundle.css"/>
-        <link rel="stylesheet" href="~/css/site.css"/>
-        <link rel="stylesheet" href="~/css/custom.css"/>
+        <link rel="stylesheet" href="~/lib/chosen/chosen.css" />
+        <link rel="stylesheet" href="~/bundles/dt.bundle.css" />
+        <link rel="stylesheet" href="~/css/site.css" />
+        <link rel="stylesheet" href="~/css/custom.css" />
     </environment>
     <environment exclude="Development">
         <link rel="stylesheet" href="~/lib/chosen/chosen.min.css" />
@@ -35,8 +35,11 @@
                                 @if (this.User.IsInRole("Administrator"))
                                 {
                                     <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="Inventory" asp-action="FixedDemand">Плановая поставка</a>
+                                    </li>
+                                    <li class="nav-item">
                                         <div class="dropdown">
-                                            <span class="nav-link text-dark dropbtn">Расчет</span>
+                                            <span class="nav-link text-dark dropbtn">Заказ</span>
                                             <div class="dropdown-content">
                                                 <a class="nav-link text-dark" asp-controller="Inventory" asp-action="Upload">Загрузка остатков ТМЦ</a>
                                                 <a class="nav-link text-dark" asp-controller="Inventory" asp-action="AutoMerge">Автоматическое объединение ТМЦ с Номенклатурой</a>

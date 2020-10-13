@@ -165,7 +165,8 @@ namespace SP.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("EntityName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(50);
 
                     b.Property<string>("NewValue")
                         .HasColumnType("nvarchar(max)");
@@ -462,9 +463,10 @@ namespace SP.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GasStationId");
-
                     b.HasIndex("NomenclatureId");
+
+                    b.HasIndex("GasStationId", "NomenclatureId")
+                        .IsUnique();
 
                     b.ToTable("CalcSheet");
                 });
@@ -669,7 +671,7 @@ namespace SP.Data.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Code")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("GasStationId")
                         .HasColumnType("int");
@@ -695,11 +697,13 @@ namespace SP.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GasStationId");
-
                     b.HasIndex("MeasureUnitId");
 
                     b.HasIndex("NomenclatureId");
+
+                    b.HasIndex("GasStationId", "Code")
+                        .IsUnique()
+                        .HasFilter("[Code] IS NOT NULL");
 
                     b.ToTable("Inventory");
                 });
@@ -761,6 +765,9 @@ namespace SP.Data.Migrations
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("OrderType")
+                        .HasColumnType("int");
 
                     b.Property<int>("PersonId")
                         .HasColumnType("int");
@@ -880,6 +887,8 @@ namespace SP.Data.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
 
                     b.ToTable("RegionalStructure");
                 });
@@ -1272,6 +1281,13 @@ namespace SP.Data.Migrations
                         .HasForeignKey("RegionalStructureId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SP.Core.Model.RegionalStructure", b =>
+                {
+                    b.HasOne("SP.Core.Model.RegionalStructure", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentId");
                 });
 
             modelBuilder.Entity("SP.Core.Model.StageInventory", b =>

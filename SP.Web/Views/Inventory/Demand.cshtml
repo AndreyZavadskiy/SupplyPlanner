@@ -105,7 +105,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Загрузка ТМЦ</h5>
+                    <h5 class="modal-title">Расчет потребности</h5>
                 </div>
                 <div class="modal-body">
                     <div class="progress-step"></div>
@@ -170,7 +170,7 @@
             var todayString = ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
             $('#DemandGrid').DataTable({
                 language: {
-                    url: '/lib/datatables/i18n/russian.json'
+                    url: '/lib/datatables/i18n/dt-russian.json'
                 },
                 rowId: 'id',
                 select: {
@@ -247,14 +247,6 @@
                         }
                     },
                     {
-                        text: 'Плановая поставка',
-                        titleAttr: 'Плановая поставка ТМЦ с СПИ не более 12 месяцев',
-                        className: 'dt-action-button btn btn-primary',
-                        action: function () {
-                            makeOrder(1);
-                        }
-                    },
-                    {
                         text: 'Заказать',
                         titleAttr: 'Заказ ТМЦ',
                         className: 'dt-action-button btn btn-primary',
@@ -263,8 +255,8 @@
                         }
                     },
                     {
-                        text: 'Изменить',
-                        titleAttr: 'Изменить параметры заказа ТМЦ',
+                        text: 'Изменить формулы',
+                        titleAttr: 'Изменить формулы заказа ТМЦ',
                         className: 'dt-action-button btn btn-primary',
                         action: function() {
                             changeOrders();
