@@ -113,6 +113,7 @@
     <Build Include="dbo\Stored Procedures\MakeFixedOrder.sql" />
     <Build Include="dbo\Stored Procedures\MakeOrder.sql" />
     <Build Include="dbo\Stored Procedures\CalculateBalance.sql" />
+    <Build Include="dbo\Stored Procedures\QueryDemandList.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SP.Database.publish.xml" />

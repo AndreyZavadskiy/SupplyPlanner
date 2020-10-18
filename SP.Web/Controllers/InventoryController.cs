@@ -356,6 +356,16 @@ namespace SP.Web.Controllers
             return View("FixedDemand", model);
         }
 
+        /// <summary>
+        /// Вывести список номенклатуры для заказа
+        /// </summary>
+        /// <param name="regions"></param>
+        /// <param name="terrs"></param>
+        /// <param name="stations"></param>
+        /// <param name="groups"></param>
+        /// <param name="noms"></param>
+        /// <param name="shortUse"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> LoadDemandList(string regions, string terrs, string stations, string groups, string noms, bool shortUse = false)
         {
@@ -377,7 +387,7 @@ namespace SP.Web.Controllers
         }
 
         /// <summary>
-        /// Рассчитать заказ
+        /// Рассчитать потребность
         /// </summary>
         /// <param name="idList"></param>
         /// <param name="coordinator"></param>
@@ -397,6 +407,11 @@ namespace SP.Web.Controllers
             return Json(new { Key = serviceKey });
         }
 
+        /// <summary>
+        /// Сохранить план/формулу
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
         [Route("[controller]/Requirement")]
         public async Task<IActionResult> Requirement([FromBody] RequirementViewModel model)
@@ -432,6 +447,13 @@ namespace SP.Web.Controllers
             return Json(successResult);
         }
 
+        /// <summary>
+        /// Сохранить заказ на поставку
+        /// </summary>
+        /// <param name="orderType"></param>
+        /// <param name="balance"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPost]
         [Route("[controller]/SaveOrder")]
         public async Task<IActionResult> SaveOrderAsync(int orderType, bool balance, [FromBody] IEnumerable<OrderQuantity> data)

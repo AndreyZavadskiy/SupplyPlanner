@@ -5,6 +5,7 @@ using SP.Core.History;
 using SP.Core.Log;
 using SP.Core.Master;
 using SP.Core.Model;
+using SP.Core.View;
 
 namespace SP.Data
 {
@@ -45,6 +46,11 @@ namespace SP.Data
             modelBuilder.Entity<CalcSheet>()
                 .HasIndex(x => new {x.GasStationId, x.NomenclatureId})
                 .IsUnique();
+
+            // типы для выборки данных
+            modelBuilder.Entity<DemandListView>()
+                .HasNoKey()
+                .ToView(null);
         }
 
         // таблицы с данными

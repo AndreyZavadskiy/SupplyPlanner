@@ -9,6 +9,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SP.Core.Enum;
 using SP.Core.Model;
+using SP.Core.View;
 using SP.Data;
 using SP.Service.Background;
 using SP.Service.DTO;
@@ -29,7 +30,7 @@ namespace SP.Service.Services
         Task<int> LinkInventoryWithNomenclatureAsync(int[] inventoryIdList, int nomenclatureId, int personId);
         Task<int> BlockInventoryAsync(int[] inventoryIdList, int personId);
         Task<IEnumerable<BalanceListItem>> GetBalanceListAsync(int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool zero);
-        Task<IEnumerable<DemandListItem>> GetDemandListAsync(int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool shortUse);
+        Task<IEnumerable<DemandListView>> GetDemandListAsync(int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool shortUse);
         Task<IEnumerable<OrderModel>> GetOrderListAsync();
         Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(int id);
         Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, int[] idList);
@@ -527,52 +528,61 @@ namespace SP.Service.Services
         /// Получить список остатков и потребности по Номенклатуре для просмотра
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<DemandListItem>> GetDemandListAsync(int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool shortUse)
+        public async Task<IEnumerable<DemandListView>> GetDemandListAsync(int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool shortUse)
         {
             try
             {
-                var query = _context.CalcSheets.AsQueryable();
-                if (stations != null)
-                {
-                    query = query.Where(x => stations.Contains(x.GasStationId));
-                }
-                else if (terrs != null)
-                {
-                    query = query.Where(x => terrs.Contains(x.GasStation.TerritoryId));
-                }
-                else if (regions != null)
-                {
-                    query = query.Where(x => x.GasStation.Territory.ParentId != null && regions.Contains(x.GasStation.Territory.ParentId.Value));
-                }
-
+                // формируем список id всей выбранной номенклатуры
+                var nomenclatureQuery = _context.Nomenclatures.AsNoTracking();
                 if (noms != null)
                 {
-                    query = query.Where(x => noms.Contains(x.NomenclatureId));
+                    nomenclatureQuery = nomenclatureQuery.Where(x => noms.Contains(x.Id));
                 }
                 else if (groups != null)
                 {
-                    query = query.Where(x => groups.Contains(x.Nomenclature.NomenclatureGroupId));
+                    nomenclatureQuery = nomenclatureQuery.Where(x => groups.Contains(x.NomenclatureGroupId));
                 }
 
                 if (shortUse)
                 {
-                    query = query.Where(x => x.Nomenclature.UsefulLife < 12);
+                    nomenclatureQuery = nomenclatureQuery.Where(x => x.UsefulLife < 12);
                 }
 
-                var orderList = await query
-                    .Select(x => new DemandListItem
+                var nomenclatureIdList = await nomenclatureQuery
+                    .Where(x => x.IsActive)
+                    .Select(x => x.Id)
+                    .ToArrayAsync();
+
+                // формируем список id все выбранных АЗС
+                var stationQuery = _context.GasStations.AsNoTracking();
+                if (stations != null)
+                {
+                    stationQuery = stationQuery.Where(x => stations.Contains(x.Id));
+                }
+                else if (terrs?.Length > 0)
+                {
+                    stationQuery = stationQuery.Where(x => terrs.Contains(x.TerritoryId));
+                }
+                else if (regions?.Length > 0)
+                {
+                    stationQuery = stationQuery
+                        .Include(x => x.Territory)
+                        .Where(x => x.Territory.ParentId != null && regions.Contains(x.Territory.ParentId.Value));
+                }
+
+                var stationList = await stationQuery
+                    .Select(x => new
                     {
-                        Id = x.Id,
-                        Code = x.Nomenclature.Code ?? x.Nomenclature.Id.ToString(),
-                        Name = x.Nomenclature.Name,
-                        GasStationName = x.GasStation.StationNumber,
-                        Quantity = x.Quantity,
-                        MeasureUnitName = x.Nomenclature.MeasureUnit.Name,
-                        FixedAmount = x.FixedAmount,
-                        Formula = x.Formula,
-                        Plan = x.Plan,
-                        OrderQuantity = x.Plan - x.Quantity
+                        x.Id,
+                        x.StationNumber
                     })
+                    .ToArrayAsync();
+
+                var pStations = new SqlParameter("@Stations", string.Join(',', stationList.Select(x => x.Id)));
+                var pNomenclatures = new SqlParameter("@Nomenclatures", string.Join(',', nomenclatureIdList));
+
+                var orderList = await _context.Set<DemandListView>()
+                    .FromSqlRaw("dbo.QueryDemandList @Stations, @Nomenclatures", pStations, pNomenclatures)
                     .ToArrayAsync();
 
                 return orderList;

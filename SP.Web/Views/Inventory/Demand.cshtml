@@ -39,6 +39,8 @@
                     <th class="exportable-column">Формула</th>
                     <th class="exportable-column">План</th>
                     <th class="exportable-column">План - остаток</th>
+                    <th class="exportable-column">Посл.заказ</th>
+                    <th class="exportable-column">Дата заказа</th>
                 </tr>
             </thead>
         </table>
@@ -189,6 +191,7 @@
                     [10, 25, 50, 100, -1],
                     [10, 25, 50, 100, 'Все']
                 ],
+                scrollX: true,
                 processing: true,
                 ajax: {
                     url: '/Inventory/LoadDemandList',
@@ -217,7 +220,9 @@
                     { data: 'fixedAmount' },
                     { data: 'formula' },
                     { data: 'plan' },
-                    { data: 'orderQuantity' }
+                    { data: 'orderQuantity' },
+                    { data: 'lastQuantity' },
+                    { data: 'lastOrderDate' }
                 ],
                 columnDefs: [
                     {
@@ -237,6 +242,10 @@
                         orderable: false,
                         sorting: false,
                         width: '1em'
+                    },
+                    {
+                        targets: 12,
+                        render: $.fn.dataTable.render.moment('YYYY-MM-DDTHH:mm:ss.SSSSSS', 'DD.MM.YYYY HH:mm')
                     }
                 ],
                 dom:
