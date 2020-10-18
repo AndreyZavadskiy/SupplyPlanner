@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[LinkInventoryWithNomenclature]
+﻿CREATE PROCEDURE [dbo].[AutoLinkInventoryWithNomenclature]
     @PersonId int,
     @Rows int OUTPUT
 AS

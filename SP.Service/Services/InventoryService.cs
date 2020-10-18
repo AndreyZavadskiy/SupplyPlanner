@@ -232,10 +232,6 @@ namespace SP.Service.Services
             {
                 query = query.Where(x => x.UsefulLife > 12);
             }
-            if (shortUsefulLife)
-            {
-                query = query.Where(x => x.UsefulLife <= 12);
-            }
             var list = await query
                 .Select(x => new DictionaryListItem
                 {

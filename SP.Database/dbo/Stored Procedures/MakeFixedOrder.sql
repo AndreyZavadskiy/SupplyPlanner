@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE [dbo].[MakeFixedOrder]
-    @IdList nvarchar(max),
+    @IdList nvarchar(max),	--  передается ограниченное количество идентификаторов
     @PersonId int,
 	@OrderNum int OUTPUT
 AS

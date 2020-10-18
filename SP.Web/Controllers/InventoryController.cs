@@ -249,6 +249,7 @@ namespace SP.Web.Controllers
             int[] stationIdList = stations.SplitToIntArray();
             int[] groupList = groups.SplitToIntArray();
             int[] nomIdList = noms.SplitToIntArray();
+
             StartBackgroundBalanceCalculation(coordinator, serviceKey, user.Id, regionIdList, terrIdList,
                 stationIdList, groupList, nomIdList, usefulIdList);
 
@@ -544,12 +545,12 @@ namespace SP.Web.Controllers
         }
 
         private void StartBackgroundBalanceCalculation(IBackgroundCoordinator coordinator, Guid serviceKey, string aspNetUserId,
-            int[] regions, int[] terrs, int? station, int? group, int? nom, int[] usefulRange)
+            int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, int[] usefulRange)
         {
             Task.Run(async () =>
             {
                 var service = new BackgroundInventoryService(coordinator);
-                await service.CalculateBalanceAsync(serviceKey, aspNetUserId, regions, terrs, station, group, nom, usefulRange);
+                await service.CalculateBalanceAsync(serviceKey, aspNetUserId, regions, terrs, stations, groups, noms, usefulRange);
             });
         }
 

@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE [dbo].[BlockInventoryList]
     @PersonId int,
-    @IdList nvarchar(max),
+    @IdList nvarchar(max),  --  передается ограниченного количество идентификаторов
     @NomenclatureId int,
     @Rows int OUTPUT
 AS

@@ -110,8 +110,11 @@
     <Build Include="dbo\Stored Procedures\AutoLinkInventoryWithNomenclature.sql" />
     <Build Include="dbo\Stored Procedures\LinkInventoryListWithNomenclature.sql" />
     <Build Include="dbo\Stored Procedures\BlockInventoryList.sql" />
-    <Build Include="dbo\Stored Procedures\LinkInventoryWithNomenclature.sql" />
     <Build Include="dbo\Stored Procedures\MakeFixedOrder.sql" />
     <Build Include="dbo\Stored Procedures\MakeOrder.sql" />
+    <Build Include="dbo\Stored Procedures\CalculateBalance.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SP.Database.publish.xml" />
   </ItemGroup>
 </Project>

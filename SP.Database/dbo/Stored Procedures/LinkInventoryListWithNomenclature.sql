@@ -1,7 +1,7 @@
 ﻿CREATE PROCEDURE [dbo].[LinkInventoryListWithNomenclature]
-    @PersonId int,
-    @IdList nvarchar(max),
+    @IdList nvarchar(max),  --  передается ограниченное количество идентификаторов
     @NomenclatureId int,
+    @PersonId int,
     @Rows int OUTPUT
 AS
 BEGIN
