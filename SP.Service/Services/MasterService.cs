@@ -30,6 +30,8 @@ namespace SP.Service.Services
         Task<IEnumerable<TerritoryListItem>> GetTerritoryListAsync();
 
         Task<Person> GetPersonAsync(string aspNetUserId);
+
+        Task<IEnumerable<DictionaryListItem>> GetNomenclatureGroup();
     }
 
     public class MasterService : IMasterService
@@ -305,6 +307,29 @@ namespace SP.Service.Services
             }
 
             return person;
+        }
+
+        public async Task<IEnumerable<DictionaryListItem>> GetNomenclatureGroup()
+        {
+            string sqlStatement = @"
+                SELECT DISTINCT ng.*
+                FROM dic.NomenclatureGroup ng
+                WHERE EXISTS (
+	                SELECT *
+	                FROM dbo.Nomenclature n
+	                WHERE n.UsefulLife <= 12
+	                )
+                ";
+            var dbReuslt = _context.NomenclatureGroups.FromSqlRaw(sqlStatement);
+            var result = dbReuslt
+                .Select(x => new DictionaryListItem
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Active = x.IsActive ? "1" : "0"
+                });
+
+            return result;
         }
     }
 }

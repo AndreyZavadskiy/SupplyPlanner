@@ -331,11 +331,17 @@ namespace SP.Web.Controllers
                 ProcessingDate = DateTime.Now
             };
 
-            await LoadEssentialDictionaries();
+            var regions = await _masterService.SelectRegionAsync();
+            var list = new SelectList(regions, "Id", "Name").ToList();
+            ViewData["RegionList"] = list;
+
+            var nomenclatureGroups = await _masterService.GetNomenclatureGroup();
+            var groupList = new SelectList(nomenclatureGroups, "Id", "Name").ToList();
+            groupList.Insert(0, new SelectListItem(string.Empty, string.Empty));
+            ViewData["NomenclatureGroupList"] = groupList;
 
             return View("FixedDemand", model);
         }
-
 
         [HttpPost]
         public async Task<IActionResult> LoadDemandList(string regions, string terrs, int? station, int? group, int? nom)

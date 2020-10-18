@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,7 @@ namespace SP.Service.Services
         Task<NomenclatureModel> GetNomenclatureModelAsync(int id);
         Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveNomenclatureAsync(NomenclatureModel model);
         Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync(int? groupId);
-        Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int? groupId, bool longterm);
+        Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int? groupId, bool longterm, bool shortUsefulLife);
         Task<IEnumerable<NomenclatureInventory>> GetNomenclatureInventoryListAsync(int id);
         Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId);
         Task<int> BlockInventoryAsync(int[] inventoryIdList);
@@ -219,7 +220,7 @@ namespace SP.Service.Services
         /// </summary>
         /// <param name="groupId"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int? groupId, bool longterm)
+        public async Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int? groupId, bool longterm, bool shortUsefulLife)
         {
             var query = _context.Nomenclatures.AsNoTracking();
             if (groupId != null)
@@ -229,6 +230,10 @@ namespace SP.Service.Services
             if (longterm)
             {
                 query = query.Where(x => x.UsefulLife > 12);
+            }
+            if (shortUsefulLife)
+            {
+                query = query.Where(x => x.UsefulLife <= 12);
             }
             var list = await query
                 .Select(x => new DictionaryListItem
@@ -583,6 +588,26 @@ namespace SP.Service.Services
 
             try
             {
+
+                string idList = string.Join(',', data.Select(x => x.Id));
+                var p1 = new SqlParameter("@IdList", idList);
+                var p2 = new SqlParameter("@PersonId", personId);
+                var p3 = new SqlParameter("@OrderNum", SqlDbType.Int)
+                {
+                    Direction = ParameterDirection.Output
+                };
+                if (orderType == 1)
+                {
+                    await _context.Database.ExecuteSqlRawAsync("dbo.MakeOrder @IdList, @PersonId, @OrderNum OUT", p1, p2, p3);
+                }
+                else
+                {
+                    await _context.Database.ExecuteSqlRawAsync("dbo.MakeFixedOrder @IdList, @PersonId, @OrderNum OUT", p1, p2, p3);
+                }
+
+                return ((int) p3.Value, 0);
+
+                /*
                 var order = new Order
                 {
                     OrderDate = DateTime.Now,
@@ -632,6 +657,7 @@ namespace SP.Service.Services
                 int saved = await _context.SaveChangesAsync();
 
                 return (order.Id, saved);
+                */
             }
             catch (Exception)
             {

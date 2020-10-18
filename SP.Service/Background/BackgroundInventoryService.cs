@@ -806,11 +806,11 @@ namespace SP.Service.Background
                 evaluator.Variables = new Dictionary<string, object>()
                 {
                     { "if", new Func<bool,double,double,double>((c, x, y) => c ? x : y)},
-                    { "cluster", gasStation.ServiceLevel.Name.ToLower() },
-                    { "operformat", gasStation.OperatorRoomFormat.Name.ToLower() },
-                    { "regime", gasStation.TradingHallOperatingMode.Name.ToLower() },
-                    { "cashdesk", gasStation.CashboxLocation.Name.ToLower() },
-                    { "salearea", gasStation.TradingHallSize.Name.ToLower() },
+                    { "cluster", gasStation.ServiceLevel?.Name.ToLower() },
+                    { "operformat", gasStation.OperatorRoomFormat?.Name.ToLower() },
+                    { "regime", gasStation.TradingHallOperatingMode?.Name.ToLower() },
+                    { "cashdesk", gasStation.CashboxLocation?.Name.ToLower() },
+                    { "salearea", gasStation.TradingHallSize?.Name.ToLower() },
                     { "totalarm", gasStation.CashboxTotal },
                     { "totaltrk", gasStation.FuelDispenserTotal },
                     { "avgcheck", Convert.ToDouble(gasStation.ChequePerDay) },

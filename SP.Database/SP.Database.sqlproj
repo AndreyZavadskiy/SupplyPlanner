@@ -108,5 +108,7 @@
     <Build Include="Security\stage.sql" />
     <Build Include="dbo\Stored Procedures\MergeStageToInventory.sql" />
     <Build Include="dbo\Stored Procedures\LinkInventoryWithNomenclature.sql" />
+    <Build Include="dbo\Stored Procedures\MakeFixedOrder.sql" />
+    <Build Include="dbo\Stored Procedures\MakeOrder.sql" />
   </ItemGroup>
 </Project>
