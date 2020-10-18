@@ -31,7 +31,7 @@ namespace SP.Service.Services
 
         Task<Person> GetPersonAsync(string aspNetUserId);
 
-        Task<IEnumerable<DictionaryListItem>> GetNomenclatureGroup();
+        Task<IEnumerable<DictionaryListItem>> GetNomenclatureGroupForShortUse();
     }
 
     public class MasterService : IMasterService
@@ -309,7 +309,7 @@ namespace SP.Service.Services
             return person;
         }
 
-        public async Task<IEnumerable<DictionaryListItem>> GetNomenclatureGroup()
+        public async Task<IEnumerable<DictionaryListItem>> GetNomenclatureGroupForShortUse()
         {
             string sqlStatement = @"
                 SELECT DISTINCT ng.*

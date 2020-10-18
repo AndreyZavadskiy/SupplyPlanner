@@ -298,9 +298,9 @@ namespace SP.Web.Controllers
         /// <param name="nom"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> LoadBalanceListAsync(string regions, string terrs, int? station, int? group, int? nom, bool zero)
+        public async Task<IActionResult> LoadBalanceListAsync(string regions, string terrs, string stations, string groups, string noms, bool zero)
         {
-            if (string.IsNullOrWhiteSpace(regions) && string.IsNullOrWhiteSpace(terrs) && group == null)
+            if (string.IsNullOrWhiteSpace(regions) && string.IsNullOrWhiteSpace(terrs) && string.IsNullOrWhiteSpace(groups))
             {
                 var zeroItem = new BalanceListItem { Name = "Установите фильтры для отображения данных" };
                 return Json(new { data = new[] { zeroItem } });
@@ -308,7 +308,11 @@ namespace SP.Web.Controllers
 
             int[] regionIdList = regions.SplitToIntArray();
             int[] terrIdList = terrs.SplitToIntArray();
-            var list = await _inventoryService.GetBalanceListAsync(regionIdList, terrIdList, station, group, nom, zero);
+            int[] stationIdList = stations.SplitToIntArray();
+            int[] groupList = groups.SplitToIntArray();
+            int[] nomIdList = noms.SplitToIntArray();
+            
+            var list = await _inventoryService.GetBalanceListAsync(regionIdList, terrIdList, stationIdList, groupList, nomIdList, zero);
 
             return Json(new { data = list });
         }
@@ -344,7 +348,7 @@ namespace SP.Web.Controllers
             var list = new SelectList(regions, "Id", "Name").ToList();
             ViewData["RegionList"] = list;
 
-            var nomenclatureGroups = await _masterService.GetNomenclatureGroup();
+            var nomenclatureGroups = await _masterService.GetNomenclatureGroupForShortUse();
             var groupList = new SelectList(nomenclatureGroups, "Id", "Name").ToList();
             groupList.Insert(0, new SelectListItem(string.Empty, string.Empty));
             ViewData["NomenclatureGroupList"] = groupList;
@@ -353,9 +357,9 @@ namespace SP.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoadDemandList(string regions, string terrs, int? station, int? group, int? nom)
+        public async Task<IActionResult> LoadDemandList(string regions, string terrs, string stations, string groups, string noms, bool shortUse = false)
         {
-            if (string.IsNullOrWhiteSpace(regions) && string.IsNullOrWhiteSpace(terrs) && group == null)
+            if (string.IsNullOrWhiteSpace(regions) && string.IsNullOrWhiteSpace(terrs) && string.IsNullOrWhiteSpace(groups))
             {
                 var zeroItem = new DemandListItem { Name = "Установите фильтры для отображения данных" };
                 return Json(new { data = new[] { zeroItem } });
@@ -363,7 +367,12 @@ namespace SP.Web.Controllers
 
             int[] regionIdList = regions.SplitToIntArray();
             int[] terrIdList = terrs.SplitToIntArray();
-            var list = await _inventoryService.GetDemandListAsync(regionIdList, terrIdList, station, group, nom);
+            int[] stationIdList = stations.SplitToIntArray();
+            int[] groupList = groups.SplitToIntArray();
+            int[] nomIdList = noms.SplitToIntArray();
+            
+            var list = await _inventoryService.GetDemandListAsync(regionIdList, terrIdList, stationIdList, groupList, nomIdList, shortUse);
+            
             return Json(new { data = list });
         }
 

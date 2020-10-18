@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using SP.Core.Enum;
 using SP.Core.Model;
 using SP.Data;
 using SP.Service.Background;
@@ -22,13 +23,13 @@ namespace SP.Service.Services
         Task<IEnumerable<MergingInventory>> GetListForManualMerge(int? mergeType);
         Task<NomenclatureModel> GetNomenclatureModelAsync(int id);
         Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveNomenclatureAsync(NomenclatureModel model);
-        Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync(int? groupId);
-        Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int[] groups, bool longterm);
+        Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync(int[] groups);
+        Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int[] groups, int[] usefulList);
         Task<IEnumerable<NomenclatureInventory>> GetNomenclatureInventoryListAsync(int id);
         Task<int> LinkInventoryWithNomenclatureAsync(int[] inventoryIdList, int nomenclatureId, int personId);
         Task<int> BlockInventoryAsync(int[] inventoryIdList, int personId);
-        Task<IEnumerable<BalanceListItem>> GetBalanceListAsync(int[] regions, int[] terrs, int? station, int? group, int? nom, bool zero);
-        Task<IEnumerable<DemandListItem>> GetDemandListAsync(int[] regions, int[] terrs, int? station, int? group, int? nom);
+        Task<IEnumerable<BalanceListItem>> GetBalanceListAsync(int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool zero);
+        Task<IEnumerable<DemandListItem>> GetDemandListAsync(int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool shortUse);
         Task<IEnumerable<OrderModel>> GetOrderListAsync();
         Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(int id);
         Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, int[] idList);
@@ -186,15 +187,15 @@ namespace SP.Service.Services
         /// Получить список Номенклатуры для просмотра
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync(int? groupId)
+        public async Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync(int[] groups)
         {
             var query = _context.Nomenclatures
                 .Include(x => x.MeasureUnit)
                 .Include(x => x.NomenclatureGroup)
                 .AsNoTracking();
-            if (groupId != null)
+            if (groups != null)
             {
-                query = query.Where(x => x.NomenclatureGroupId == groupId);
+                query = query.Where(x => groups.Contains(x.NomenclatureGroupId));
             }
 
             var list = await query
@@ -221,17 +222,32 @@ namespace SP.Service.Services
         /// </summary>
         /// <param name="groupId"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int[] groups, bool longterm)
+        public async Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int[] groups, int[] usefulList)
         {
             var query = _context.Nomenclatures.AsNoTracking();
             if (groups != null)
             {
                 query = query.Where(x => groups.Contains(x.NomenclatureGroupId));
             }
-            if (longterm)
+            if (usefulList != null)
             {
-                query = query.Where(x => x.UsefulLife > 12);
+                foreach (var r in usefulList)
+                {
+                    switch ((UsefulLifeRange)r)
+                    {
+                        case UsefulLifeRange.LessThanYear:
+                            query = query.Where(x => x.UsefulLife < 12);
+                            break;
+                        case UsefulLifeRange.Year:
+                            query = query.Where(x => x.UsefulLife == 12);
+                            break;
+                        case UsefulLifeRange.GreaterThanYear:
+                            query = query.Where(x => x.UsefulLife > 12);
+                            break;
+                    }
+                }
             }
+
             var list = await query
                 .Select(x => new DictionaryListItem
                 {
@@ -452,31 +468,31 @@ namespace SP.Service.Services
         /// <param name="group"></param>
         /// <param name="nom"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<BalanceListItem>> GetBalanceListAsync(int[] regions, int[] terrs, int? station, int? group, int? nom, bool hideZero)
+        public async Task<IEnumerable<BalanceListItem>> GetBalanceListAsync(int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool hideZero)
         {
             try
             {
                 var query = _context.CalcSheets.AsQueryable();
-                if (station.HasValue)
+                if (stations != null)
                 {
-                    query = query.Where(x => x.GasStationId == station);
+                    query = query.Where(x => stations.Contains(x.GasStationId));
                 }
-                else if (terrs?.Length > 0)
+                else if (terrs != null)
                 {
                     query = query.Where(x => terrs.Contains(x.GasStation.TerritoryId));
                 }
-                else if (regions?.Length > 0)
+                else if (regions != null)
                 {
                     query = query.Where(x => x.GasStation.Territory.ParentId != null && regions.Contains(x.GasStation.Territory.ParentId.Value));
                 }
 
-                if (nom.HasValue)
+                if (noms != null)
                 {
-                    query = query.Where(x => x.NomenclatureId == nom);
+                    query = query.Where(x => noms.Contains(x.NomenclatureId));
                 }
-                else if (group.HasValue)
+                else if (groups != null)
                 {
-                    query = query.Where(x => x.Nomenclature.NomenclatureGroupId == group);
+                    query = query.Where(x => groups.Contains(x.Nomenclature.NomenclatureGroupId));
                 }
 
                 if (hideZero)
@@ -511,31 +527,36 @@ namespace SP.Service.Services
         /// Получить список остатков и потребности по Номенклатуре для просмотра
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<DemandListItem>> GetDemandListAsync(int[] regions, int[] terrs, int? station, int? group, int? nom)
+        public async Task<IEnumerable<DemandListItem>> GetDemandListAsync(int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool shortUse)
         {
             try
             {
                 var query = _context.CalcSheets.AsQueryable();
-                if (station.HasValue)
+                if (stations != null)
                 {
-                    query = query.Where(x => x.GasStationId == station);
+                    query = query.Where(x => stations.Contains(x.GasStationId));
                 }
-                else if (terrs?.Length > 0)
+                else if (terrs != null)
                 {
                     query = query.Where(x => terrs.Contains(x.GasStation.TerritoryId));
                 }
-                else if (regions?.Length > 0)
+                else if (regions != null)
                 {
                     query = query.Where(x => x.GasStation.Territory.ParentId != null && regions.Contains(x.GasStation.Territory.ParentId.Value));
                 }
 
-                if (nom.HasValue)
+                if (noms != null)
                 {
-                    query = query.Where(x => x.NomenclatureId == nom);
+                    query = query.Where(x => noms.Contains(x.NomenclatureId));
                 }
-                else if (group.HasValue)
+                else if (groups != null)
                 {
-                    query = query.Where(x => x.Nomenclature.NomenclatureGroupId == group);
+                    query = query.Where(x => groups.Contains(x.Nomenclature.NomenclatureGroupId));
+                }
+
+                if (shortUse)
+                {
+                    query = query.Where(x => x.Nomenclature.UsefulLife < 12);
                 }
 
                 var orderList = await query

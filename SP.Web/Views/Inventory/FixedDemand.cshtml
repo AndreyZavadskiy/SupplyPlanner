@@ -75,16 +75,24 @@
                             </div>
                             <div class="form-group row col-12">
                                 <label for="GasStationList" class="control-label zero-gutters col-3">АЗС</label>
-                                <select id="GasStationList" data-placeholder="Выберите АЗС..."></select>
+                                <select id="GasStationList" multiple="multiple" data-placeholder="Выберите АЗС..."></select>
+                                <a title="Выделить все" onclick="chosenSelectAll('GasStationList');"><img src="/images/check-all.svg" class="icon-button" /></a>
+                                <a title="Снять все" onclick="chosenDeselectAll('GasStationList');"><img src="/images/x.svg" class="icon-button" /></a>
                             </div>
                             <div class="form-group row col-12">
                                 <label for="NomenclatureGroupList" class="control-label zero-gutters col-3">Группа номенклатуры</label>
-                                <select id="NomenclatureGroupList" data-placeholder="Выберите группу..."
-                                        asp-items="ViewBag.NomenclatureGroupList" onchange="loadNomenclature(this);"></select>
+                                <select id="NomenclatureGroupList" multiple="multiple" data-placeholder="Выберите группу..."
+                                        asp-items="ViewBag.NomenclatureGroupList"
+                                        onchange="loadNomenclature();">
+                                </select>
+                                <a title="Выделить все" onclick="chosenSelectAll('NomenclatureGroupList');"><img src="/images/check-all.svg" class="icon-button" /></a>
+                                <a title="Снять все" onclick="chosenDeselectAll('NomenclatureGroupList');"><img src="/images/x.svg" class="icon-button" /></a>
                             </div>
                             <div class="form-group row col-12">
                                 <label for="NomenclatureList" class="control-label zero-gutters col-3">Номенклатура</label>
-                                <select id="NomenclatureList" data-placeholder="Выберите позицию номенклатуры..."></select>
+                                <select id="NomenclatureList" multiple="multiple" data-placeholder="Выберите позицию номенклатуры..."></select>
+                                <a title="Выделить все" onclick="chosenSelectAll('NomenclatureList');"><img src="/images/check-all.svg" class="icon-button" /></a>
+                                <a title="Снять все" onclick="chosenDeselectAll('NomenclatureList');"><img src="/images/x.svg" class="icon-button" /></a>
                             </div>
                         </div>
                     </div>
@@ -187,9 +195,10 @@
                     data: function(d) {
                         d.regions = $('#RegionList').val().join();
                         d.terrs = $('#TerritoryList').val().join();
-                        d.station = $('#GasStationList').val();
-                        d.group = $('#NomenclatureGroupList').val();
-                        d.nom = $('#NomenclatureList').val();
+                        d.stations = $('#GasStationList').val().join();
+                        d.groups = $('#NomenclatureGroupList').val().join();
+                        d.noms = $('#NomenclatureList').val().join();
+                        d.shortuse = true;
                     },
                     dataType: 'json'
                 },
@@ -231,9 +240,8 @@
                 ],
                 dom:
                     "<'row'<'col-sm-12 col-md-12 dt-action-group'B>>" +
-                        "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                        "<'row'<'col-sm-12 col-md-4'l><'col-sm-12 col-md-4'i><'col-sm-12 col-md-4'f>>" +
                         "<'row'<'col-sm-12'tr>>" +
-                        "<'row'<'col-sm-12 col-md-6'i>>" +
                         "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
                 buttons: [
                     {
@@ -297,7 +305,7 @@
             $(".selectAll").on("click",
                 function (e) {
                     if ($(this).is(":checked")) {
-                        dt.rows({ page: 'current' }).select();
+                        dt.rows().select();
                     } else {
                         dt.rows().deselect();
                     }
@@ -372,27 +380,24 @@
                 });
         }
 
-        function loadNomenclature(control) {
-            var group = $(control).val();
+        function loadNomenclature() {
             var nomList = $('#NomenclatureList');
+            var selectedGroups = $('#NomenclatureGroupList').val();
+            var selectedNoms = nomList.val().join();
             nomList.empty();
-            if (group === '') {
+            if (selectedGroups.length === 0) {
+                nomList.trigger("chosen:updated");
                 nomList.trigger('change');
                 return;
             }
             var url = '/Nomenclature/LoadNomenclature';
             var requestData = {
-                'group': group,
-                'shortSpi': true
+                groups: selectedGroups.join(),
+                useful: '1'
             };
             $.get(url,
                 requestData,
                 function (data) {
-                    nomList.append($('<option>',
-                        {
-                            value: '',
-                            text: '-- ВСЕ --'
-                        }));
                     $.each(data,
                         function (index, element) {
                             nomList.append($('<option>',
@@ -401,8 +406,9 @@
                                     text: element.name
                                 }));
                         });
+
+                    selectOptions(nomList, selectedNoms);
                     nomList.trigger("chosen:updated");
-                    nomList.prop('selectedIndex', 0);
                     nomList.trigger('change');
                 });
         }

@@ -40,17 +40,19 @@ namespace SP.Web.Controllers
 
         [HttpPost]
         [Route("[controller]/LoadList")]
-        public async Task<IActionResult> LoadListAsync(int? group)
+        public async Task<IActionResult> LoadListAsync(string groups)
         {
-            var list = await _inventoryService.GetNomenclatureListAsync(group);
+            var groupIdList = groups.SplitToIntArray();
+            var list = await _inventoryService.GetNomenclatureListAsync(groupIdList);
 
             return Json(new { data = list });
         }
 
-        public async Task<IActionResult> LoadNomenclature(string groups, bool longterm = false)
+        public async Task<IActionResult> LoadNomenclature(string groups, string useful)
         {
             var groupIdList = groups.SplitToIntArray();
-            var list = await _inventoryService.GetNomenclatureListItemsAsync(groupIdList, longterm);
+            var usefulList = useful.SplitToIntArray();
+            var list = await _inventoryService.GetNomenclatureListItemsAsync(groupIdList, usefulList);
 
             return Json(list);
         }

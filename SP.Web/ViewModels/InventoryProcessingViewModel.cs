@@ -16,7 +16,7 @@ namespace SP.Web.ViewModels
         /// Дата обработки
         /// </summary>
         [Required(ErrorMessage = "Поле Дата обработки обязательно для заполнения.")]
-        [DisplayName("Дата загрузки")]
+        [DisplayName("Дата обработки")]
         public DateTime ProcessingDate { get; set; }
         /// <summary>
         /// Лог обработки
