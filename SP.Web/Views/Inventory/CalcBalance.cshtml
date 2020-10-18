@@ -40,22 +40,32 @@
         <div class="form-row zero-gutters">
             <div class="form-group row col-12">
                 <label for="GasStationList" class="control-label col-2">АЗС</label>
-                <select id="GasStationList" class="col-5" data-placeholder="Выберите регион/территорию..."></select>
+                <select id="GasStationList" multiple="multiple" data-placeholder="Выберите регион/территорию..."
+                        class="col-9">
+                </select>
+                <a title="Выделить все" onclick="chosenSelectAll('GasStationList');"><img src="/images/check-all.svg" class="icon-button" /></a>
+                <a title="Снять все" onclick="chosenDeselectAll('GasStationList');"><img src="/images/x.svg" class="icon-button" /></a>
             </div>
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-12">
                 <label for="NomenclatureGroupList" class="control-label col-2">Группа номенклатуры</label>
-                <select id="NomenclatureGroupList" data-placeholder="Выберите группу..."
-                        asp-items="ViewBag.NomenclatureGroupList" 
-                        class="col-5" onchange="loadNomenclature(this);">
+                <select id="NomenclatureGroupList" multiple="multiple" data-placeholder="Выберите группу..."
+                        asp-items="ViewBag.NomenclatureGroupList"
+                        class="col-9" onchange="loadNomenclature();">
                 </select>
+                <a title="Выделить все" onclick="chosenSelectAll('NomenclatureGroupList');"><img src="/images/check-all.svg" class="icon-button" /></a>
+                <a title="Снять все" onclick="chosenDeselectAll('NomenclatureGroupList');"><img src="/images/x.svg" class="icon-button" /></a>
             </div>
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-12">
                 <label for="NomenclatureList" class="control-label col-2">Номенклатура</label>
-                <select id="NomenclatureList" class="col-5" data-placeholder="Выберите позицию номенклатуры..."></select>
+                <select id="NomenclatureList" multiple="multiple" data-placeholder="Выберите позицию номенклатуры..."
+                        class="col-9">
+                </select>
+                <a title="Выделить все" onclick="chosenSelectAll('NomenclatureList');"><img src="/images/check-all.svg" class="icon-button" /></a>
+                <a title="Снять все" onclick="chosenDeselectAll('NomenclatureList');"><img src="/images/x.svg" class="icon-button" /></a>
             </div>
         </div>
         <div class="form-row zero-gutters">
@@ -130,9 +140,9 @@
                 var data = {
                     regions: $('#RegionList').val().join(),
                     terrs: $('#TerritoryList').val().join(),
-                    station: $('#GasStationList').val(),
-                    group: $('#NomenclatureGroupList').val(),
-                    nom: $('#NomenclatureList').val(),
+                    stations: $('#GasStationList').val().join(),
+                    groups: $('#NomenclatureGroupList').val().join(),
+                    noms: $('#NomenclatureList').val().join(),
                     usefuls: $('#UserfulLifeList').val().join()
                 };
                 console.log(data);
@@ -245,24 +255,21 @@
                 });
         }
 
-        function loadNomenclature(control) {
-            var group = $(control).val();
+        function loadNomenclature() {
             var nomList = $('#NomenclatureList');
+            var selectedGroups = $('#NomenclatureGroupList').val();
+            var selectedNoms = nomList.val().join();
             nomList.empty();
-            if (group === '') {
+            if (selectedGroups.length === 0) {
+                nomList.trigger("chosen:updated");
                 nomList.trigger('change');
                 return;
             }
             var url = '/Nomenclature/LoadNomenclature';
-            var requestData = { 'group': group };
+            var requestData = { groups: selectedGroups.join() };
             $.get(url,
                 requestData,
                 function (data) {
-                    nomList.append($('<option>',
-                        {
-                            value: '',
-                            text: '-- ВСЕ --'
-                        }));
                     $.each(data,
                         function (index, element) {
                             nomList.append($('<option>',
@@ -271,8 +278,9 @@
                                     text: element.name
                                 }));
                         });
+
+                    selectOptions(nomList, selectedNoms);
                     nomList.trigger("chosen:updated");
-                    nomList.prop('selectedIndex', 0);
                     nomList.trigger('change');
                 });
         }

@@ -57,6 +57,7 @@ namespace SP.Web.Controllers
             int[] terrIdList = terrs.SplitToIntArray();
             var list = await GetGasStationListItems(regionIdList, terrIdList);
             var stations = list
+                .OrderBy(x => x.StationNumber)
                 .Select(x => new DictionaryListItem
                 {
                     Id = x.Id,

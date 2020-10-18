@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 using SP.Core.Master;
 using SP.Service.Models;
 using SP.Service.Services;
@@ -48,9 +47,10 @@ namespace SP.Web.Controllers
             return Json(new { data = list });
         }
 
-        public async Task<IActionResult> LoadNomenclature(int? group, bool longterm = false, bool shortSpi = false)
+        public async Task<IActionResult> LoadNomenclature(string groups, bool longterm = false)
         {
-            var list = await _inventoryService.GetNomenclatureListItemsAsync(group, longterm, shortSpi);
+            var groupIdList = groups.SplitToIntArray();
+            var list = await _inventoryService.GetNomenclatureListItemsAsync(groupIdList, longterm);
 
             return Json(list);
         }

@@ -23,10 +23,10 @@ namespace SP.Service.Services
         Task<NomenclatureModel> GetNomenclatureModelAsync(int id);
         Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveNomenclatureAsync(NomenclatureModel model);
         Task<IEnumerable<NomenclatureListItem>> GetNomenclatureListAsync(int? groupId);
-        Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int? groupId, bool longterm, bool shortUsefulLife);
+        Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int[] groups, bool longterm);
         Task<IEnumerable<NomenclatureInventory>> GetNomenclatureInventoryListAsync(int id);
-        Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId);
-        Task<int> BlockInventoryAsync(int[] inventoryIdList);
+        Task<int> LinkInventoryWithNomenclatureAsync(int[] inventoryIdList, int nomenclatureId, int personId);
+        Task<int> BlockInventoryAsync(int[] inventoryIdList, int personId);
         Task<IEnumerable<BalanceListItem>> GetBalanceListAsync(int[] regions, int[] terrs, int? station, int? group, int? nom, bool zero);
         Task<IEnumerable<DemandListItem>> GetDemandListAsync(int[] regions, int[] terrs, int? station, int? group, int? nom);
         Task<IEnumerable<OrderModel>> GetOrderListAsync();
@@ -97,13 +97,14 @@ namespace SP.Service.Services
             }
 
             // переносим в основную таблицу
-            UpdateProgress(serviceKey, "[1/2] Обновление остатков ТМЦ в базе данных", 100.0m * currentRow / totalRows);
+            UpdateProgress(serviceKey, "[2/2] Обновление остатков ТМЦ в базе данных", 100.0m * currentRow / totalRows);
             var p1 = new SqlParameter("@PersonId", personId);
             var p2 = new SqlParameter("@Rows", SqlDbType.Int)
             {
                 Direction = ParameterDirection.Output
             };
             await _context.Database.ExecuteSqlRawAsync("dbo.MergeStageToInventory @PersonId, @Rows OUT", p1, p2);
+            UpdateProgress(serviceKey, "[2/2] Обновление остатков ТМЦ в базе данных", 100.0m);
             Debug.WriteLine(p2.Value.ToString());
 
             return (true, null);
@@ -220,12 +221,12 @@ namespace SP.Service.Services
         /// </summary>
         /// <param name="groupId"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int? groupId, bool longterm, bool shortUsefulLife)
+        public async Task<IEnumerable<DictionaryListItem>> GetNomenclatureListItemsAsync(int[] groups, bool longterm)
         {
             var query = _context.Nomenclatures.AsNoTracking();
-            if (groupId != null)
+            if (groups != null)
             {
-                query = query.Where(x => x.NomenclatureGroupId == groupId);
+                query = query.Where(x => groups.Contains(x.NomenclatureGroupId));
             }
             if (longterm)
             {
@@ -254,8 +255,8 @@ namespace SP.Service.Services
                 .Where(x => x.NomenclatureId == id)
                 .Select(x => new NomenclatureInventory
                 {
-                    Code = x.Nomenclature.Code ?? x.NomenclatureId.ToString(),
-                    Name = x.Nomenclature.Name,
+                    Code = x.Code,
+                    Name = x.Name,
                     StationNumber = x.GasStation.StationNumber
                 })
                 .ToArrayAsync();
@@ -370,18 +371,40 @@ namespace SP.Service.Services
         /// <param name="inventoryIdList"></param>
         /// <param name="nomenclatureId"></param>
         /// <returns></returns>
-        public async Task<int> LinkInventoryToNomenclatureAsync(int[] inventoryIdList, int nomenclatureId)
+        public async Task<int> LinkInventoryWithNomenclatureAsync(int[] inventoryIdList, int nomenclatureId, int personId)
         {
-            throw new NotImplementedException();
-            //int updated = await _context.Inventories
-            //    .Where(x => inventoryIdList.Contains(x.Id))
-            //    .BatchUpdateAsync(x => new Inventory
-            //    {
-            //        NomenclatureId = nomenclatureId,
-            //        IsBlocked = false
-            //    });
+            Stopwatch sw = new Stopwatch();
+            int currentRow = 0;
+            int updated = 0;
+            while (true)
+            {
+                var portion = inventoryIdList
+                    .Skip(currentRow)
+                    .Take(250)
+                    .ToArray();
+                if (portion.Length == 0)
+                {
+                    break;
+                }
 
-            //return updated;
+                var p1 = new SqlParameter("@PersonId", personId);
+                var p2 = new SqlParameter("@IdList" , string.Join(',', portion));
+                var p3 = new SqlParameter("@NomenclatureId", nomenclatureId);
+                var pRows = new SqlParameter("@Rows", SqlDbType.Int)
+                {
+                    Direction = ParameterDirection.Output
+                };
+                await _context.Database.ExecuteSqlRawAsync(
+                    "dbo.LinkInventoryListWithNomenclature @PersonId, @IdList, @NomenclatureId, @Rows OUT", 
+                    p1, p2, p3, pRows);
+                updated += (pRows.Value == null || pRows.Value == DBNull.Value) ? 0 : (int)pRows.Value;
+                currentRow += 250;
+            }
+
+            sw.Stop();
+            Debug.WriteLine($"Обработано записей {inventoryIdList.Length}, присоединено {updated} за {sw.ElapsedMilliseconds} мс");
+
+            return updated;
         }
 
         /// <summary>
@@ -389,18 +412,39 @@ namespace SP.Service.Services
         /// </summary>
         /// <param name="inventoryIdList"></param>
         /// <returns></returns>
-        public async Task<int> BlockInventoryAsync(int[] inventoryIdList)
+        public async Task<int> BlockInventoryAsync(int[] inventoryIdList, int personId)
         {
-            throw new NotImplementedException();
-            //int updated = await _context.Inventories
-            //    .Where(x => inventoryIdList.Contains(x.Id))
-            //    .BatchUpdateAsync(x => new Inventory
-            //    {
-            //        NomenclatureId = null,
-            //        IsBlocked = true
-            //    });
+            Stopwatch sw = new Stopwatch();
+            int currentRow = 0;
+            int updated = 0;
+            while (true)
+            {
+                var portion = inventoryIdList
+                    .Skip(currentRow)
+                    .Take(250)
+                    .ToArray();
+                if (portion.Length == 0)
+                {
+                    break;
+                }
 
-            //return updated;
+                var p1 = new SqlParameter("@PersonId", personId);
+                var p2 = new SqlParameter("@IdList", string.Join(',', portion));
+                var pRows = new SqlParameter("@Rows", SqlDbType.Int)
+                {
+                    Direction = ParameterDirection.Output
+                };
+                await _context.Database.ExecuteSqlRawAsync(
+                    "dbo.BlockInventoryList @PersonId, @IdList, @Rows OUT",
+                    p1, p2, pRows);
+                updated += (pRows.Value == null || pRows.Value == DBNull.Value) ? 0 : (int)pRows.Value;
+                currentRow += 250;
+            }
+
+            sw.Stop();
+            Debug.WriteLine($"Обработано записей {inventoryIdList.Length}, присоединено {updated} за {sw.ElapsedMilliseconds} мс");
+
+            return updated;
         }
 
         /// <summary>
