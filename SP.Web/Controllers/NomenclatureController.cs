@@ -47,9 +47,10 @@ namespace SP.Web.Controllers
             return Json(new { data = list });
         }
 
-        public async Task<IActionResult> LoadNomenclature(int? group, bool longterm = false)
+        public async Task<IActionResult> LoadNomenclature(string groups, bool longterm = false)
         {
-            var list = await _inventoryService.GetNomenclatureListItemsAsync(group, longterm);
+            var groupIdList = groups.SplitToIntArray();
+            var list = await _inventoryService.GetNomenclatureListItemsAsync(groupIdList, longterm);
 
             return Json(list);
         }

@@ -182,7 +182,9 @@ namespace SP.Web.Controllers
                 return Json(new { updated = 0 });
             }
 
-            int updated = await _inventoryService.LinkInventoryToNomenclatureAsync(model.Inventories, model.Nomenclature);
+            var user = await _userManager.GetUserAsync(User);
+            var person = await _masterService.GetPersonAsync(user.Id);
+            int updated = await _inventoryService.LinkInventoryWithNomenclatureAsync(model.Inventories, model.Nomenclature, person.Id);
 
             await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory", 
                 $"Объединено {updated} позиций ТМЦ с номенклатурой id {model.Nomenclature}.");
@@ -199,7 +201,9 @@ namespace SP.Web.Controllers
                 return Json(new { updated = 0 });
             }
 
-            int updated = await _inventoryService.BlockInventoryAsync(model.Inventories);
+            var user = await _userManager.GetUserAsync(User);
+            var person = await _masterService.GetPersonAsync(user.Id);
+            int updated = await _inventoryService.BlockInventoryAsync(model.Inventories, person.Id);
 
             await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory",
                 $"Исключено {updated} позиций ТМЦ из объединения в Номенклатуру.");
@@ -231,7 +235,7 @@ namespace SP.Web.Controllers
 
         [HttpPost]
         [Route("[controller]/CalcBalance")]
-        public async Task<IActionResult> CalcBalanceAsync(string regions, string terrs, int? station, int? group, int? nom, string usefuls,
+        public async Task<IActionResult> CalcBalanceAsync(string regions, string terrs, string stations, string groups, string noms, string usefuls,
             [FromServices] IBackgroundCoordinator coordinator)
         {
             await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory",
@@ -242,7 +246,11 @@ namespace SP.Web.Controllers
             int[] regionIdList = regions.SplitToIntArray();
             int[] terrIdList = terrs.SplitToIntArray();
             int[] usefulIdList = usefuls.SplitToIntArray();
-            StartBackgroundBalanceCalculation(coordinator, serviceKey, user.Id, regionIdList, terrIdList, station, group, nom, usefulIdList);
+            int[] stationIdList = stations.SplitToIntArray();
+            int[] groupList = groups.SplitToIntArray();
+            int[] nomIdList = noms.SplitToIntArray();
+            StartBackgroundBalanceCalculation(coordinator, serviceKey, user.Id, regionIdList, terrIdList,
+                stationIdList, groupList, nomIdList, usefulIdList);
 
             return Json(new { Key = serviceKey });
         }

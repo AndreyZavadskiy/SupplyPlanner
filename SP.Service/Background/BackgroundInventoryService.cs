@@ -392,12 +392,12 @@ namespace SP.Service.Background
 
                 if (totalRows == 0)
                 {
-                    processingLog.AppendLine("Выполнение завершено.");
+                    processingLog.AppendLine("Автообъединение завершено.");
                     var successNothingProgress = new BackgroundServiceProgress
                     {
                         Key = serviceKey,
                         Status = BackgroundServiceStatus.RanToCompletion,
-                        Step = "Загрузка завершена",
+                        Step = "Автообъединение завершено",
                         Progress = 100,
                         Log = processingLog.ToString()
                     };
@@ -412,7 +412,7 @@ namespace SP.Service.Background
                     Direction = ParameterDirection.Output
                 };
                 sw.Restart();
-                await _context.Database.ExecuteSqlRawAsync("dbo.LinkInventoryWithNomenclature @PersonId, @Rows OUT", p1, p2);
+                await _context.Database.ExecuteSqlRawAsync("dbo.AutoLinkInventoryWithNomenclature @PersonId, @Rows OUT", p1, p2);
                 sw.Stop();
                 Debug.WriteLine($"Автоматическое объдинение ТМЦ {sw.ElapsedMilliseconds} мс");
 

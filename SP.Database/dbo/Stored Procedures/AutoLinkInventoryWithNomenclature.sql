@@ -1,14 +1,14 @@
 ﻿CREATE PROCEDURE [dbo].[LinkInventoryWithNomenclature]
     @PersonId int,
-	@Rows int OUTPUT
+    @Rows int OUTPUT
 AS
 BEGIN
 
-	DECLARE @StatementRows int;
+    DECLARE @StatementRows int;
 
     SET @Rows = 0;
 
-    -- стыкуем по названию
+    -- стыкуем по точному совпадению названия
     WITH EqualName AS (
         SELECT i.Id AS InventoryId, 
             n.Id AS NomenclatureId
@@ -23,8 +23,8 @@ BEGIN
     FROM dbo.Inventory i
     JOIN EqualName c ON i.Id = c.InventoryId;
 
-	SET @StatementRows = @@ROWCOUNT;
-	SET @Rows += @StatementRows;
+    SET @StatementRows = @@ROWCOUNT;
+    SET @Rows += @StatementRows;
 
     -- стыкуем по ранее привязанным кодам
     WITH SingleCodes AS (
@@ -46,7 +46,7 @@ BEGIN
     JOIN SingleLinkedInventory c ON i.Code = c.Code
     WHERE i.NomenclatureId IS NULL;
 
-	SET @StatementRows = @@ROWCOUNT;
-	SET @Rows += @StatementRows;
+    SET @StatementRows = @@ROWCOUNT;
+    SET @Rows += @StatementRows;
 
 END

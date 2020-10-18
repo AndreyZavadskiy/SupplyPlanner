@@ -107,6 +107,8 @@
     <Build Include="Security\log.sql" />
     <Build Include="Security\stage.sql" />
     <Build Include="dbo\Stored Procedures\MergeStageToInventory.sql" />
-    <Build Include="dbo\Stored Procedures\LinkInventoryWithNomenclature.sql" />
+    <Build Include="dbo\Stored Procedures\AutoLinkInventoryWithNomenclature.sql" />
+    <Build Include="dbo\Stored Procedures\LinkInventoryListWithNomenclature.sql" />
+    <Build Include="dbo\Stored Procedures\BlockInventoryList.sql" />
   </ItemGroup>
 </Project>
