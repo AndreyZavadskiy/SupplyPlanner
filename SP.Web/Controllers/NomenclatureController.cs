@@ -11,7 +11,7 @@ using SP.Web.Utility;
 
 namespace SP.Web.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator,SupplySpecialist")]
     public class NomenclatureController : Controller
     {
         private readonly IInventoryService _inventoryService;

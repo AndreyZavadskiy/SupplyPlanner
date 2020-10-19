@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,7 +7,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using SP.Core.Enum;
 using SP.Core.Master;
 using SP.Data;
 using SP.Service.Background;
@@ -20,7 +18,7 @@ using SP.Web.ViewModels;
 
 namespace SP.Web.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator,SupplySpecialist")]
     public class InventoryController : Controller
     {
         private readonly IInventoryService _inventoryService;
@@ -413,6 +411,7 @@ namespace SP.Web.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         [Route("[controller]/Requirement")]
         public async Task<IActionResult> Requirement([FromBody] RequirementViewModel model)
         {

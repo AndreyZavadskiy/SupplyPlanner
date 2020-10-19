@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Demand";
+    bool isAdminRole = this.User.IsInRole("Administrator");
 }
 
 <h1>Заказ ТМЦ</h1>
@@ -24,7 +25,6 @@
     </div>
 
     <div class="col-xl-12">
-        <hr class="section-separate" />
         <table id="DemandGrid" class="table table-striped table-bordered nowrap" width="100%" cellspacing="0">
             <thead>
                 <tr>
@@ -270,14 +270,19 @@
                             makeOrder(2);
                         }
                     },
+                    @if (isAdminRole)
                     {
-                        text: 'Изменить формулы',
-                        titleAttr: 'Изменить формулы заказа ТМЦ',
-                        className: 'dt-action-button btn btn-primary',
-                        action: function() {
-                            changeOrders();
-                        }
-                    },
+                        <text>
+                            {
+                                text: 'Изменить формулы',
+                                titleAttr: 'Изменить формулы заказа ТМЦ',
+                                className: 'dt-action-button btn btn-primary',
+                                action: function() {
+                                    changeOrders();
+                                }
+                            },
+                        </text>
+                    }
                     {
                         text: 'Перейти на следующий шаг',
                         className: 'dt-action-button btn btn-success',

@@ -132,6 +132,7 @@ namespace SP.Web.Controllers
         }
 
         [Route("Station/Create")]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> CreateAsync(string regions, string terrs)
         {
             var model = new GasStationModel();
@@ -144,6 +145,7 @@ namespace SP.Web.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> EditAsync([FromForm] GasStationModel model, [FromForm] string regions, [FromForm] string terrs)
         {
             return await SaveGasStation(model, regions, terrs, actionName: "Index");
@@ -155,6 +157,7 @@ namespace SP.Web.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> SaveAsync([FromForm] GasStationModel model, [FromForm] string regions, [FromForm] string terrs)
         {
             return await SaveGasStation(model, regions, terrs);

@@ -1,8 +1,9 @@
 ﻿@{
     ViewData["Title"] = "Station List";
+    bool isAdminRole = this.User.IsInRole("Administrator");
 }
 
-<h1>Справочник АЗС</h1>
+<h1>Реестр АЗС</h1>
 
 <section>
     <div class="col-xl-12">
@@ -205,35 +206,40 @@
                         "<'row'<'col-sm-12'tr>>" +
                         "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
                 buttons:
-                [
-                    {
-                        text: 'Добавить',
-                        titleAttr: "Создать новую территорию в регионе",
-                        className: 'dt-action-button',
-                        action: function (e, dt, node, config) {
-                            createGasStation();
+                    [
+                        @if (isAdminRole)
+                        {
+                            <text>
+                                {
+                                    text: 'Добавить',
+                                    titleAttr: "Создать новую территорию в регионе",
+                                    className: 'dt-action-button',
+                                    action: function (e, dt, node, config) {
+                                        createGasStation();
+                                    }
+                                },
+                            </text>
                         }
-                    },
-                    {
-                        text: 'Excel',
-                        titleAttr: "Выгрузить таблицу в Excel",
-                        className: 'dt-action-button',
-                        extend: 'excel',
-                        title: 'Список АЗС',
-                        messageTop: 'Дата выгрузки ' + todayString,
-                        exportOptions: {
-                            columns: '.exportable-column',
-                            modifier: { search: 'applied' },
-                            grouped_array_index: [4, 5]
+                        {
+                            text: 'Excel',
+                            titleAttr: "Выгрузить таблицу в Excel",
+                            className: 'dt-action-button',
+                            extend: 'excel',
+                            title: 'Список АЗС',
+                            messageTop: 'Дата выгрузки ' + todayString,
+                            exportOptions: {
+                                columns: '.exportable-column',
+                                modifier: { search: 'applied' },
+                                grouped_array_index: [4, 5]
+                            }
+                        },
+                        {
+                            text: 'Фильтры',
+                            className: 'dt-action-button filter-button',
+                            action: function (e, dt, node, config) {
+                                //$('#FilterModal').modal();
+                            }
                         }
-                    },
-                    {
-                        text: 'Фильтры',
-                        className: 'dt-action-button filter-button',
-                        action: function (e, dt, node, config) {
-                            //$('#FilterModal').modal();
-                        }
-                    }
                 ]
             });
         }

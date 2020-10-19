@@ -2,6 +2,8 @@
 
 @{
     ViewData["Title"] = "User";
+    bool isAdminRole = this.User.IsInRole("Administrator");
+    bool isSupplySpecialistRole = this.User.IsInRole("SupplySpecialist");
     string actionMessageClass = TempData["ActionMessageClass"]?.ToString();
 }
 
@@ -234,12 +236,15 @@
             </div>
         </div>
         <div class="form-row button-row">
-            <input type="submit" value="Сохранить и вернуться" class="btn btn-primary" />
-            <button asp-action="Save" class="btn btn-success">Сохранить</button>
+            @if (isAdminRole)
+            {
+                <input type="submit" value="Сохранить и вернуться" class="btn btn-primary" />
+                <button asp-action="Save" class="btn btn-success">Сохранить</button>
+            }
             <a class="btn btn-secondary" style="color: white;" onclick="goBack();">Вернуться</a>
         </div>
-        <input type="hidden" id="regions" name="regions"/>
-        <input type="hidden" id="terrs" name="terrs"/>
+        <input type="hidden" id="regions" name="regions" />
+        <input type="hidden" id="terrs" name="terrs" />
     </div>
 </form>
 
