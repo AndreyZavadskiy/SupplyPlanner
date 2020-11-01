@@ -408,8 +408,8 @@ namespace SP.Service.Services
                     Direction = ParameterDirection.Output
                 };
                 await _context.Database.ExecuteSqlRawAsync(
-                    "dbo.LinkInventoryListWithNomenclature @PersonId, @IdList, @NomenclatureId, @Rows OUT", 
-                    p1, p2, p3, pRows);
+                    "dbo.LinkInventoryListWithNomenclature @IdList, @NomenclatureId, @PersonId, @Rows OUT", 
+                    p2, p3, p1, pRows);
                 updated += (pRows.Value == null || pRows.Value == DBNull.Value) ? 0 : (int)pRows.Value;
                 currentRow += 250;
             }
