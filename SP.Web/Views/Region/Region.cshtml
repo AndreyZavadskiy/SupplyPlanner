@@ -195,7 +195,7 @@
             $(".selectAll").on("click",
                 function (e) {
                     if ($(this).is(":checked")) {
-                        dt.rows().select();
+                        dt.rows({ search: "applied" }).select();
                     } else {
                         dt.rows().deselect();
                     }
