@@ -68,6 +68,7 @@
     <Folder Include="log\Tables\" />
     <Folder Include="Security\" />
     <Folder Include="dbo\Stored Procedures" />
+    <Folder Include="dbo\Triggers" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\PersonTerritory.sql" />
@@ -114,6 +115,7 @@
     <Build Include="dbo\Stored Procedures\MakeOrder.sql" />
     <Build Include="dbo\Stored Procedures\CalculateBalance.sql" />
     <Build Include="dbo\Stored Procedures\QueryDemandList.sql" />
+    <Build Include="dbo\Triggers\CalcSheet_History.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SP.Database.publish.xml" />
