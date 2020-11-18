@@ -44,7 +44,7 @@ namespace SP.Service.Background
             _parser = new ExcelParser();
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
             var options = optionsBuilder
-                .UseSqlServer(coordinator.Options.DefaultConnection)
+                .UseNpgsql(coordinator.Options.DefaultConnection)
                 .UseLoggerFactory(ApplicationDbContext.ApplicationDbLoggerFactory)
                 .EnableDetailedErrors()
                 .EnableSensitiveDataLogging()

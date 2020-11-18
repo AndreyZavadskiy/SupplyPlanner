@@ -1,9 +1,10 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace SP.Data.Migrations
 {
-    public partial class _20201118_rebuild : Migration
+    public partial class _20201118_pgsql_initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -60,7 +61,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ParentId = table.Column<int>(nullable: true),
                     Name = table.Column<string>(maxLength: 200, nullable: false),
                     IsActive = table.Column<bool>(nullable: false)
@@ -82,7 +83,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(nullable: false)
                 },
@@ -97,7 +98,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(nullable: false)
                 },
@@ -112,7 +113,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(nullable: false)
                 },
@@ -127,7 +128,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(nullable: false)
                 },
@@ -142,7 +143,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(nullable: false)
                 },
@@ -157,7 +158,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(nullable: false)
                 },
@@ -172,7 +173,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(nullable: false)
                 },
@@ -187,7 +188,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(nullable: false)
                 },
@@ -202,7 +203,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(nullable: false)
                 },
@@ -217,7 +218,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(nullable: false)
                 },
@@ -232,7 +233,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(nullable: false)
                 },
@@ -247,7 +248,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(nullable: false)
                 },
@@ -261,7 +262,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     RoleId = table.Column<string>(nullable: false),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true)
@@ -282,7 +283,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserId = table.Column<string>(nullable: false),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true)
@@ -367,7 +368,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Code = table.Column<string>(maxLength: 20, nullable: true),
                     AspNetUserId = table.Column<string>(maxLength: 450, nullable: false),
                     LastName = table.Column<string>(maxLength: 50, nullable: false),
@@ -390,7 +391,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Code = table.Column<string>(maxLength: 20, nullable: true),
                     Name = table.Column<string>(maxLength: 100, nullable: true),
                     PetronicsCode = table.Column<string>(maxLength: 20, nullable: true),
@@ -425,7 +426,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Code = table.Column<string>(maxLength: 20, nullable: true),
                     CodeKSSS = table.Column<int>(nullable: false),
                     CodeSAP = table.Column<string>(maxLength: 20, nullable: true),
@@ -528,7 +529,7 @@ namespace SP.Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_GasStation_TradingHallOperatingMode_TradingHallOperatingModeId",
+                        name: "FK_GasStation_TradingHallOperatingMode_TradingHallOperatingMod~",
                         column: x => x.TradingHallOperatingModeId,
                         principalSchema: "dic",
                         principalTable: "TradingHallOperatingMode",
@@ -548,7 +549,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<long>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     OrderDate = table.Column<DateTime>(nullable: false),
                     PersonId = table.Column<int>(nullable: false),
                     OrderType = table.Column<int>(nullable: false)
@@ -569,7 +570,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PersonId = table.Column<int>(nullable: false),
                     RegionalStructureId = table.Column<int>(nullable: false)
                 },
@@ -596,7 +597,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PersonId = table.Column<int>(nullable: false),
                     ActionDate = table.Column<DateTime>(nullable: false),
                     Category = table.Column<string>(maxLength: 50, nullable: true),
@@ -619,7 +620,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PersonId = table.Column<int>(nullable: false),
                     ChangeDate = table.Column<DateTime>(nullable: false),
                     EntityName = table.Column<string>(maxLength: 50, nullable: true),
@@ -643,7 +644,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<long>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     NomenclatureId = table.Column<int>(nullable: false),
                     GasStationId = table.Column<int>(nullable: false),
                     Quantity = table.Column<decimal>(type: "decimal(19,4)", nullable: false),
@@ -676,7 +677,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<long>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     RecordId = table.Column<long>(nullable: false),
                     EffectiveDate = table.Column<DateTime>(nullable: false),
                     NomenclatureId = table.Column<int>(nullable: false),
@@ -711,7 +712,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<long>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Code = table.Column<string>(nullable: true),
                     Name = table.Column<string>(maxLength: 100, nullable: true),
                     GasStationId = table.Column<int>(nullable: false),
@@ -750,7 +751,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<long>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Code = table.Column<string>(maxLength: 20, nullable: true),
                     Name = table.Column<string>(maxLength: 100, nullable: true),
                     GasStationId = table.Column<int>(nullable: false),
@@ -788,7 +789,7 @@ namespace SP.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<long>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     OrderId = table.Column<long>(nullable: false),
                     NomenclatureId = table.Column<int>(nullable: false),
                     GasStationId = table.Column<int>(nullable: false),
@@ -826,8 +827,7 @@ namespace SP.Data.Migrations
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-                unique: true,
-                filter: "[NormalizedName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -853,8 +853,7 @@ namespace SP.Data.Migrations
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
-                unique: true,
-                filter: "[NormalizedUserName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_CalcSheet_NomenclatureId",
@@ -946,8 +945,7 @@ namespace SP.Data.Migrations
                 name: "IX_Inventory_GasStationId_Code",
                 table: "Inventory",
                 columns: new[] { "GasStationId", "Code" },
-                unique: true,
-                filter: "[Code] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Nomenclature_MeasureUnitId",

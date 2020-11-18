@@ -34,7 +34,7 @@ namespace SP.Web
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                 {
-                    options.UseSqlServer(
+                    options.UseNpgsql(
                         Configuration.GetConnectionString("DefaultConnection"),
                         sqlServerOptionsAction => sqlServerOptionsAction.CommandTimeout(300)
                         );
