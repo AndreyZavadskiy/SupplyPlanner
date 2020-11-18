@@ -116,5 +116,6 @@
     <Build Include="dbo\Stored procedures\MakeOrder.sql" />
     <Build Include="dbo\Stored procedures\MergeStageToInventory.sql" />
     <Build Include="dbo\Stored procedures\QueryDemandList.sql" />
+    <Build Include="dbo\Triggers\CalcSheet_History.sql" />
   </ItemGroup>
 </Project>
