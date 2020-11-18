@@ -58,64 +58,61 @@
   <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
   <ItemGroup>
     <Folder Include="Properties" />
+    <Folder Include="log\" />
+    <Folder Include="log\Tables\" />
     <Folder Include="dbo\" />
     <Folder Include="dbo\Tables\" />
     <Folder Include="dic\" />
     <Folder Include="dic\Tables\" />
-    <Folder Include="stage\" />
-    <Folder Include="stage\Tables\" />
-    <Folder Include="log\" />
-    <Folder Include="log\Tables\" />
     <Folder Include="Security\" />
-    <Folder Include="dbo\Stored Procedures" />
+    <Folder Include="dbo\Stored procedures" />
   </ItemGroup>
   <ItemGroup>
-    <Build Include="dbo\Tables\PersonTerritory.sql" />
-    <Build Include="dbo\Tables\CalcSheet.sql" />
-    <Build Include="dic\Tables\NomenclatureGroup.sql" />
-    <Build Include="dic\Tables\MeasureUnit.sql" />
-    <Build Include="stage\Tables\Inventory.sql" />
-    <Build Include="dbo\Tables\Nomenclature.sql" />
-    <Build Include="dbo\Tables\Inventory.sql" />
-    <Build Include="log\Tables\Action.sql" />
-    <Build Include="dbo\Tables\CalcSheetHistory.sql" />
+    <None Include="SP.Database.publish.xml" />
+  </ItemGroup>
+  <ItemGroup>
     <Build Include="log\Tables\Change.sql" />
+    <Build Include="dbo\Tables\CalcSheet.sql" />
+    <Build Include="dbo\Tables\CalcSheetHistory.sql" />
+    <Build Include="dbo\Tables\Inventory.sql" />
+    <Build Include="dbo\Tables\StageInventory.sql" />
+    <Build Include="dbo\Tables\OrderDetail.sql" />
     <Build Include="dbo\Tables\__EFMigrationsHistory.sql" />
     <Build Include="dbo\Tables\AspNetRoles.sql" />
     <Build Include="dbo\Tables\AspNetUsers.sql" />
-    <Build Include="dbo\Tables\Person.sql" />
+    <Build Include="dbo\Tables\RegionalStructure.sql" />
+    <Build Include="dic\Tables\CashboxLocation.sql" />
+    <Build Include="dic\Tables\ClientRestroom.sql" />
+    <Build Include="dic\Tables\ManagementSystem.sql" />
+    <Build Include="dic\Tables\MeasureUnit.sql" />
+    <Build Include="dic\Tables\NomenclatureGroup.sql" />
+    <Build Include="dic\Tables\OperatorRoomFormat.sql" />
+    <Build Include="dic\Tables\ServiceLevel.sql" />
+    <Build Include="dic\Tables\Settlement.sql" />
+    <Build Include="dic\Tables\StationLocation.sql" />
+    <Build Include="dic\Tables\StationStatus.sql" />
+    <Build Include="dic\Tables\TradingHallOperatingMode.sql" />
+    <Build Include="dic\Tables\TradingHallSize.sql" />
     <Build Include="dbo\Tables\AspNetRoleClaims.sql" />
     <Build Include="dbo\Tables\AspNetUserClaims.sql" />
     <Build Include="dbo\Tables\AspNetUserLogins.sql" />
     <Build Include="dbo\Tables\AspNetUserRoles.sql" />
     <Build Include="dbo\Tables\AspNetUserTokens.sql" />
-    <Build Include="dic\Tables\CashboxLocation.sql" />
-    <Build Include="dic\Tables\ClientRestroom.sql" />
-    <Build Include="dic\Tables\ManagementSystem.sql" />
-    <Build Include="dic\Tables\OperatorRoomFormat.sql" />
-    <Build Include="dic\Tables\ServiceLevel.sql" />
-    <Build Include="dic\Tables\StationLocation.sql" />
-    <Build Include="dic\Tables\StationStatus.sql" />
-    <Build Include="dic\Tables\TradingHallOperatingMode.sql" />
-    <Build Include="dic\Tables\TradingHallSize.sql" />
-    <Build Include="dbo\Tables\Order.sql" />
-    <Build Include="dbo\Tables\RegionalStructure.sql" />
-    <Build Include="dic\Tables\Settlement.sql" />
-    <Build Include="dbo\Tables\OrderDetail.sql" />
+    <Build Include="dbo\Tables\Person.sql" />
+    <Build Include="dbo\Tables\Nomenclature.sql" />
     <Build Include="dbo\Tables\GasStation.sql" />
+    <Build Include="dbo\Tables\Order.sql" />
+    <Build Include="dbo\Tables\PersonTerritory.sql" />
+    <Build Include="log\Tables\Action.sql" />
     <Build Include="Security\dic.sql" />
     <Build Include="Security\log.sql" />
-    <Build Include="Security\stage.sql" />
-    <Build Include="dbo\Stored Procedures\MergeStageToInventory.sql" />
-    <Build Include="dbo\Stored Procedures\AutoLinkInventoryWithNomenclature.sql" />
-    <Build Include="dbo\Stored Procedures\LinkInventoryListWithNomenclature.sql" />
-    <Build Include="dbo\Stored Procedures\BlockInventoryList.sql" />
-    <Build Include="dbo\Stored Procedures\MakeFixedOrder.sql" />
-    <Build Include="dbo\Stored Procedures\MakeOrder.sql" />
-    <Build Include="dbo\Stored Procedures\CalculateBalance.sql" />
-    <Build Include="dbo\Stored Procedures\QueryDemandList.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="SP.Database.publish.xml" />
+    <Build Include="dbo\Stored procedures\AutoLinkInventoryWithNomenclature.sql" />
+    <Build Include="dbo\Stored procedures\BlockInventoryList.sql" />
+    <Build Include="dbo\Stored procedures\CalculateBalance.sql" />
+    <Build Include="dbo\Stored procedures\LinkInventoryListWithNomenclature.sql" />
+    <Build Include="dbo\Stored procedures\MakeFixedOrder.sql" />
+    <Build Include="dbo\Stored procedures\MakeOrder.sql" />
+    <Build Include="dbo\Stored procedures\MergeStageToInventory.sql" />
+    <Build Include="dbo\Stored procedures\QueryDemandList.sql" />
   </ItemGroup>
 </Project>

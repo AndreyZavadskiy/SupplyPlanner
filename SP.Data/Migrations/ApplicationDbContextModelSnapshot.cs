@@ -429,9 +429,9 @@ namespace SP.Data.Migrations
 
             modelBuilder.Entity("SP.Core.Model.CalcSheet", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<decimal?>("FixedAmount")
@@ -473,9 +473,9 @@ namespace SP.Data.Migrations
 
             modelBuilder.Entity("SP.Core.Model.CalcSheetHistory", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<DateTime>("EffectiveDate")
@@ -505,8 +505,8 @@ namespace SP.Data.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(19,4)");
 
-                    b.Property<int>("RecordId")
-                        .HasColumnType("int");
+                    b.Property<long>("RecordId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Rounding")
                         .HasColumnType("int");
@@ -665,9 +665,9 @@ namespace SP.Data.Migrations
 
             modelBuilder.Entity("SP.Core.Model.Inventory", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Code")
@@ -758,9 +758,9 @@ namespace SP.Data.Migrations
 
             modelBuilder.Entity("SP.Core.Model.Order", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<DateTime>("OrderDate")
@@ -781,9 +781,9 @@ namespace SP.Data.Migrations
 
             modelBuilder.Entity("SP.Core.Model.OrderDetail", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("GasStationId")
@@ -792,8 +792,8 @@ namespace SP.Data.Migrations
                     b.Property<int>("NomenclatureId")
                         .HasColumnType("int");
 
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
+                    b.Property<long>("OrderId")
+                        .HasColumnType("bigint");
 
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
@@ -895,9 +895,9 @@ namespace SP.Data.Migrations
 
             modelBuilder.Entity("SP.Core.Model.StageInventory", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Code")
@@ -931,7 +931,7 @@ namespace SP.Data.Migrations
 
                     b.HasIndex("PersonId");
 
-                    b.ToTable("Inventory","stage");
+                    b.ToTable("StageInventory");
                 });
 
             modelBuilder.Entity("SP.Data.ApplicationRole", b =>

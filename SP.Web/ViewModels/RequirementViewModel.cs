@@ -9,7 +9,7 @@ namespace SP.Web.ViewModels
     {
         public string FixedAmount { get; set; }
         public string Formula { get; set; }
-        public int[] IdList { get; set; }
+        public long[] IdList { get; set; }
         public int UpdatedCount { get; set; }
     }
 }

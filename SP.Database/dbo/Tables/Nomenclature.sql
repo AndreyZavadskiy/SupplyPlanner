@@ -7,7 +7,7 @@
     [MeasureUnitId]       INT             NOT NULL,
     [NomenclatureGroupId] INT             NOT NULL,
     [UsefulLife]          INT             NOT NULL,
-    [IsActive]            BIT             DEFAULT (CONVERT([bit],(0))) NOT NULL,
+    [IsActive]            BIT             NOT NULL,
     [Description]         NVARCHAR (2000) NULL,
     CONSTRAINT [PK_Nomenclature] PRIMARY KEY CLUSTERED ([Id] ASC),
     CONSTRAINT [FK_Nomenclature_MeasureUnit_MeasureUnitId] FOREIGN KEY ([MeasureUnitId]) REFERENCES [dic].[MeasureUnit] ([Id]) ON DELETE CASCADE,

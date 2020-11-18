@@ -10,7 +10,7 @@ namespace SP.Service.Models
         /// <summary>
         /// ID
         /// </summary>
-        public int Id { get; set; }
+        public long Id { get; set; }
         /// <summary>
         /// Код по Номенклатуре
         /// </summary>

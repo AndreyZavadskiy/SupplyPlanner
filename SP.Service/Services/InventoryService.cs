@@ -33,7 +33,7 @@ namespace SP.Service.Services
         Task<IEnumerable<DemandListView>> GetDemandListAsync(int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool shortUse);
         Task<IEnumerable<OrderModel>> GetOrderListAsync();
         Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(int id);
-        Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, int[] idList);
+        Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, long[] idList);
         Task<(int OrderNumber, int RecordCount)> SaveOrderAsync(int orderType, bool withBalance, IEnumerable<OrderQuantity> data, int personId);
     }
 
@@ -55,7 +55,7 @@ namespace SP.Service.Services
         /// <returns></returns>
         public async Task<bool> PurgeStageInventoryAsync(int personId)
         {
-            string sqlStatement = "DELETE FROM stage.Inventory WHERE PersonId = @PersonId;";
+            string sqlStatement = "DELETE FROM dbo.StageInventory WHERE PersonId = @PersonId;";
             var p1 = new SqlParameter("@PersonId", personId);
             int deleted = await _context.Database.ExecuteSqlRawAsync(sqlStatement, p1);
             return true;
@@ -602,7 +602,7 @@ namespace SP.Service.Services
         /// <param name="formula"></param>
         /// <param name="idList"></param>
         /// <returns></returns>
-        public async Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, int[] idList)
+        public async Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, long[] idList)
         {
             var existingRecords = await _context.CalcSheets
                 .Where(b => idList.Contains(b.Id))

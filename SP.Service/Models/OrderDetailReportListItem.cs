@@ -9,6 +9,6 @@ namespace SP.Service.Models
         public string StationNumber { get; set; }
         public DateTime Date { get; set; }
         public decimal Quantity { get; set; }
-        public int OrderNumber { get; set; }
+        public long OrderNumber { get; set; }
     }
 }

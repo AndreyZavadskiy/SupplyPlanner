@@ -10,8 +10,8 @@ using SP.Data;
 namespace SP.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20200721142735_20200721_StageInventory")]
-    partial class _20200721_StageInventory
+    [Migration("20201118163335_20201118_rebuild")]
+    partial class _20201118_rebuild
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -127,6 +127,66 @@ namespace SP.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
+                });
+
+            modelBuilder.Entity("SP.Core.History.ActionLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("ActionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Category")
+                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(50);
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PersonId");
+
+                    b.ToTable("Action","log");
+                });
+
+            modelBuilder.Entity("SP.Core.Log.ChangeLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("ChangeDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EntityName")
+                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(50);
+
+                    b.Property<string>("NewValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RecordId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PersonId");
+
+                    b.ToTable("Change","log");
                 });
 
             modelBuilder.Entity("SP.Core.Master.CashboxLocation", b =>
@@ -369,6 +429,99 @@ namespace SP.Data.Migrations
                     b.ToTable("TradingHallSize","dic");
                 });
 
+            modelBuilder.Entity("SP.Core.Model.CalcSheet", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<decimal?>("FixedAmount")
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<string>("Formula")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("GasStationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LastUpdate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("MultipleFactor")
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<int>("NomenclatureId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Plan")
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<int>("Rounding")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NomenclatureId");
+
+                    b.HasIndex("GasStationId", "NomenclatureId")
+                        .IsUnique();
+
+                    b.ToTable("CalcSheet");
+                });
+
+            modelBuilder.Entity("SP.Core.Model.CalcSheetHistory", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("EffectiveDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("FixedAmount")
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<string>("Formula")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("GasStationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LastUpdate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("MultipleFactor")
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<int>("NomenclatureId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Plan")
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(19,4)");
+
+                    b.Property<long>("RecordId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Rounding")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GasStationId");
+
+                    b.HasIndex("NomenclatureId");
+
+                    b.ToTable("CalcSheetHistory");
+                });
+
             modelBuilder.Entity("SP.Core.Model.GasStation", b =>
                 {
                     b.Property<int>("Id")
@@ -380,16 +533,19 @@ namespace SP.Data.Migrations
                         .HasColumnType("nvarchar(200)")
                         .HasMaxLength(200);
 
-                    b.Property<int>("CashboxLocationId")
+                    b.Property<int?>("CashboxLocationId")
                         .HasColumnType("int");
 
                     b.Property<int>("CashboxTotal")
                         .HasColumnType("int");
 
-                    b.Property<int>("ChequePerDay")
-                        .HasColumnType("int");
+                    b.Property<decimal>("ChequeBandLengthPerDay")
+                        .HasColumnType("decimal(8,2)");
 
-                    b.Property<int>("ClientRestroomId")
+                    b.Property<decimal>("ChequePerDay")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("ClientRestroomId")
                         .HasColumnType("int");
 
                     b.Property<int>("ClientRestroomTotal")
@@ -409,6 +565,9 @@ namespace SP.Data.Migrations
                     b.Property<int>("CoffeeMachineTotal")
                         .HasColumnType("int");
 
+                    b.Property<int>("DeepFryTotal")
+                        .HasColumnType("int");
+
                     b.Property<int>("DishWashingMachineTotal")
                         .HasColumnType("int");
 
@@ -419,9 +578,6 @@ namespace SP.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("HasCakes")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasFrenchFry")
                         .HasColumnType("bit");
 
                     b.Property<bool>("HasJointRestroomEntrance")
@@ -444,6 +600,9 @@ namespace SP.Data.Migrations
 
                     b.Property<int>("PersonnelPerDay")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("RepresentativenessFactor")
+                        .HasColumnType("decimal(8,2)");
 
                     b.Property<decimal>("RevenueAvg")
                         .HasColumnType("decimal(12,2)");
@@ -470,13 +629,13 @@ namespace SP.Data.Migrations
                     b.Property<int>("TerritoryId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TradingHallArea")
+                    b.Property<decimal?>("TradingHallArea")
                         .HasColumnType("decimal(8,2)");
 
-                    b.Property<int>("TradingHallOperatingModeId")
+                    b.Property<int?>("TradingHallOperatingModeId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TradingHallSizeId")
+                    b.Property<int?>("TradingHallSizeId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -508,13 +667,13 @@ namespace SP.Data.Migrations
 
             modelBuilder.Entity("SP.Core.Model.Inventory", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Code")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("GasStationId")
                         .HasColumnType("int");
@@ -524,6 +683,9 @@ namespace SP.Data.Migrations
 
                     b.Property<DateTime>("LastUpdate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("MeasureUnitId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(100)")
@@ -537,9 +699,13 @@ namespace SP.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GasStationId");
+                    b.HasIndex("MeasureUnitId");
 
                     b.HasIndex("NomenclatureId");
+
+                    b.HasIndex("GasStationId", "Code")
+                        .IsUnique()
+                        .HasFilter("[Code] IS NOT NULL");
 
                     b.ToTable("Inventory");
                 });
@@ -554,6 +720,13 @@ namespace SP.Data.Migrations
                     b.Property<string>("Code")
                         .HasColumnType("nvarchar(20)")
                         .HasMaxLength(20);
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(2000)")
+                        .HasMaxLength(2000);
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<int>("MeasureUnitId")
                         .HasColumnType("int");
@@ -583,6 +756,59 @@ namespace SP.Data.Migrations
                     b.HasIndex("NomenclatureGroupId");
 
                     b.ToTable("Nomenclature");
+                });
+
+            modelBuilder.Entity("SP.Core.Model.Order", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("OrderType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PersonId");
+
+                    b.ToTable("Order");
+                });
+
+            modelBuilder.Entity("SP.Core.Model.OrderDetail", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("GasStationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NomenclatureId")
+                        .HasColumnType("int");
+
+                    b.Property<long>("OrderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GasStationId");
+
+                    b.HasIndex("NomenclatureId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderDetail");
                 });
 
             modelBuilder.Entity("SP.Core.Model.Person", b =>
@@ -622,6 +848,28 @@ namespace SP.Data.Migrations
                     b.ToTable("Person");
                 });
 
+            modelBuilder.Entity("SP.Core.Model.PersonTerritory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RegionalStructureId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PersonId");
+
+                    b.HasIndex("RegionalStructureId");
+
+                    b.ToTable("PersonTerritory");
+                });
+
             modelBuilder.Entity("SP.Core.Model.RegionalStructure", b =>
                 {
                     b.Property<int>("Id")
@@ -634,56 +882,24 @@ namespace SP.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(100)")
-                        .HasMaxLength(100);
+                        .HasColumnType("nvarchar(200)")
+                        .HasMaxLength(200);
 
                     b.Property<int?>("ParentId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ParentId");
+
                     b.ToTable("RegionalStructure");
-                });
-
-            modelBuilder.Entity("SP.Core.Model.Requirement", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Formula")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("GasStationId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("MultipleFactor")
-                        .HasColumnType("decimal(19,4)");
-
-                    b.Property<int>("NomenclatureId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Quantity")
-                        .HasColumnType("decimal(19,4)");
-
-                    b.Property<int>("Rounding")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GasStationId");
-
-                    b.HasIndex("NomenclatureId");
-
-                    b.ToTable("Requirement");
                 });
 
             modelBuilder.Entity("SP.Core.Model.StageInventory", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Code")
@@ -703,6 +919,9 @@ namespace SP.Data.Migrations
                         .HasColumnType("nvarchar(100)")
                         .HasMaxLength(100);
 
+                    b.Property<int>("PersonId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(19,4)");
 
@@ -712,7 +931,9 @@ namespace SP.Data.Migrations
 
                     b.HasIndex("MeasureUnitId");
 
-                    b.ToTable("Inventory","stage");
+                    b.HasIndex("PersonId");
+
+                    b.ToTable("StageInventory");
                 });
 
             modelBuilder.Entity("SP.Data.ApplicationRole", b =>
@@ -869,19 +1090,63 @@ namespace SP.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("SP.Core.History.ActionLog", b =>
+                {
+                    b.HasOne("SP.Core.Model.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SP.Core.Log.ChangeLog", b =>
+                {
+                    b.HasOne("SP.Core.Model.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SP.Core.Model.CalcSheet", b =>
+                {
+                    b.HasOne("SP.Core.Model.GasStation", "GasStation")
+                        .WithMany("CalcSheets")
+                        .HasForeignKey("GasStationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SP.Core.Model.Nomenclature", "Nomenclature")
+                        .WithMany("CalcSheets")
+                        .HasForeignKey("NomenclatureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SP.Core.Model.CalcSheetHistory", b =>
+                {
+                    b.HasOne("SP.Core.Model.GasStation", "GasStation")
+                        .WithMany()
+                        .HasForeignKey("GasStationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SP.Core.Model.Nomenclature", "Nomenclature")
+                        .WithMany()
+                        .HasForeignKey("NomenclatureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SP.Core.Model.GasStation", b =>
                 {
                     b.HasOne("SP.Core.Master.CashboxLocation", "CashboxLocation")
                         .WithMany()
-                        .HasForeignKey("CashboxLocationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CashboxLocationId");
 
                     b.HasOne("SP.Core.Master.ClientRestroom", "ClientRestroom")
                         .WithMany()
-                        .HasForeignKey("ClientRestroomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ClientRestroomId");
 
                     b.HasOne("SP.Core.Master.ManagementSystem", "ManagementSystem")
                         .WithMany()
@@ -925,15 +1190,11 @@ namespace SP.Data.Migrations
 
                     b.HasOne("SP.Core.Master.TradingHallOperatingMode", "TradingHallOperatingMode")
                         .WithMany()
-                        .HasForeignKey("TradingHallOperatingModeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TradingHallOperatingModeId");
 
                     b.HasOne("SP.Core.Master.TradingHallSize", "TradingHallSize")
                         .WithMany()
-                        .HasForeignKey("TradingHallSizeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TradingHallSizeId");
                 });
 
             modelBuilder.Entity("SP.Core.Model.Inventory", b =>
@@ -941,6 +1202,12 @@ namespace SP.Data.Migrations
                     b.HasOne("SP.Core.Model.GasStation", "GasStation")
                         .WithMany("Inventories")
                         .HasForeignKey("GasStationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SP.Core.Master.MeasureUnit", "MeasureUnit")
+                        .WithMany()
+                        .HasForeignKey("MeasureUnitId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -964,6 +1231,36 @@ namespace SP.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("SP.Core.Model.Order", b =>
+                {
+                    b.HasOne("SP.Core.Model.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SP.Core.Model.OrderDetail", b =>
+                {
+                    b.HasOne("SP.Core.Model.GasStation", "GasStation")
+                        .WithMany()
+                        .HasForeignKey("GasStationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SP.Core.Model.Nomenclature", "Nomenclature")
+                        .WithMany()
+                        .HasForeignKey("NomenclatureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SP.Core.Model.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SP.Core.Model.Person", b =>
                 {
                     b.HasOne("SP.Data.ApplicationUser", null)
@@ -973,19 +1270,26 @@ namespace SP.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SP.Core.Model.Requirement", b =>
+            modelBuilder.Entity("SP.Core.Model.PersonTerritory", b =>
                 {
-                    b.HasOne("SP.Core.Model.GasStation", "GasStation")
-                        .WithMany("Requirements")
-                        .HasForeignKey("GasStationId")
+                    b.HasOne("SP.Core.Model.Person", "Person")
+                        .WithMany("PersonTerritories")
+                        .HasForeignKey("PersonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SP.Core.Model.Nomenclature", "Nomenclature")
-                        .WithMany("Requirements")
-                        .HasForeignKey("NomenclatureId")
+                    b.HasOne("SP.Core.Model.RegionalStructure", "RegionalStructure")
+                        .WithMany()
+                        .HasForeignKey("RegionalStructureId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SP.Core.Model.RegionalStructure", b =>
+                {
+                    b.HasOne("SP.Core.Model.RegionalStructure", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentId");
                 });
 
             modelBuilder.Entity("SP.Core.Model.StageInventory", b =>
@@ -999,6 +1303,12 @@ namespace SP.Data.Migrations
                     b.HasOne("SP.Core.Master.MeasureUnit", "MeasureUnit")
                         .WithMany()
                         .HasForeignKey("MeasureUnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SP.Core.Model.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

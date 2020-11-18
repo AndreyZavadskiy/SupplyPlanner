@@ -11,11 +11,11 @@ namespace SP.Core.Model
         /// <summary>
         /// ID
         /// </summary>
-        public int Id { get; set; }
+        public long Id { get; set; }
         /// <summary>
         /// ID оригинальной записи
         /// </summary>
-        public int RecordId { get; set; }
+        public long RecordId { get; set; }
         /// <summary>
         /// Дата вступления в силу
         /// </summary>

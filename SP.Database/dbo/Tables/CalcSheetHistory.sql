@@ -1,6 +1,6 @@
 ﻿CREATE TABLE [dbo].[CalcSheetHistory] (
-    [Id]             INT             IDENTITY (1, 1) NOT NULL,
-    [RecordId]       INT             NOT NULL,
+    [Id]             BIGINT          IDENTITY (1, 1) NOT NULL,
+    [RecordId]       BIGINT          NOT NULL,
     [EffectiveDate]  DATETIME2 (7)   NOT NULL,
     [NomenclatureId] INT             NOT NULL,
     [GasStationId]   INT             NOT NULL,

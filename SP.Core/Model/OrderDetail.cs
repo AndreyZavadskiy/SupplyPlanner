@@ -8,11 +8,11 @@ namespace SP.Core.Model
         /// <summary>
         /// ID
         /// </summary>
-        public int Id { get; set; }
+        public long Id { get; set; }
         /// <summary>
         /// ID заказа
         /// </summary>
-        public int OrderId { get; set; }
+        public long OrderId { get; set; }
         /// <summary>
         /// ID Номенклатуры
         /// </summary>

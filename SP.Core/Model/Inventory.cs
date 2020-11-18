@@ -14,7 +14,7 @@ namespace SP.Core.Model
         /// <summary>
         /// ID ТМЦ
         /// </summary>
-        public int Id { get; set; }
+        public long Id { get; set; }
         /// <summary>
         /// Код
         /// </summary>

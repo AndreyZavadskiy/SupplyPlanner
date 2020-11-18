@@ -8,13 +8,13 @@ namespace SP.Core.Model
     /// <summary>
     /// Выгрузка ТМЦ в разрезе АЗС
     /// </summary>
-    [Table("Inventory", Schema = "stage")]
+    [Table("StageInventory")]
     public class StageInventory
     {
         /// <summary>
         /// ID
         /// </summary>
-        public int Id { get; set; }
+        public long Id { get; set; }
         /// <summary>
         /// Код ТМЦ
         /// </summary>

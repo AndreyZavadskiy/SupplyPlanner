@@ -1,5 +1,5 @@
 ﻿CREATE TABLE [dbo].[CalcSheet] (
-    [Id]             INT             IDENTITY (1, 1) NOT NULL,
+    [Id]             BIGINT          IDENTITY (1, 1) NOT NULL,
     [NomenclatureId] INT             NOT NULL,
     [GasStationId]   INT             NOT NULL,
     [Quantity]       DECIMAL (19, 4) NOT NULL,
@@ -16,11 +16,11 @@
 
 
 GO
-CREATE UNIQUE NONCLUSTERED INDEX [IX_CalcSheet_GasStationId_NomenclatureId]
-    ON [dbo].[CalcSheet]([GasStationId] ASC, [NomenclatureId] ASC);
+CREATE NONCLUSTERED INDEX [IX_CalcSheet_NomenclatureId]
+    ON [dbo].[CalcSheet]([NomenclatureId] ASC);
 
 
 GO
-CREATE NONCLUSTERED INDEX [IX_CalcSheet_NomenclatureId]
-    ON [dbo].[CalcSheet]([NomenclatureId] ASC);
+CREATE UNIQUE NONCLUSTERED INDEX [IX_CalcSheet_GasStationId_NomenclatureId]
+    ON [dbo].[CalcSheet]([GasStationId] ASC, [NomenclatureId] ASC);
 

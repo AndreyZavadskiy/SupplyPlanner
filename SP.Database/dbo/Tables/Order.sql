@@ -1,8 +1,8 @@
 ﻿CREATE TABLE [dbo].[Order] (
-    [Id]        INT           IDENTITY (1, 1) NOT NULL,
+    [Id]        BIGINT        IDENTITY (1, 1) NOT NULL,
     [OrderDate] DATETIME2 (7) NOT NULL,
     [PersonId]  INT           NOT NULL,
-    [OrderType] INT           DEFAULT ((0)) NOT NULL,
+    [OrderType] INT           NOT NULL,
     CONSTRAINT [PK_Order] PRIMARY KEY CLUSTERED ([Id] ASC),
     CONSTRAINT [FK_Order_Person_PersonId] FOREIGN KEY ([PersonId]) REFERENCES [dbo].[Person] ([Id]) ON DELETE CASCADE
 );

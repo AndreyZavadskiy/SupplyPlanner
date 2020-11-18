@@ -12,7 +12,7 @@ BEGIN
 	SET i.Quantity = ISNULL(s.Quantity, 0),
 		i.LastUpdate = GETDATE()
 	FROM dbo.Inventory i
-	LEFT JOIN stage.Inventory s
+	LEFT JOIN dbo.StageInventory s
 		ON i.GasStationId = s.GasStationId 
 			AND i.Code = s.Code
 			AND s.PersonId = @PersonId;
@@ -22,7 +22,7 @@ BEGIN
 
 	WITH NewInventory AS (
 		SELECT *
-		FROM stage.Inventory s
+		FROM dbo.StageInventory s
 		WHERE s.PersonId = @PersonId
 			AND NOT EXISTS (
 				SELECT *
