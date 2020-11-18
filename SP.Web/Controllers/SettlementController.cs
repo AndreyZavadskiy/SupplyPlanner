@@ -6,7 +6,7 @@ using SP.Web.Utility;
 namespace SP.Web.Controllers
 {
     [Authorize]
-    public class SettlementController : BaseDictionaryController<CashboxLocation>
+    public class SettlementController : BaseDictionaryController<Settlement>
     {
         public SettlementController(IMasterService masterService, IAppLogger appLogger) : base(masterService, appLogger)
         {

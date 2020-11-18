@@ -32,7 +32,7 @@ namespace SP.Service.Services
         Task<IEnumerable<BalanceListItem>> GetBalanceListAsync(int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool zero);
         Task<IEnumerable<DemandListView>> GetDemandListAsync(int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool shortUse);
         Task<IEnumerable<OrderModel>> GetOrderListAsync();
-        Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(int id);
+        Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(long id);
         Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, long[] idList);
         Task<(int OrderNumber, int RecordCount)> SaveOrderAsync(int orderType, bool withBalance, IEnumerable<OrderQuantity> data, int personId);
     }
@@ -762,7 +762,7 @@ namespace SP.Service.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(int id)
+        public async Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(long id)
         {
             var list = await _context.OrderDetails
                 .Where(x => x.OrderId == id)

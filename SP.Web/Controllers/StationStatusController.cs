@@ -6,7 +6,7 @@ using SP.Web.Utility;
 namespace SP.Web.Controllers
 {
     [Authorize]
-    public class StationStatusController : BaseDictionaryController<CashboxLocation>
+    public class StationStatusController : BaseDictionaryController<StationStatus>
     {
         public StationStatusController(IMasterService masterService, IAppLogger appLogger) : base(masterService, appLogger)
         {

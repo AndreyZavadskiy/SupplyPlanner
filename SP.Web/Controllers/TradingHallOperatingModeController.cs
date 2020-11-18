@@ -6,7 +6,7 @@ using SP.Web.Utility;
 namespace SP.Web.Controllers
 {
     [Authorize]
-    public class TradingHallOperatingModeController : BaseDictionaryController<CashboxLocation>
+    public class TradingHallOperatingModeController : BaseDictionaryController<TradingHallOperatingMode>
     {
         public TradingHallOperatingModeController(IMasterService masterService, IAppLogger appLogger) : base(masterService, appLogger)
         {

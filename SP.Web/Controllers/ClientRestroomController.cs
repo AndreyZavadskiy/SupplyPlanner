@@ -6,7 +6,7 @@ using SP.Web.Utility;
 namespace SP.Web.Controllers
 {
     [Authorize]
-    public class ClientRestroomController : BaseDictionaryController<CashboxLocation>
+    public class ClientRestroomController : BaseDictionaryController<ClientRestroom>
     {
         public ClientRestroomController(IMasterService masterService, IAppLogger appLogger) : base(masterService, appLogger)
         {

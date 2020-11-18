@@ -6,7 +6,7 @@ using SP.Web.Utility;
 namespace SP.Web.Controllers
 {
     [Authorize]
-    public class OperatorRoomFormatController : BaseDictionaryController<CashboxLocation>
+    public class OperatorRoomFormatController : BaseDictionaryController<OperatorRoomFormat>
     {
         public OperatorRoomFormatController(IMasterService masterService, IAppLogger appLogger) : base(masterService, appLogger)
         {

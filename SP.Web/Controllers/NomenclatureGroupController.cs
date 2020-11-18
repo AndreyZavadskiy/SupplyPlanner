@@ -6,7 +6,7 @@ using SP.Web.Utility;
 namespace SP.Web.Controllers
 {
     [Authorize]
-    public class NomenclatureGroupController : BaseDictionaryController<CashboxLocation>
+    public class NomenclatureGroupController : BaseDictionaryController<NomenclatureGroup>
     {
         public NomenclatureGroupController(IMasterService masterService, IAppLogger appLogger) : base(masterService, appLogger)
         {

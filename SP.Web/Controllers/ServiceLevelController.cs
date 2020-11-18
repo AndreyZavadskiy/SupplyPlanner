@@ -6,7 +6,7 @@ using SP.Web.Utility;
 namespace SP.Web.Controllers
 {
     [Authorize]
-    public class ServiceLevelController : BaseDictionaryController<CashboxLocation>
+    public class ServiceLevelController : BaseDictionaryController<ServiceLevel>
     {
         public ServiceLevelController(IMasterService masterService, IAppLogger appLogger) : base(masterService, appLogger)
         {
