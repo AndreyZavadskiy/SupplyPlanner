@@ -65,6 +65,8 @@
     <Folder Include="dic\" />
     <Folder Include="dic\Tables\" />
     <Folder Include="Security\" />
+    <Folder Include="dbo\Stored Procedures" />
+    <Folder Include="dbo\Triggers" />
     <Folder Include="dbo\Stored procedures" />
   </ItemGroup>
   <ItemGroup>
