@@ -13,6 +13,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SP.Service", "SP.Service\SP
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SP.Database", "SP.Database\SP.Database.sqlproj", "{D5B33BD8-EFE2-489F-8C70-3BD74E3C3EBD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PostgreSQL", "PostgreSQL", "{7B6FD084-E564-4529-85A5-0F6C7C3C9D51}"
+	ProjectSection(SolutionItems) = preProject
+		PostgreSQL\AutoLinkInventoryWithNomenclature.sql = PostgreSQL\AutoLinkInventoryWithNomenclature.sql
+		PostgreSQL\BlockInventoryList.sql = PostgreSQL\BlockInventoryList.sql
+		PostgreSQL\LinkInventoryListWithNomenclature.sql = PostgreSQL\LinkInventoryListWithNomenclature.sql
+		PostgreSQL\MergeStageToInventory.sql = PostgreSQL\MergeStageToInventory.sql
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

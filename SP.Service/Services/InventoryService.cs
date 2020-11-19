@@ -14,6 +14,7 @@ using SP.Data;
 using SP.Service.Background;
 using SP.Service.DTO;
 using SP.Service.Models;
+using Npgsql;
 
 namespace SP.Service.Services
 {
@@ -55,8 +56,8 @@ namespace SP.Service.Services
         /// <returns></returns>
         public async Task<bool> PurgeStageInventoryAsync(int personId)
         {
-            string sqlStatement = "DELETE FROM dbo.StageInventory WHERE PersonId = @PersonId;";
-            var p1 = new SqlParameter("@PersonId", personId);
+            string sqlStatement = "DELETE FROM \"StageInventory\" WHERE \"PersonId\" = @person_id;";
+            var p1 = new NpgsqlParameter("person_id", personId);
             int deleted = await _context.Database.ExecuteSqlRawAsync(sqlStatement, p1);
             return true;
         }
@@ -100,12 +101,13 @@ namespace SP.Service.Services
 
             // переносим в основную таблицу
             UpdateProgress(serviceKey, "[2/2] Обновление остатков ТМЦ в базе данных", 100.0m * currentRow / totalRows);
-            var p1 = new SqlParameter("@PersonId", personId);
-            var p2 = new SqlParameter("@Rows", SqlDbType.Int)
+            var p1 = new NpgsqlParameter("person_id", personId);
+            var p2 = new NpgsqlParameter("total_rows", DbType.Int32)
             {
-                Direction = ParameterDirection.Output
+                Direction = ParameterDirection.InputOutput,
+                Value = 0
             };
-            await _context.Database.ExecuteSqlRawAsync("dbo.MergeStageToInventory @PersonId, @Rows OUT", p1, p2);
+            await _context.Database.ExecuteSqlRawAsync("CALL \"MergeStageToInventory\"(@person_id, @total_rows);", p1, p2);
             UpdateProgress(serviceKey, "[2/2] Обновление остатков ТМЦ в базе данных", 100.0m);
             Debug.WriteLine(p2.Value.ToString());
 
@@ -400,15 +402,15 @@ namespace SP.Service.Services
                     break;
                 }
 
-                var p1 = new SqlParameter("@PersonId", personId);
-                var p2 = new SqlParameter("@IdList" , string.Join(',', portion));
-                var p3 = new SqlParameter("@NomenclatureId", nomenclatureId);
-                var pRows = new SqlParameter("@Rows", SqlDbType.Int)
+                var p1 = new NpgsqlParameter("person_id", personId);
+                var p2 = new NpgsqlParameter("id_list", string.Join(',', portion));
+                var p3 = new NpgsqlParameter("nomenclature_id", nomenclatureId);
+                var pRows = new NpgsqlParameter("total_rows", DbType.Int32)
                 {
-                    Direction = ParameterDirection.Output
+                    Direction = ParameterDirection.InputOutput,
+                    Value = 0
                 };
-                await _context.Database.ExecuteSqlRawAsync(
-                    "dbo.LinkInventoryListWithNomenclature @IdList, @NomenclatureId, @PersonId, @Rows OUT", 
+                await _context.Database.ExecuteSqlRawAsync("CALL \"LinkInventoryListWithNomenclature\"(@id_list, @nomenclature_id, @person_id, @total_rows);", 
                     p2, p3, p1, pRows);
                 updated += (pRows.Value == null || pRows.Value == DBNull.Value) ? 0 : (int)pRows.Value;
                 currentRow += 250;

@@ -17,6 +17,7 @@ using SP.Data;
 using SP.Service.DTO;
 using SP.Service.Excel;
 using SP.Service.Services;
+using Npgsql;
 
 namespace SP.Service.Background
 {
@@ -406,15 +407,16 @@ namespace SP.Service.Background
                     return true;
                 }
 
-                var p1 = new SqlParameter("@PersonId", person.Id);
-                var p2 = new SqlParameter("@Rows", SqlDbType.Int)
+                var p1 = new NpgsqlParameter("person_id", person.Id);
+                var p2 = new NpgsqlParameter("total_rows", DbType.Int32)
                 {
-                    Direction = ParameterDirection.Output
+                    Direction = ParameterDirection.InputOutput,
+                    Value = 0
                 };
                 sw.Restart();
-                await _context.Database.ExecuteSqlRawAsync("dbo.AutoLinkInventoryWithNomenclature @PersonId, @Rows OUT", p1, p2);
+                await _context.Database.ExecuteSqlRawAsync("CALL \"AutoLinkInventoryWithNomenclature\"(@person_id, @total_rows);", p1, p2);
                 sw.Stop();
-                Debug.WriteLine($"Автоматическое объдинение ТМЦ {sw.ElapsedMilliseconds} мс");
+                Debug.WriteLine($"Автоматическое объединение ТМЦ {sw.ElapsedMilliseconds} мс");
 
 
                 processingLog.AppendLine($"Обработано {totalRows} записей ТМЦ.");
