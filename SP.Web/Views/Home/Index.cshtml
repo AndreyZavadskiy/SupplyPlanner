@@ -1,7 +1,25 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    var indicators = ViewData["Indicators"] as Dictionary<string, string>;
 }
 
 <div class="text-center">
     <h1 class="display-4">Расчет поставок ТМЦ</h1>
+
+    @if (indicators != null)
+    {
+        <table style="font-size: large;">
+            <thead>
+            <th style="text-align: left;">Сводная информация</th>
+            <th></th>
+            </thead>
+            @foreach (var ind in indicators)
+            {
+            <tr>
+                <td style="text-align: left;">@ind.Key</td>
+                <td style="text-align: right; padding-left: 2em;">@ind.Value</td>
+            </tr>
+            }
+        </table>
+    }
 </div>

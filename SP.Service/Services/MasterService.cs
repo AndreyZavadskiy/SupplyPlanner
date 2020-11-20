@@ -315,10 +315,10 @@ namespace SP.Service.Services
                 SELECT DISTINCT ng.*
                 FROM dic.NomenclatureGroup ng
                 WHERE EXISTS (
-	                SELECT *
-	                FROM dbo.Nomenclature n
-	                WHERE n.UsefulLife <= 12
-	                )
+                    SELECT *
+                    FROM dbo.Nomenclature n
+                    WHERE n.UsefulLife <= 12
+                    )
                 ";
             var dbReuslt = _context.NomenclatureGroups.FromSqlRaw(sqlStatement);
             var result = dbReuslt

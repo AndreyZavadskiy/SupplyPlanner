@@ -51,6 +51,9 @@ namespace SP.Data
             modelBuilder.Entity<DemandListView>()
                 .HasNoKey()
                 .ToView(null);
+            modelBuilder.Entity<IndicatorView>()
+                .HasNoKey()
+                .ToView(null);
         }
 
         // таблицы с данными

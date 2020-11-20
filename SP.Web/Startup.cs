@@ -53,6 +53,7 @@ namespace SP.Web
             services.AddScoped<IGasStationService, GasStationService>();
             services.AddScoped<IInventoryService, InventoryService>();
             services.AddTransient<IBackgroundInventoryService, BackgroundInventoryService>();
+            services.AddTransient<IReportService, ReportService>();
             services.AddTransient<IExcelParser, ExcelParser>();
             services.AddScoped<ILogService, LogService>();
             services.AddScoped<IAppLogger, AppLogger>();

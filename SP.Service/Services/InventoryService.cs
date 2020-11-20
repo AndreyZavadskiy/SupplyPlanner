@@ -443,14 +443,14 @@ namespace SP.Service.Services
                     break;
                 }
 
-                var p1 = new SqlParameter("@PersonId", personId);
-                var p2 = new SqlParameter("@IdList", string.Join(',', portion));
-                var pRows = new SqlParameter("@Rows", SqlDbType.Int)
+                var p1 = new NpgsqlParameter("person_id", personId);
+                var p2 = new NpgsqlParameter("id_list", string.Join(',', portion));
+                var pRows = new NpgsqlParameter("total_rows", DbType.Int32)
                 {
-                    Direction = ParameterDirection.Output
+                    Direction = ParameterDirection.InputOutput,
+                    Value = 0
                 };
-                await _context.Database.ExecuteSqlRawAsync(
-                    "dbo.BlockInventoryList @PersonId, @IdList, @Rows OUT",
+                await _context.Database.ExecuteSqlRawAsync("CALL \"BlockInventoryList\"(@person_id, @id_list, @total_rows);",
                     p1, p2, pRows);
                 updated += (pRows.Value == null || pRows.Value == DBNull.Value) ? 0 : (int)pRows.Value;
                 currentRow += 250;
