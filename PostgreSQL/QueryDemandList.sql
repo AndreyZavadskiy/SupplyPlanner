@@ -1,22 +1,38 @@
 CREATE OR REPLACE FUNCTION "QueryDemandList"(stations text, nomenclatures text)
 RETURNS table (
-	"Id" bigint,
-	"Code" varchar(20),
-	"Name" varchar(100),
-	"GasStationName" varchar(5),
-	"Quantity" numeric(19,4),
-	"MeasureUnitName" varchar(100),
-	"FixedAmount" numeric(19,4),
-	"Formula" text,
-	"Plan" numeric(19,4),
-	"OrderQuantity" numeric(19,4),
-	"LastOrderDate" timestamp,
-	"LastQuantity"  numeric(19,4)
-	)
+    "Id" bigint,
+    "Code" varchar(20),
+    "Name" varchar(100),
+    "GasStationName" varchar(5),
+    "Quantity" numeric(19,4),
+    "MeasureUnitName" varchar(100),
+    "FixedAmount" numeric(19,4),
+    "Formula" text,
+    "Plan" numeric(19,4),
+    "OrderQuantity" numeric(19,4),
+    "LastOrderDate" timestamp,
+    "LastQuantity"  numeric(19,4)
+    )
 LANGUAGE plpgsql
 AS $$
+BEGIN
+    
+    CREATE TEMP TABLE temp_result (
+        "Id" bigint,
+        "Code" varchar(20),
+        "Name" varchar(100),
+        "GasStationName" varchar(5),
+        "Quantity" numeric(19,4),
+        "MeasureUnitName" varchar(100),
+        "FixedAmount" numeric(19,4),
+        "Formula" text,
+        "Plan" numeric(19,4),
+        "OrderQuantity" numeric(19,4),
+        "LastOrderDate" timestamp,
+        "LastQuantity"  numeric(19,4)
+    ); 
 
-	WITH "Sourse" AS (
+    WITH "Sourse" AS (
         SELECT c.*, 
             o."OrderDate", 
             od."Quantity" AS "OrderQuantity",
@@ -28,9 +44,10 @@ AS $$
         LEFT JOIN public."OrderDetail" od ON od."GasStationId" = c."GasStationId" AND od."NomenclatureId" = c."NomenclatureId"
             AND od."Quantity" != 0
         LEFT JOIN public."Order" o ON od."OrderId" = o."Id"
-		WHERE c."GasStationId" = ANY(string_to_array(stations, ',')::int[])
-			AND c."NomenclatureId" = ANY(string_to_array(nomenclatures, ',')::int[])
+        WHERE c."GasStationId" = ANY(string_to_array(stations, ',')::int[])
+            AND c."NomenclatureId" = ANY(string_to_array(nomenclatures, ',')::int[])
     )
+    INSERT INTO temp_result
     SELECT 
         c."Id",
         COALESCE(n."Code", CAST(n."Id" AS varchar(10))) AS "Code",
@@ -49,4 +66,11 @@ AS $$
     JOIN dic."MeasureUnit" mu ON n."MeasureUnitId" = mu."Id"
     JOIN public."GasStation" s ON c."GasStationId" = s."Id";
 
+    RETURN QUERY
+        SELECT *
+        FROM temp_result;
+    
+    DROP TABLE temp_result;
+
+END
 $$;

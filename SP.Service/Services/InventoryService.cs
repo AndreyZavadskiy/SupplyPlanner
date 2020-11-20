@@ -584,7 +584,7 @@ namespace SP.Service.Services
                 var pNomenclatures = new NpgsqlParameter("nomenclatures", string.Join(',', nomenclatureIdList));
 
                 var orderList = await _context.Set<DemandListView>()
-                    .FromSqlRaw("SELECT \"QueryDemandList\"(@stations, @nomenclatures);", pStations, pNomenclatures)
+                    .FromSqlRaw("SELECT * FROM \"QueryDemandList\"(@stations, @nomenclatures);", pStations, pNomenclatures)
                     .ToArrayAsync();
 
                 return orderList;
@@ -663,19 +663,22 @@ namespace SP.Service.Services
             {
 
                 string idList = string.Join(',', data.Select(x => x.Id));
-                var p1 = new SqlParameter("@IdList", idList);
-                var p2 = new SqlParameter("@PersonId", personId);
-                var p3 = new SqlParameter("@OrderNum", SqlDbType.Int)
+                var p1 = new NpgsqlParameter("id_List", idList);
+                var p2 = new NpgsqlParameter("person_id", personId);
+                var p3 = new NpgsqlParameter("order_num", DbType.Int32)
                 {
-                    Direction = ParameterDirection.Output
+                    Direction = ParameterDirection.InputOutput,
+                    Value = 0
                 };
                 if (orderType == 1)
                 {
-                    await _context.Database.ExecuteSqlRawAsync("dbo.MakeOrder @IdList, @PersonId, @OrderNum OUT", p1, p2, p3);
+                    // стандартный заказ
+                    await _context.Database.ExecuteSqlRawAsync("CALL \"MakeOrder\"(@id_list, @person_id, @order_num);", p1, p2, p3);
                 }
                 else
                 {
-                    await _context.Database.ExecuteSqlRawAsync("dbo.MakeFixedOrder @IdList, @PersonId, @OrderNum OUT", p1, p2, p3);
+                    // плановая поставка
+                    await _context.Database.ExecuteSqlRawAsync("CALL \"MakeFixedOrder\"(@id_list, @person_id, @order_num);", p1, p2, p3);
                 }
 
                 return ((int) p3.Value, 0);
@@ -732,7 +735,7 @@ namespace SP.Service.Services
                 return (order.Id, saved);
                 */
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 Debugger.Break();
             }

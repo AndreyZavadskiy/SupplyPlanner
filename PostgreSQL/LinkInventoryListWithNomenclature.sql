@@ -7,8 +7,8 @@ BEGIN
     SET "NomenclatureId" = nomenclature_id
     WHERE i."Id" = ANY(string_to_array(id_list, ',')::int[]);
 
-	GET DIAGNOSTICS total_rows = ROW_COUNT;
-	
+    GET DIAGNOSTICS total_rows = ROW_COUNT;
+    
 END
 
 $$;

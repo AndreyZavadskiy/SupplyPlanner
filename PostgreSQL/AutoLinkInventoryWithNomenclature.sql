@@ -19,7 +19,7 @@ BEGIN
     SET "NomenclatureId" = c."NomenclatureId",
         "LastUpdate" = current_timestamp
     FROM "EqualName" c 
-	WHERE i."Id" = c."InventoryId";
+    WHERE i."Id" = c."InventoryId";
 
     GET DIAGNOSTICS statement_rows = ROW_COUNT;
     total_rows := total_rows + statement_rows;
@@ -41,8 +41,8 @@ BEGIN
     UPDATE public."Inventory" i
     SET "NomenclatureId" = c."NomenclatureId"
     FROM "SingleLinkedInventory" c 
-	WHERE i."Code" = c."Code"
-		AND i."NomenclatureId" IS NULL;
+    WHERE i."Code" = c."Code"
+        AND i."NomenclatureId" IS NULL;
 
     GET DIAGNOSTICS statement_rows = ROW_COUNT;
     total_rows := total_rows + statement_rows;

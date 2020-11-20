@@ -17,8 +17,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PostgreSQL", "PostgreSQL", 
 	ProjectSection(SolutionItems) = preProject
 		PostgreSQL\AutoLinkInventoryWithNomenclature.sql = PostgreSQL\AutoLinkInventoryWithNomenclature.sql
 		PostgreSQL\BlockInventoryList.sql = PostgreSQL\BlockInventoryList.sql
+		PostgreSQL\CalculateBalance.sql = PostgreSQL\CalculateBalance.sql
 		PostgreSQL\LinkInventoryListWithNomenclature.sql = PostgreSQL\LinkInventoryListWithNomenclature.sql
+		PostgreSQL\MakeFixedOrder.sql = PostgreSQL\MakeFixedOrder.sql
+		PostgreSQL\MakeOrder.sql = PostgreSQL\MakeOrder.sql
 		PostgreSQL\MergeStageToInventory.sql = PostgreSQL\MergeStageToInventory.sql
+		PostgreSQL\QueryDemandList.sql = PostgreSQL\QueryDemandList.sql
 	EndProjectSection
 EndProject
 Global
