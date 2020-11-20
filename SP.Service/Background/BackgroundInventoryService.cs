@@ -569,15 +569,16 @@ namespace SP.Service.Background
                         break;
                     }
 
-                    var pStations = new SqlParameter("@Stations", string.Join(',', stationList.Select(x => x.Id)));
-                    var pNomenclatures = new SqlParameter("@Nomenclatures", string.Join(',', nomenclatureIdList));
-                    var pPerson = new SqlParameter("@PersonId", person.Id);
-                    var pRows = new SqlParameter("@Rows", SqlDbType.Int)
+                    var pStations = new NpgsqlParameter("stations", string.Join(',', stationList.Select(x => x.Id)));
+                    var pNomenclatures = new NpgsqlParameter("nomenclatures", string.Join(',', nomenclatureIdList));
+                    var pPerson = new NpgsqlParameter("person_id", person.Id);
+                    var pRows = new NpgsqlParameter("total_rows", DbType.Int32)
                     {
-                        Direction = ParameterDirection.Output
+                        Direction = ParameterDirection.InputOutput,
+                        Value = 0
                     };
                     sw.Restart();
-                    await _context.Database.ExecuteSqlRawAsync("dbo.CalculateBalance @Stations, @Nomenclatures, @PersonId, @Rows OUT", 
+                    await _context.Database.ExecuteSqlRawAsync("CALL \"CalculateBalance\"(@stations, @nomenclatures, @person_id, @total_rows);", 
                         pStations, pNomenclatures, pPerson, pRows);
 
                     currentRow += totalNomenclatures;

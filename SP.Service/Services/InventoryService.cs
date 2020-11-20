@@ -580,11 +580,11 @@ namespace SP.Service.Services
                     })
                     .ToArrayAsync();
 
-                var pStations = new SqlParameter("@Stations", string.Join(',', stationList.Select(x => x.Id)));
-                var pNomenclatures = new SqlParameter("@Nomenclatures", string.Join(',', nomenclatureIdList));
+                var pStations = new NpgsqlParameter("stations", string.Join(',', stationList.Select(x => x.Id)));
+                var pNomenclatures = new NpgsqlParameter("nomenclatures", string.Join(',', nomenclatureIdList));
 
                 var orderList = await _context.Set<DemandListView>()
-                    .FromSqlRaw("dbo.QueryDemandList @Stations, @Nomenclatures", pStations, pNomenclatures)
+                    .FromSqlRaw("SELECT \"QueryDemandList\"(@stations, @nomenclatures);", pStations, pNomenclatures)
                     .ToArrayAsync();
 
                 return orderList;
