@@ -1,6 +1,7 @@
 ﻿@model SP.Service.Models.RegionalStructureModel
 @{
     Layout = null;
+    bool isAdminRole = this.User.IsInRole("Administrator");
 }
 
 <form id="EditRegionForm">
@@ -24,7 +25,10 @@
         <div id="EditRegionAlert" class="text-danger"></div>
     </div>
     <div class="modal-footer form-row button-row">
-        <button type="button" class="btn btn-primary" onclick="postForm();">Сохранить и закрыть</button>
+        @if (isAdminRole)
+        {
+            <button type="button" class="btn btn-primary" onclick="postForm();">Сохранить и закрыть</button>
+        }
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
     </div>
 </form>

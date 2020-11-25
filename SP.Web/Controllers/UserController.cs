@@ -12,7 +12,7 @@ using SP.Web.Utility;
 
 namespace SP.Web.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator")]
     public class UserController : Controller
     {
         private readonly IUserService _userService;

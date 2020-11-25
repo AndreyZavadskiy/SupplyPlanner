@@ -1,4 +1,8 @@
-﻿<h1>@ViewData["Title"]</h1>
+﻿@{
+    bool isAdminRole = this.User.IsInRole("Administrator");
+}
+
+<h1>@ViewData["Title"]</h1>
 
 <section>
     <div class="col-xl-9">
@@ -101,14 +105,19 @@
                     "<'row'<'col-sm-12 col-md-6'i>>" +
                     "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
                 buttons: [
+                    @if (isAdminRole)
                     {
-                        text: 'Добавить',
-                        titleAttr: "Создать новую запись",
-                        className: 'dt-action-button',
-                        action: function (e, dt, node, config) {
-                            createItem();
-                        }
-                    },
+                        <text>
+                        {
+                            text: 'Добавить',
+                            titleAttr: "Создать новую запись",
+                            className: 'dt-action-button',
+                            action: function (e, dt, node, config) {
+                                createItem();
+                            }
+                        },
+                        </text>
+                    }
                     {
                         text: 'Excel',
                         titleAttr: "Выгрузить таблицу в Excel",

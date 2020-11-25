@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Region";
+    bool isAdminRole = this.User.IsInRole("Administrator");
 }
 
 <h1>Справочник регионов и территорий</h1>
@@ -11,10 +12,13 @@
                 <label for="RegionList" class="control-label zero-gutters col-3">Регион</label>
                 <select id="RegionList" asp-items="ViewBag.RegionList" class="col-9" onchange="setRegionFilter();"></select>
             </div>
-            <div class="form-group row button-group-right col-6">
-                <button class="btn btn-secondary" onclick="createRegion();">Добавить</button>
-                <button class="btn btn-secondary" onclick="editRegion();">Изменить</button>
-            </div>
+            @if (isAdminRole)
+            {
+                <div class="form-group row button-group-right col-6">
+                    <button class="btn btn-secondary" onclick="createRegion();">Добавить</button>
+                    <button class="btn btn-secondary" onclick="editRegion();">Изменить</button>
+                </div>
+            }
         </div>
     </div>
 
@@ -155,14 +159,19 @@
                     "<'row'<'col-sm-12 col-md-6'i>>" +
                     "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
                 buttons: [
+                    @if (isAdminRole)
                     {
-                        text: 'Добавить',
-                        titleAttr: "Создать новую территорию в регионе",
-                        className: 'dt-action-button',
-                        action: function (e, dt, node, config) {
-                            createTerritory();
-                        }
-                    },
+                        <text>
+                        {
+                            text: 'Добавить',
+                            titleAttr: "Создать новую территорию в регионе",
+                            className: 'dt-action-button',
+                            action: function (e, dt, node, config) {
+                                createTerritory();
+                            }
+                        },
+                        </text>
+                    }
                     {
                         text: 'Excel',
                         titleAttr: "Выгрузить таблицу в Excel",

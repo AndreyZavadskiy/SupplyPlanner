@@ -1,5 +1,6 @@
 ﻿@{
     bool isAdminRole = this.User.IsInRole("Administrator");
+    bool isSupplyChief = this.User.IsInRole("SupplyChief");
     bool isSupplySpecialistRole = this.User.IsInRole("SupplySpecialist");
 }
 <!DOCTYPE html>
@@ -36,7 +37,7 @@
                         if (this.User.Identity.IsAuthenticated)
                         {
                             <ul class="navbar-nav flex-grow-1">
-                                @if (isAdminRole || isSupplySpecialistRole)
+                                @if (isAdminRole || isSupplySpecialistRole || isSupplyChief)
                                 {
                                     <li class="nav-item">
                                         <div class="dropdown">
@@ -93,11 +94,17 @@
                                     <li class="nav-item">
                                         <a class="nav-link text-dark" asp-controller="User" asp-action="Index">Пользователи</a>
                                     </li>
+                                }
+                                @if (isAdminRole || isSupplySpecialistRole || isSupplyChief)
+                                {
                                     <li class="nav-item">
                                         <div class="dropdown">
                                             <span class="nav-link text-dark dropbtn">Отчеты</span>
                                             <div class="dropdown-content">
+                                                @if (isAdminRole || isSupplyChief)
+                                                {
                                                 <a class="nav-link text-dark" asp-controller="Report" asp-action="ActionReport">Отчет руководителя</a>
+                                                }
                                                 <a class="nav-link text-dark" asp-controller="Report" asp-action="BalanceReport">Контроль движения ТМЦ более 12 месяцев</a>
                                                 <a class="nav-link text-dark" asp-controller="Report" asp-action="ExceedPlanReport">Контроль соблюдения норм</a>
                                                 <a class="nav-link text-dark" asp-controller="Report" asp-action="OrderReport">Отчет по отгрузке</a>

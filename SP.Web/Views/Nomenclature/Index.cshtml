@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Index";
+    bool isAdminRole = this.User.IsInRole("Administrator");
 }
 
 <h1>Номенклатура</h1>
@@ -158,20 +159,25 @@
                 ],
                 dom:
                     "<'row'<'col-sm-12 col-md-6 dt-action-group'B>>" +
-                        "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                        "<'row'<'col-sm-12'tr>>" +
-                        "<'row'<'col-sm-12 col-md-6'i>>" +
-                        "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
+                    "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                    "<'row'<'col-sm-12'tr>>" +
+                    "<'row'<'col-sm-12 col-md-6'i>>" +
+                    "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
                 buttons:
-                [
+                    [
+                    @if (isAdminRole)
                     {
-                        text: 'Добавить',
-                        titleAttr: "Создать новую номенклатуру",
-                        className: 'dt-action-button',
-                        action: function (e, dt, node, config) {
-                            createNomenclature();
-                        }
-                    },
+                        <text>
+                        {
+                            text: 'Добавить',
+                            titleAttr: "Создать новую номенклатуру",
+                            className: 'dt-action-button',
+                            action: function (e, dt, node, config) {
+                                createNomenclature();
+                            }
+                        },
+                    </text>
+                    }
                     {
                         text: 'Excel',
                         titleAttr: "Выгрузить таблицу в Excel",
