@@ -3,8 +3,10 @@
 @{
     ViewData["Title"] = "User";
     bool isAdminRole = this.User.IsInRole("Administrator");
-    bool isSupplySpecialistRole = this.User.IsInRole("SupplySpecialist");
+    bool isRegionalManager = this.User.IsInRole("RegionalManager");
     string actionMessageClass = TempData["ActionMessageClass"]?.ToString();
+    bool canEdit = isAdminRole || isRegionalManager;
+    bool canEditLimited = isAdminRole;
 }
 
 <h1>Карточка АЗС</h1>
@@ -18,13 +20,29 @@
         <div class="form-row zero-gutters">
             <div class="form-group row col-8">
                 <label asp-for="RegionId" class="control-label col-3"></label>
-                <select asp-for="RegionId" asp-items="ViewBag.RegionList" class="col-9"></select>
+                @if (canEditLimited)
+                {
+                    <select asp-for="RegionId" asp-items="ViewBag.RegionList" class="col-9"></select>
+                }
+                else
+                {
+                    <select name="RegionId1" asp-for="RegionId" asp-items="ViewBag.RegionList" class="col-9" disabled="disabled"></select>
+                    <input name="RegionId" type="hidden" value="@Model.RegionId" />
+                }
             </div>
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-8">
                 <label asp-for="TerritoryId" class="control-label col-3"></label>
-                <select asp-for="TerritoryId" asp-items="ViewBag.TerritoryList" class="col-9"></select>
+                @if (canEditLimited)
+                {
+                    <select asp-for="TerritoryId" asp-items="ViewBag.TerritoryList" class="col-9"></select>
+                }
+                else
+                {
+                    <select name="TerritoryId1" asp-for="TerritoryId" asp-items="ViewBag.TerritoryList" class="col-9" disabled="disabled"></select>
+                    <input name="TerritoryId" type="hidden" value="@Model.TerritoryId" />
+                }
                 <span asp-validation-for="TerritoryId" class="text-danger"></span>
             </div>
         </div>
@@ -36,57 +54,98 @@
             </div>
             <div class="form-group row col-4">
                 <label asp-for="CodeKSSS" class="control-label col-6"></label>
-                <input asp-for="CodeKSSS" class="form-control col-6" />
+                <input asp-for="CodeKSSS" class="form-control col-6" readonly="@(!canEditLimited)" />
                 <span asp-validation-for="CodeKSSS" class="text-danger"></span>
             </div>
             <div class="form-group row col-4">
                 <label asp-for="CodeSAP" class="control-label col-6"></label>
-                <input asp-for="CodeSAP" class="form-control col-6" />
+                <input asp-for="CodeSAP" class="form-control col-6" readonly="@(!canEditLimited)" />
                 <span asp-validation-for="CodeSAP" class="text-danger"></span>
             </div>
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-4">
                 <label asp-for="StationNumber" class="control-label col-6"></label>
-                <input asp-for="StationNumber" class="form-control col-6" />
+                <input asp-for="StationNumber" class="form-control col-6" readonly="@(!canEditLimited)" />
                 <span asp-validation-for="StationNumber" class="text-danger"></span>
             </div>
             <div class="form-group row col-8">
                 <label asp-for="SettlementId" class="control-label col-3"></label>
-                <select asp-for="SettlementId" asp-items="ViewBag.SettlementList" class="col-9"></select>
+                @if (canEditLimited)
+                {
+                    <select asp-for="SettlementId" asp-items="ViewBag.SettlementList" class="col-9"></select>
+                }
+                else
+                {
+                    <select name="SettlementId1" asp-for="SettlementId" asp-items="ViewBag.SettlementList" class="col-9" disabled="disabled"></select>
+                    <input name="SettlementId" type="hidden" value="@Model.SettlementId" />
+                }
                 <span asp-validation-for="SettlementId" class="text-danger"></span>
             </div>
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-12">
                 <label asp-for="Address" class="control-label col-2"></label>
-                <input asp-for="Address" class="form-control col-10" />
+                <input asp-for="Address" class="form-control col-10" readonly="@(!canEditLimited)" />
                 <span asp-validation-for="Address" class="text-danger"></span>
             </div>
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-6">
                 <label asp-for="StationStatusId" class="control-label col-4"></label>
-                <select asp-for="StationStatusId" asp-items="ViewBag.StationStatusList" class="col-8"></select>
+                @if (canEdit)
+                {
+                    <select asp-for="StationStatusId" asp-items="ViewBag.StationStatusList" class="col-8"></select>
+                }
+                else
+                {
+                    <select name="StationStatusId1" asp-for="StationStatusId" asp-items="ViewBag.StationStatusList" class="col-8" disabled="disabled"></select>
+                    <input name="StationStatusId" type="hidden" value="@Model.StationStatusId" />
+                }
                 <span asp-validation-for="StationStatusId" class="text-danger"></span>
             </div>
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-6">
                 <label asp-for="StationLocationId" class="control-label col-4">Место-<br />расположение</label>
-                <select asp-for="StationLocationId" asp-items="ViewBag.StationLocationList" class="col-8"></select>
+                @if (canEditLimited)
+                {
+                    <select asp-for="StationLocationId" asp-items="ViewBag.StationLocationList" class="col-8"></select>
+                }
+                else
+                {
+                    <select name="StationLocationId" asp-for="StationLocationId" asp-items="ViewBag.StationLocationList" class="col-8" disabled="disabled"></select>
+                    <input name="StationLocationId" type="hidden" value="@Model.StationLocationId" />
+                }
                 <span asp-validation-for="StationLocationId" class="text-danger"></span>
             </div>
             <div class="form-group row col-6">
                 <label asp-for="ServiceLevelId" class="control-label col-4"></label>
-                <select asp-for="ServiceLevelId" asp-items="ViewBag.ServiceLevelList" class="col-8"></select>
+                @if (canEdit)
+                {
+                    <select asp-for="ServiceLevelId" asp-items="ViewBag.ServiceLevelList" class="col-8"></select>
+                }
+                else
+                {
+                    <select name="ServiceLevelId1" asp-for="ServiceLevelId" asp-items="ViewBag.ServiceLevelList" class="col-8" disabled="disabled"></select>
+                    <input name="ServiceLevelId" type="hidden" value="@Model.ServiceLevelId" />
+                }
                 <span asp-validation-for="ServiceLevelId" class="text-danger"></span>
             </div>
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-6">
                 <label asp-for="OperatorRoomFormatId" class="control-label col-4"></label>
-                <select asp-for="OperatorRoomFormatId" asp-items="ViewBag.OperatorRoomFormatList" class="col-8"></select>
+                
+                @if (canEdit)
+                {
+                    <select asp-for="OperatorRoomFormatId" asp-items="ViewBag.OperatorRoomFormatList" class="col-8"></select>
+                }
+                else
+                {
+                    <select name="OperatorRoomFormatId1" asp-for="OperatorRoomFormatId" asp-items="ViewBag.OperatorRoomFormatList" class="col-8" disabled="disabled"></select>
+                    <input name="OperatorRoomFormatId" type="hidden" value="@Model.OperatorRoomFormatId" />
+                }
                 <span asp-validation-for="OperatorRoomFormatId" class="text-danger"></span>
             </div>
             <div class="form-group row col-6">
@@ -103,19 +162,19 @@
             </div>
             <div class="form-group row col-6">
                 <label asp-for="PersonnelPerDay" class="control-label col-4"></label>
-                <input asp-for="PersonnelPerDay" class="form-control col-4" />
+                <input asp-for="PersonnelPerDay" class="form-control col-4" readonly="@(!canEdit)"/>
                 <span asp-validation-for="PersonnelPerDay" class="text-danger"></span>
             </div>
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-6">
                 <label asp-for="FuelDispenserTotal" class="control-label col-4"></label>
-                <input asp-for="FuelDispenserTotal" class="form-control col-4" />
+                <input asp-for="FuelDispenserTotal" class="form-control col-4" readonly="@(!canEdit)" />
                 <span asp-validation-for="FuelDispenserTotal" class="text-danger"></span>
             </div>
             <div class="form-group row col-6">
                 <label asp-for="CashboxTotal" class="control-label col-4"></label>
-                <input asp-for="CashboxTotal" class="form-control col-4" />
+                <input asp-for="CashboxTotal" class="form-control col-4" readonly="@(!canEdit)" />
                 <span asp-validation-for="CashboxTotal" class="text-danger"></span>
             </div>
         </div>
@@ -134,19 +193,19 @@
             </div>
             <div class="form-group row col-6">
                 <label asp-for="TradingHallArea" class="control-label col-4"></label>
-                <input asp-for="TradingHallArea" class="form-control col-4" />
+                <input asp-for="TradingHallArea" class="form-control col-4" readonly="@(!canEdit)" />
                 <span asp-validation-for="TradingHallArea" class="text-danger"></span>
             </div>
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-6">
                 <label asp-for="ChequePerDay" class="control-label col-4"></label>
-                <input asp-for="ChequePerDay" class="form-control col-4" />
+                <input asp-for="ChequePerDay" class="form-control col-4" readonly="@(!canEdit)" />
                 <span asp-validation-for="ChequePerDay" class="text-danger"></span>
             </div>
             <div class="form-group row col-6">
                 <label asp-for="RevenueAvg" class="control-label col-4"></label>
-                <input asp-for="RevenueAvg" class="form-control col-4" />
+                <input asp-for="RevenueAvg" class="form-control col-4" readonly="@(!canEdit)" />
                 <span asp-validation-for="RevenueAvg" class="text-danger"></span>
             </div>
         </div>
@@ -158,7 +217,7 @@
             </div>
             <div class="form-group row col-6">
                 <label asp-for="ClientRestroomTotal" class="control-label col-4"></label>
-                <input asp-for="ClientRestroomTotal" class="form-control col-4" />
+                <input asp-for="ClientRestroomTotal" class="form-control col-4" readonly="@(!canEdit)" />
                 <span asp-validation-for="ClientRestroomTotal" class="text-danger"></span>
             </div>
         </div>
@@ -167,7 +226,7 @@
                 <div class="form-group row col-4"></div>
                 <div class="form-group row form-check col-8">
                     <label class="form-check-label">
-                        <input asp-for="HasJointRestroomEntrance" /> @Html.DisplayNameFor(model => model.HasJointRestroomEntrance)
+                        <input asp-for="HasJointRestroomEntrance" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasJointRestroomEntrance)
                     </label>
                 </div>
             </div>
@@ -177,7 +236,7 @@
                 <div class="form-group row col-4"></div>
                 <div class="form-group row form-check col-8">
                     <label class="form-check-label">
-                        <input asp-for="HasSibilla" /> @Html.DisplayNameFor(model => model.HasSibilla)
+                        <input asp-for="HasSibilla" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasSibilla)
                     </label>
                 </div>
             </div>
@@ -185,7 +244,7 @@
                 <div class="form-group row col-4"></div>
                 <div class="form-group row form-check col-8">
                     <label class="form-check-label">
-                        <input asp-for="HasBakery" /> @Html.DisplayNameFor(model => model.HasBakery)
+                        <input asp-for="HasBakery" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasBakery)
                     </label>
                 </div>
             </div>
@@ -195,7 +254,7 @@
                 <div class="form-group row col-4"></div>
                 <div class="form-group row form-check col-8">
                     <label class="form-check-label">
-                        <input asp-for="HasCakes" /> @Html.DisplayNameFor(model => model.HasCakes)
+                        <input asp-for="HasCakes" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasCakes)
                     </label>
                 </div>
             </div>
@@ -203,7 +262,7 @@
                 <div class="form-group row col-4"></div>
                 <div class="form-group row form-check col-8">
                     <label class="form-check-label">
-                        <input asp-for="HasMarmite" /> @Html.DisplayNameFor(model => model.HasMarmite)
+                        <input asp-for="HasMarmite" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasMarmite)
                     </label>
                 </div>
             </div>
@@ -211,14 +270,14 @@
         <div class="form-row zero-gutters">
             <div class="form-group row col-6">
                 <label asp-for="DeepFryTotal" class="control-label col-4"></label>
-                <input asp-for="DeepFryTotal" class="form-control col-4" />
+                <input asp-for="DeepFryTotal" class="form-control col-4" readonly="@(!canEdit)" />
                 <span asp-validation-for="DeepFryTotal" class="text-danger"></span>
             </div>
             <div class="form-group row zero-gutters col-6">
                 <div class="form-group row col-4"></div>
                 <div class="form-group row form-check col-8">
                     <label class="form-check-label">
-                        <input asp-for="HasKitchen" /> @Html.DisplayNameFor(model => model.HasKitchen)
+                        <input asp-for="HasKitchen" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasKitchen)
                     </label>
                 </div>
             </div>
@@ -226,17 +285,17 @@
         <div class="form-row zero-gutters">
             <div class="form-group row col-6">
                 <label asp-for="CoffeeMachineTotal" class="control-label col-4"></label>
-                <input asp-for="CoffeeMachineTotal" class="form-control col-4" />
+                <input asp-for="CoffeeMachineTotal" class="form-control col-4" readonly="@(!canEdit)" />
                 <span asp-validation-for="CoffeeMachineTotal" class="text-danger"></span>
             </div>
             <div class="form-group row col-6">
                 <label asp-for="DishWashingMachineTotal" class="control-label col-4"></label>
-                <input asp-for="DishWashingMachineTotal" class="form-control col-4" />
+                <input asp-for="DishWashingMachineTotal" class="form-control col-4" readonly="@(!canEdit)" />
                 <span asp-validation-for="DishWashingMachineTotal" class="text-danger"></span>
             </div>
         </div>
         <div class="form-row button-row">
-            @if (isAdminRole)
+            @if (isAdminRole || isRegionalManager)
             {
                 <input type="submit" value="Сохранить и вернуться" class="btn btn-primary" />
                 <button asp-action="Save" class="btn btn-success">Сохранить</button>

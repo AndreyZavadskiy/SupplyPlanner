@@ -25,7 +25,9 @@ namespace SP.Service.Services
 
         Task<RegionalStructureModel> GetRegionalStructureItemAsync(int id);
         Task<IEnumerable<DictionaryListItem>> SelectRegionAsync();
+        Task<IEnumerable<DictionaryListItem>> SelectRegionAsync(int personId);
         Task<IEnumerable<DictionaryListItem>> SelectTerritoryAsync(int[] regions);
+        Task<IEnumerable<DictionaryListItem>> SelectTerritoryAsync(int[] regions, int personId);
         Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveRegionAsync(RegionalStructureModel model);
         Task<IEnumerable<TerritoryListItem>> GetTerritoryListAsync();
 
@@ -162,6 +164,29 @@ namespace SP.Service.Services
             return list;
         }
 
+        public async Task<IEnumerable<DictionaryListItem>> SelectRegionAsync(int personId)
+        {
+            var territories = await _context.PersonTerritories
+                .Include(x => x.RegionalStructure)
+                .Where(x => x.PersonId == personId)
+                .Select(x => x.RegionalStructure.ParentId)
+                .Distinct()
+                .ToArrayAsync();
+
+            var list = await _context.RegionStructure.AsNoTracking()
+                .Where(x => x.ParentId == null && territories.Contains(x.Id))
+                .Select(x => new DictionaryListItem
+                {
+                    Id = x.Id,
+                    Name = x.IsActive
+                        ? x.Name
+                        : $"{x.Name} (исключен)"
+                })
+                .ToArrayAsync();
+
+            return list;
+        }
+
         public async Task<IEnumerable<DictionaryListItem>> SelectTerritoryAsync(int[] regions)
         {
             if (regions == null)
@@ -182,6 +207,45 @@ namespace SP.Service.Services
 
             var list = await _context.RegionStructure.AsNoTracking()
                 .Where(x => x.ParentId != null && regions.Contains(x.ParentId.Value))
+                .Select(x => new DictionaryListItem
+                {
+                    Id = x.Id,
+                    Name = x.IsActive
+                        ? x.Name
+                        : $"{x.Name} (исключен)"
+                })
+                .ToArrayAsync();
+
+            return list;
+        }
+
+        public async Task<IEnumerable<DictionaryListItem>> SelectTerritoryAsync(int[] regions, int personId)
+        {
+            var territories = await _context.PersonTerritories
+                .Where(x => x.PersonId == personId)
+                .Select(x => x.RegionalStructureId)
+                .Distinct()
+                .ToArrayAsync();
+
+            if (regions == null)
+            {
+                var fullList = await _context.RegionStructure.AsNoTracking()
+                    .Where(x => x.ParentId.HasValue && territories.Contains(x.Id))
+                    .Select(x => new DictionaryListItem
+                    {
+                        Id = x.Id,
+                        Name = x.IsActive
+                            ? x.Name
+                            : $"{x.Name} (исключен)"
+                    })
+                    .ToArrayAsync();
+
+                return fullList;
+            }
+
+            var list = await _context.RegionStructure.AsNoTracking()
+                .Where(x => x.ParentId.HasValue && regions.Contains(x.ParentId.Value)
+                    && territories.Contains(x.Id))
                 .Select(x => new DictionaryListItem
                 {
                     Id = x.Id,

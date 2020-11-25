@@ -13,6 +13,7 @@ namespace SP.Service.Services
     public interface IGasStationService
     {
         Task<IEnumerable<GasStationListItem>> GetGasStationListAsync(int[] regions, int[] territories);
+        Task<IEnumerable<GasStationListItem>> GetGasStationListAsync(int[] regions, int[] territories, int? personId);
         Task<IEnumerable<GasStationIdentification>> GetGasStationIdentificationListAsync();
         Task<GasStationModel> GetGasStationAsync(int id);
         Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveGasStationAsync(GasStationModel model);
@@ -28,6 +29,11 @@ namespace SP.Service.Services
         }
 
         public async Task<IEnumerable<GasStationListItem>> GetGasStationListAsync(int[] regions, int[] territories)
+        {
+            return await GetGasStationListAsync(regions, territories, null);
+        }
+
+        public async Task<IEnumerable<GasStationListItem>> GetGasStationListAsync(int[] regions, int[] territories, int? personId)
         {
             var query = _context.GasStations.AsNoTracking()
                 .Include(x => x.Territory)
@@ -54,6 +60,15 @@ namespace SP.Service.Services
             if (territories != null)
             {
                 query = query.Where(x => territories.Contains(x.TerritoryId));
+            }
+            else if (personId != null)
+            {
+                var managerTerritories = await _context.PersonTerritories
+                    .Where(x => x.PersonId == personId)
+                    .Select(x => x.RegionalStructureId)
+                    .Distinct()
+                    .ToArrayAsync();
+                query = query.Where(x => managerTerritories.Contains(x.TerritoryId));
             }
 
             var stations = query.AsEnumerable()

@@ -2,6 +2,7 @@
 @{
     Layout = null;
     bool isAdminRole = this.User.IsInRole("Administrator");
+    string readonlyText = isAdminRole ? "(true)" : "(false)";
 }
 
 <form id="EditNomenclatureForm">
@@ -27,50 +28,50 @@
                     <div class="form-row zero-gutters">
                         <div class="form-group row col-12">
                             <label asp-for="Code" class="control-label col-4"></label>
-                            <input asp-for="Code" class="form-control col-4" />
+                            <input asp-for="Code" class="form-control col-4" readonly="@readonlyText" />
                         </div>
                     </div>
                     <div class="form-row zero-gutters">
                         <div class="form-group row col-12">
                             <label asp-for="Name" class="control-label col-4"></label>
-                            <input asp-for="Name" class="form-control col-8" />
+                            <input asp-for="Name" class="form-control col-8" readonly="@readonlyText"/>
                         </div>
                     </div>
                     <div class="form-row zero-gutters">
                         <div class="form-group row col-12">
                             <label asp-for="PetronicsCode" class="control-label col-4"></label>
-                            <input asp-for="PetronicsCode" class="form-control col-4" />
+                            <input asp-for="PetronicsCode" class="form-control col-4" readonly="@readonlyText"/>
                         </div>
                     </div>
                     <div class="form-row zero-gutters">
                         <div class="form-group row col-12">
                             <label asp-for="PetronicsName" class="control-label col-4"></label>
-                            <input asp-for="PetronicsName" class="form-control col-8" />
+                            <input asp-for="PetronicsName" class="form-control col-8" readonly="@readonlyText"/>
                         </div>
                     </div>
                     <div class="form-row zero-gutters">
                         <div class="form-group row col-12">
                             <label asp-for="MeasureUnitId" class="control-label col-4"></label>
-                            <select asp-for="MeasureUnitId" asp-items="ViewBag.MeasureUnitList" class="form-control col-8"></select>
+                            <select asp-for="MeasureUnitId" asp-items="ViewBag.MeasureUnitList" class="form-control col-8" readonly="@readonlyText"></select>
                         </div>
                     </div>
                     <div class="form-row zero-gutters">
                         <div class="form-group row col-12">
                             <label asp-for="NomenclatureGroupId" class="control-label col-4"></label>
-                            <select asp-for="NomenclatureGroupId" asp-items="ViewBag.NomenclatureGroupList" class="form-control col-8"></select>
+                            <select asp-for="NomenclatureGroupId" asp-items="ViewBag.NomenclatureGroupList" class="form-control col-8" readonly="@readonlyText"></select>
                         </div>
                     </div>
                     <div class="form-row zero-gutters">
                         <div class="form-group row col-12">
                             <label asp-for="UsefulLife" class="control-label col-4"></label>
-                            <input asp-for="UsefulLife" class="form-control col-2" />
+                            <input asp-for="UsefulLife" class="form-control col-2" readonly="@readonlyText" />
                         </div>
                     </div>
                     <div class="form-row zero-gutters">
                         <div class="form-group row col-4"></div>
                         <div class="form-group row form-check col-8">
                             <label class="form-check-label">
-                                <input asp-for="Inactive" /> @Html.DisplayNameFor(model => model.Inactive)
+                                <input asp-for="Inactive" readonly="@readonlyText" /> @Html.DisplayNameFor(model => model.Inactive)
                             </label>
                         </div>
                     </div>

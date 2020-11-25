@@ -2,8 +2,10 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using SP.Data;
 using SP.Service.Models;
 using SP.Service.Services;
 using SP.Web.Utility;
@@ -15,11 +17,13 @@ namespace SP.Web.Controllers
     public class RegionController : Controller
     {
         private readonly IMasterService _masterService;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IAppLogger _appLogger;
 
-        public RegionController(IMasterService masterService, IAppLogger appLogger)
+        public RegionController(IMasterService masterService, UserManager<ApplicationUser> userManager, IAppLogger appLogger)
         {
             _masterService = masterService;
+            _userManager = userManager;
             _appLogger = appLogger;
         }
 
@@ -57,7 +61,22 @@ namespace SP.Web.Controllers
         /// <returns></returns>
         public async Task<IActionResult> LoadTerritoriesAsync(string regions)
         {
+            if (!string.IsNullOrWhiteSpace(regions) && regions.Contains("2147483647"))
+            {
+                regions = null;
+            }
+            
+            var user = await _userManager.GetUserAsync(User);
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            var person = await _masterService.GetPersonAsync(user.Id);
+
             var regionIdList = regions.SplitToIntArray();
+            if (currentRoles.Contains("RegionalManager"))
+            {
+                var managerTerritories = await _masterService.SelectTerritoryAsync(regionIdList, person.Id);
+                return Json(managerTerritories);
+            }
+
             var territories = await _masterService.SelectTerritoryAsync(regionIdList);
 
             return Json(territories);

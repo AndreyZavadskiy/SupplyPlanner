@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SP.Core.Master;
+using SP.Data;
 using SP.Service.Models;
 using SP.Service.Services;
 using SP.Web.Utility;
@@ -17,20 +19,28 @@ namespace SP.Web.Controllers
     {
         private readonly IGasStationService _gasStationService;
         private readonly IMasterService _masterService;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IAppLogger _appLogger;
 
-        public StationController(IGasStationService gasStationService, IMasterService masterService, IAppLogger appLogger)
+        public StationController(IGasStationService gasStationService, IMasterService masterService, UserManager<ApplicationUser> userManager, IAppLogger appLogger)
         {
             _gasStationService = gasStationService;
             _masterService = masterService;
+            _userManager = userManager;
             _appLogger = appLogger;
         }
 
         public async Task<IActionResult> Index(string regions, string terrs)
         {
             await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "gasstation", "Открыт справочник АЗС.");
+            var user = await _userManager.GetUserAsync(User);
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            var person = await _masterService.GetPersonAsync(user.Id);
 
-            var regionList = await _masterService.SelectRegionAsync();
+            var regionList = currentRoles.Contains("RegionalManager")
+                ? await _masterService.SelectRegionAsync(person.Id)
+                : await _masterService.SelectRegionAsync();
+
             var list = new SelectList(regionList, "Id", "Name").ToList();
             list.Add(new SelectListItem("ВСЕ", Int32.MaxValue.ToString()));
             ViewData["RegionList"] = list;
@@ -43,10 +53,24 @@ namespace SP.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> LoadList(string regions, string terrs)
         {
+            if (!string.IsNullOrWhiteSpace(regions) && regions.Contains("2147483647"))
+            {
+                regions = null;
+            }
+
             int[] regionIdList = regions.SplitToIntArray();
             int[] terrIdList = terrs.SplitToIntArray();
 
-            var stations = await GetGasStationListItems(regionIdList, terrIdList);
+            var user = await _userManager.GetUserAsync(User);
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            var person = await _masterService.GetPersonAsync(user.Id);
+            int? personId = null;
+            if (currentRoles.Contains("RegionalManager"))
+            {
+                personId = person.Id;
+            }
+
+            var stations = await GetGasStationListItems(regionIdList, terrIdList, personId);
 
             return Json(new { data = stations });
         }
@@ -67,14 +91,18 @@ namespace SP.Web.Controllers
             return Json(stations);
         }
 
-        private async Task<IEnumerable<GasStationListItem>> GetGasStationListItems(int[] regions, int[] territories)
+        private async Task<IEnumerable<GasStationListItem>> GetGasStationListItems(int[] regions, int[] territories, int? personId = null)
         {
             IEnumerable<GasStationListItem> stations;
             if (regions == null && territories == null)
             {
                 stations = new GasStationListItem[0];
             }
-            else
+            else if (personId != null)
+            {
+                stations = await _gasStationService.GetGasStationListAsync(regions, territories, personId.Value);
+            }
+            else 
             {
                 stations = await _gasStationService.GetGasStationListAsync(regions, territories);
             }
@@ -145,7 +173,7 @@ namespace SP.Web.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = "Administrator,RegionalManager")]
         public async Task<IActionResult> EditAsync([FromForm] GasStationModel model, [FromForm] string regions, [FromForm] string terrs)
         {
             return await SaveGasStation(model, regions, terrs, actionName: "Index");
@@ -157,7 +185,7 @@ namespace SP.Web.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = "Administrator,RegionalManager")]
         public async Task<IActionResult> SaveAsync([FromForm] GasStationModel model, [FromForm] string regions, [FromForm] string terrs)
         {
             return await SaveGasStation(model, regions, terrs);
@@ -202,5 +230,6 @@ namespace SP.Web.Controllers
 
             return Redirect($"/Station/{result.Id}?regions={regions}&terrs={terrs}");
         }
+
     }
 }
