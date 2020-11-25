@@ -2,7 +2,6 @@
 @{
     Layout = null;
     bool isAdminRole = this.User.IsInRole("Administrator");
-    string readonlyText = isAdminRole ? "(true)" : "(false)";
 }
 
 <form id="EditTerritoryForm">
@@ -22,11 +21,11 @@
         </div>
         <div class="form-group">
             <label asp-for="Territory.Name" class="control-label">Наименование территории</label>
-            <input asp-for="Territory.Name" class="form-control" readonly="@readonlyText" />
+            <input asp-for="Territory.Name" class="form-control" />
         </div>
         <div class="form-group form-check">
             <label class="form-check-label">
-                <input class="form-check-input" asp-for="Territory.Inactive" readonly="@readonlyText" /> @Html.DisplayNameFor(model => model.Territory.Inactive)
+                <input class="form-check-input" asp-for="Territory.Inactive" /> @Html.DisplayNameFor(model => model.Territory.Inactive)
             </label>
         </div>
         <div id="EditRegionAlert" class="text-danger"></div>

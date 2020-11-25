@@ -2,7 +2,6 @@
 @{
     Layout = null;
     bool isAdminRole = this.User.IsInRole("Administrator");
-    string readonlyText = isAdminRole ? "(true)" : "(false)";
 }
 
 <form id="EditForm">
@@ -16,11 +15,11 @@
         <input asp-for="Id" type="hidden" />
         <div class="form-group">
             <label asp-for="Name" class="control-label"></label>
-            <input asp-for="Name" class="form-control" readonly="@readonlyText" />
+            <input asp-for="Name" class="form-control" />
         </div>
         <div class="form-group form-check">
             <label class="form-check-label">
-                <input class="form-check-input" asp-for="Inactive" readonly="@readonlyText" /> @Html.DisplayNameFor(model => model.Inactive)
+                <input class="form-check-input" asp-for="Inactive" /> @Html.DisplayNameFor(model => model.Inactive)
             </label>
         </div>
         <div id="EditAlert" class="text-danger"></div>
