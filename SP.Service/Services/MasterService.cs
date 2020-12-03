@@ -377,11 +377,11 @@ namespace SP.Service.Services
         {
             string sqlStatement = @"
                 SELECT DISTINCT ng.*
-                FROM dic.NomenclatureGroup ng
+                FROM dic.""NomenclatureGroup"" ng
                 WHERE EXISTS (
                     SELECT *
-                    FROM dbo.Nomenclature n
-                    WHERE n.UsefulLife <= 12
+                    FROM public.""Nomenclature"" n
+                    WHERE n.""UsefulLife"" <= 12
                     )
                 ";
             var dbReuslt = _context.NomenclatureGroups.FromSqlRaw(sqlStatement);
