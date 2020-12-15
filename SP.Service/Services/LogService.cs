@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using SP.Core.History;
+using SP.Core.Log;
 using SP.Core.Model;
 using SP.Data;
 using SP.Service.Models;
@@ -98,6 +98,7 @@ namespace SP.Service.Services
 
             return list;
         }
+        
         public async Task<IEnumerable<ChangeListItem>> GetChangeListAsync(int? user, DateTime? start, DateTime? end)
         {
             var query = _context.ChangeLogs.AsNoTracking();

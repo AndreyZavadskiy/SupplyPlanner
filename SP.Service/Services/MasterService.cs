@@ -384,8 +384,8 @@ namespace SP.Service.Services
                     WHERE n.""UsefulLife"" <= 12
                     )
                 ";
-            var dbReuslt = _context.NomenclatureGroups.FromSqlRaw(sqlStatement);
-            var result = dbReuslt
+            var dbResult = _context.NomenclatureGroups.FromSqlRaw(sqlStatement);
+            var result = dbResult
                 .Select(x => new DictionaryListItem
                 {
                     Id = x.Id,

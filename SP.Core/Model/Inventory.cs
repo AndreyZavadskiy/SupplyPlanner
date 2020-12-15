@@ -18,6 +18,7 @@ namespace SP.Core.Model
         /// <summary>
         /// Код
         /// </summary>
+        [StringLength(20)]
         public string Code { get; set; }
         /// <summary>
         /// Наименование ТМЦ

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SP.Core.History;
 using SP.Core.Log;
 using SP.Core.Master;
 using SP.Core.Model;

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using SP.Core.Model;
 
-namespace SP.Core.History
+namespace SP.Core.Log
 {
     [Table("Action", Schema = "log")]
     public class ActionLog

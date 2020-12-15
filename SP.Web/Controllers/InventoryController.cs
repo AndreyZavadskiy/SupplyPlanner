@@ -18,7 +18,7 @@ using SP.Web.ViewModels;
 
 namespace SP.Web.Controllers
 {
-    [Authorize(Roles = "Administrator,SupplySpecialist")]
+    [Authorize(Roles = "Administrator,SupplySpecialist,SupplyChief")]
     public class InventoryController : Controller
     {
         private readonly IInventoryService _inventoryService;
