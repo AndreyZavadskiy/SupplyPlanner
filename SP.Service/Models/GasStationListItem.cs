@@ -176,5 +176,10 @@ namespace SP.Service.Models
         /// </summary>
         [DisplayName("Количество посудомоечных машин")]
         public int DishWashingMachineTotal { get; set; }
+        /// <summary>
+        /// Количество печей Меришеф
+        /// </summary>
+        [DisplayName("Количество печей Меришеф")]
+        public int MerrychefTotal { get; set; }
     }
 }

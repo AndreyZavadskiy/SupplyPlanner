@@ -202,5 +202,11 @@ namespace SP.Service.Models
         [Required(ErrorMessage = "Поле является обязательным")]
         [DisplayName("Количество посудомоечных машин")]
         public int DishWashingMachineTotal { get; set; }
+        /// <summary>
+        /// Количество печей Меришеф
+        /// </summary>
+        [Required(ErrorMessage = "Поле является обязательным")]
+        [DisplayName("Количество печей Меришеф")]
+        public int MerrychefTotal { get; set; }
     }
 }

@@ -294,6 +294,13 @@
                 <span asp-validation-for="DishWashingMachineTotal" class="text-danger"></span>
             </div>
         </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="MerrychefTotal" class="control-label col-4"></label>
+                <input asp-for="MerrychefTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="MerrychefTotal" class="text-danger"></span>
+            </div>
+        </div>
         <div class="form-row button-row">
             @if (isAdminRole || isRegionalManager)
             {

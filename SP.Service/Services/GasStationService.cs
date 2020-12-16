@@ -107,7 +107,8 @@ namespace SP.Service.Services
                     HasMarmite = x.HasMarmite,
                     HasKitchen = x.HasKitchen,
                     CoffeeMachineTotal = x.CoffeeMachineTotal,
-                    DishWashingMachineTotal = x.DishWashingMachineTotal
+                    DishWashingMachineTotal = x.DishWashingMachineTotal,
+                    MerrychefTotal = x.MerrychefTotal
                 })
                 .ToArray();
 
@@ -177,6 +178,7 @@ namespace SP.Service.Services
                 HasKitchen = station.HasKitchen,
                 CoffeeMachineTotal = station.CoffeeMachineTotal,
                 DishWashingMachineTotal = station.DishWashingMachineTotal,
+                MerrychefTotal = station.MerrychefTotal
             };
 
             return model;
@@ -187,13 +189,13 @@ namespace SP.Service.Services
             var dbStation = await _context.GasStations.FindAsync(model.Id);
             if (dbStation == null)
             {
-                return await InsertUserAsync(model);
+                return await InsertStationAsync(model);
             }
 
-            return await UpdateUserAsync(dbStation, model);
+            return await UpdateStationAsync(dbStation, model);
         }
 
-        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> InsertUserAsync(GasStationModel model)
+        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> InsertStationAsync(GasStationModel model)
         {
             var errors = new List<string>();
             try
@@ -231,7 +233,8 @@ namespace SP.Service.Services
                     HasMarmite = model.HasMarmite,
                     HasKitchen = model.HasKitchen,
                     CoffeeMachineTotal = model.CoffeeMachineTotal,
-                    DishWashingMachineTotal = model.DishWashingMachineTotal
+                    DishWashingMachineTotal = model.DishWashingMachineTotal,
+                    MerrychefTotal = model.MerrychefTotal
                 };
 
                 _context.GasStations.Add(gasStation);
@@ -254,7 +257,7 @@ namespace SP.Service.Services
             return (false, null, errors);
         }
 
-        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> UpdateUserAsync(GasStation station, GasStationModel model)
+        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> UpdateStationAsync(GasStation station, GasStationModel model)
         {
             var errors = new List<string>();
 
@@ -292,6 +295,8 @@ namespace SP.Service.Services
                 station.HasKitchen = model.HasKitchen;
                 station.CoffeeMachineTotal = model.CoffeeMachineTotal;
                 station.DishWashingMachineTotal = model.DishWashingMachineTotal;
+                station.MerrychefTotal = model.MerrychefTotal;
+
                 _context.GasStations.Update(station);
                 await _context.SaveChangesAsync();
 

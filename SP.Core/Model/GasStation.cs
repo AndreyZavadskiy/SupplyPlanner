@@ -165,6 +165,10 @@ namespace SP.Core.Model
         /// </summary>
         [Column(TypeName = "decimal(8,2)")]
         public decimal RepresentativenessFactor { get; set; }
+        /// <summary>
+        /// Количество комбипечей Меришеф
+        /// </summary>
+        public int MerrychefTotal { get; set; }
 
         #region Navigation properties
 
