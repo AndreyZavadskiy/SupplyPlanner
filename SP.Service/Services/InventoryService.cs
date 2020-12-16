@@ -15,6 +15,7 @@ using SP.Service.Background;
 using SP.Service.DTO;
 using SP.Service.Models;
 using Npgsql;
+using SP.Core.Log;
 
 namespace SP.Service.Services
 {
@@ -34,7 +35,7 @@ namespace SP.Service.Services
         Task<IEnumerable<DemandListView>> GetDemandListAsync(int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool shortUse);
         Task<IEnumerable<OrderModel>> GetOrderListAsync();
         Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(long id);
-        Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, long[] idList);
+        Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, long[] idList, int personId);
         Task<(int OrderNumber, int RecordCount)> SaveOrderAsync(int orderType, bool withBalance, IEnumerable<OrderQuantity> data, int personId);
     }
 
@@ -443,15 +444,15 @@ namespace SP.Service.Services
                     break;
                 }
 
-                var p1 = new NpgsqlParameter("person_id", personId);
-                var p2 = new NpgsqlParameter("id_list", string.Join(',', portion));
+                var pIdList = new NpgsqlParameter("id_list", string.Join(',', portion));
+                var pPerson = new NpgsqlParameter("person_id", personId);
                 var pRows = new NpgsqlParameter("total_rows", DbType.Int32)
                 {
                     Direction = ParameterDirection.InputOutput,
                     Value = 0
                 };
-                await _context.Database.ExecuteSqlRawAsync("CALL \"BlockInventoryList\"(@person_id, @id_list, @total_rows);",
-                    p1, p2, pRows);
+                await _context.Database.ExecuteSqlRawAsync("CALL \"BlockInventoryList\"(@id_list, @person_id, @total_rows);",
+                    pIdList, pPerson, pRows);
                 updated += (pRows.Value == null || pRows.Value == DBNull.Value) ? 0 : (int)pRows.Value;
                 currentRow += 250;
             }
@@ -604,18 +605,46 @@ namespace SP.Service.Services
         /// <param name="formula"></param>
         /// <param name="idList"></param>
         /// <returns></returns>
-        public async Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, long[] idList)
+        public async Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, long[] idList, int personId)
         {
+            DateTime now = DateTime.Now;
+
             var existingRecords = await _context.CalcSheets
                 .Where(b => idList.Contains(b.Id))
                 .ToArrayAsync();
 
             foreach (var rec in existingRecords)
             {
+                if (rec.FixedAmount == fixedAmount && rec.Formula == formula)
+                {
+                    continue;
+                }
+
+                string oldValue = rec.FixedAmount == null ? string.Empty : $"Фикс: {rec.FixedAmount}";
+                oldValue += string.IsNullOrWhiteSpace(rec.Formula) ? string.Empty : $"Формула: {rec.Formula}";
+
                 rec.FixedAmount = fixedAmount;
                 rec.Formula = formula;
+                rec.LastUpdate = now;
                 _context.Entry(rec).Property(r => r.FixedAmount).IsModified = true;
                 _context.Entry(rec).Property(r => r.Formula).IsModified = true;
+                _context.Entry(rec).Property(r => r.LastUpdate).IsModified = true;
+
+                string newValue = fixedAmount == null ? string.Empty : $"Фикс: {fixedAmount}";
+                newValue += string.IsNullOrWhiteSpace(formula) ? string.Empty : $"Формула: {formula}";
+
+                var updateChangeLogRecord = new ChangeLog
+                {
+                    PersonId = personId,
+                    ChangeDate = now,
+                    EntityName = "CalcSheet",
+                    ActionName = "SetRequirement",
+                    RecordId = rec.Id,
+                    OldValue = oldValue,
+                    NewValue = newValue
+                };
+
+                await _context.ChangeLogs.AddAsync(updateChangeLogRecord);
             }
 
             var updated = await _context.SaveChangesAsync();
@@ -631,7 +660,6 @@ namespace SP.Service.Services
             {
                 var newRec = new CalcSheet
                 {
-
                     NomenclatureId = item.NomenclatureId,
                     GasStationId = item.GasStationId,
                     FixedAmount = fixedAmount,
@@ -639,6 +667,22 @@ namespace SP.Service.Services
                 };
 
                 await _context.CalcSheets.AddAsync(newRec);
+
+                string newValue = fixedAmount == null ? string.Empty : $"Фикс: {fixedAmount}";
+                newValue += string.IsNullOrWhiteSpace(formula) ? string.Empty : $"Формула: {formula}";
+
+                var insertChangeLogRecord = new ChangeLog
+                {
+                    PersonId = personId,
+                    ChangeDate = now,
+                    EntityName = "CalcSheet",
+                    ActionName = "SetRequirement",
+                    RecordId = newRec.Id,
+                    OldValue = null,
+                    NewValue = newValue
+                };
+
+                await _context.ChangeLogs.AddAsync(insertChangeLogRecord);
             }
 
             var inserted = await _context.SaveChangesAsync();

@@ -8,7 +8,7 @@ namespace SP.Service.Models
         public string UserName { get; set; }
         public DateTime ChangeDate { get; set; }
         public string EntityName { get; set; }
-        public int RecordId { get; set; }
+        public long RecordId { get; set; }
         public string OldValue { get; set; }
         public string NewValue { get; set; }
     }

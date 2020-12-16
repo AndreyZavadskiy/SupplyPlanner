@@ -1,6 +1,6 @@
-CREATE OR REPLACE PROCEDURE "AutoLinkInventoryWithNomenclature"(person_id int, total_rows INOUT int)
+CREATE OR REPLACE PROCEDURE public."AutoLinkInventoryWithNomenclature"(person_id integer, INOUT total_rows integer)
 LANGUAGE plpgsql
-AS $$
+AS $procedure$
 DECLARE statement_rows int;
 
 BEGIN
@@ -37,7 +37,7 @@ BEGIN
 	DROP TABLE IF EXISTS equal_names;
 
     -- стыкуем по ранее привязанным кодам
-    CREATE TEMP TABLE equal_code (
+    CREATE TEMP TABLE equal_codes (
     	"InventoryId" BIGINT,
     	"NomenclatureId" INTEGER
     );
@@ -47,18 +47,21 @@ BEGIN
         FROM public."Inventory"
         WHERE "NomenclatureId" IS NOT NULL
             AND "IsBlocked" = false
-        GROUP BY "Code", "NomenclatureId"
-        HAVING COUNT("NomenclatureId") = 1
+        GROUP BY "Code"
+        HAVING COUNT(DISTINCT "NomenclatureId") = 1
     ),
-    "SingleLinkedInventory" AS (
-        SELECT "Code", "NomenclatureId"
+    "SingleLinkedInventoryCodes" AS (
+        SELECT DISTINCT
+            "Code", "NomenclatureId"
         FROM public."Inventory"
         WHERE "Code" IN (SELECT "Code" FROM "SingleCodes")
+            AND "NomenclatureId" IS NOT NULL
     )
     INSERT INTO equal_codes ("InventoryId", "NomenclatureId")
-	SELECT i."Id", c."NomenclatureId"
+	SELECT DISTINCT
+        i."Id", c."NomenclatureId"
     FROM public."Inventory" i
-    JOIN "SingleLinkedInventory" c ON i."Code" = c."Code"
+    JOIN "SingleLinkedInventoryCodes" c ON i."Code" = c."Code"
     WHERE i."NomenclatureId" IS NULL;
     
     UPDATE public."Inventory" i
@@ -71,11 +74,14 @@ BEGIN
     total_rows := total_rows + statement_rows;
    
 	INSERT INTO log."Change" ("PersonId", "ChangeDate", "EntityName", "ActionName", "RecordId", "OldValue", "NewValue")
-	SELECT person_id, current_timestamp, 'Inventory', 'AutoMerge', "InventoryId", 
+	SELECT person_id, current_timestamp, 'Inventory', 'AutoMerge', c."InventoryId", 
 		null, 
-		'Номенклатура: ' || "NomenclatureId"::text
-	FROM equal_codes;
+		'Номенклатура: ' || c."NomenclatureId"::text || ' ' || n."Name" 
+	FROM equal_codes c
+	JOIN "Nomenclature" n ON c."NomenclatureId" = n."Id" ;
+
+	DROP TABLE IF EXISTS equal_codes;
 
 END
 
-$$;
+$procedure$;

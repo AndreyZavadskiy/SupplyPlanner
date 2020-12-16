@@ -18,6 +18,7 @@ using SP.Service.DTO;
 using SP.Service.Excel;
 using SP.Service.Services;
 using Npgsql;
+using SP.Core.Log;
 
 namespace SP.Service.Background
 {
@@ -666,7 +667,7 @@ namespace SP.Service.Background
 
                     foreach (var id in portion)
                     {
-                        await CalculateSingleOrder(id);
+                        await CalculateSingleOrder(id, person.Id);
                     }
 
                     await _context.SaveChangesAsync();
@@ -712,8 +713,9 @@ namespace SP.Service.Background
         /// Рассчитать потребность в заказе отдельной позиции Номенклатуры по АЗС
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="personId"></param>
         /// <returns></returns>
-        private async Task<bool> CalculateSingleOrder(int id)
+        private async Task<bool> CalculateSingleOrder(int id, int personId)
         {
             var nomBalance = await _context.CalcSheets.FirstOrDefaultAsync(x => x.Id == id);
             if (nomBalance == null)
@@ -784,12 +786,26 @@ namespace SP.Service.Background
             }
 
             DateTime now = DateTime.Now;
+            decimal oldPlan = nomBalance.Plan;
             nomBalance.Plan = plan;
             nomBalance.LastUpdate = now;
             _context.Entry(nomBalance).Property(r => r.Plan).IsModified = true;
             _context.Entry(nomBalance).Property(r => r.LastUpdate).IsModified = true;
+            
             var historyRecord = CalcSheetHistory.CreateHistoryRecord(nomBalance, now);
-            _context.CalcSheetHistories.Add(historyRecord);
+            await _context.CalcSheetHistories.AddAsync(historyRecord);
+
+            var changeLogRecord = new ChangeLog
+            {
+                PersonId = personId,
+                ChangeDate = now,
+                EntityName = "CalcSheet",
+                ActionName = "CalcPlan",
+                RecordId = nomBalance.Id,
+                OldValue = $"План: {oldPlan}",
+                NewValue = $"План: {plan}"
+            };
+            await _context.ChangeLogs.AddAsync(changeLogRecord);
 
             return true;
         }

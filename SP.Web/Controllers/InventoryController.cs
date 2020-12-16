@@ -385,14 +385,14 @@ namespace SP.Web.Controllers
         }
 
         /// <summary>
-        /// Рассчитать потребность
+        /// Рассчитать потребность (план)
         /// </summary>
         /// <param name="idList"></param>
         /// <param name="coordinator"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("[controller]/CalcOrder")]
-        public async Task<IActionResult> CalcOrderAsync([FromBody] int[] idList,
+        [Route("[controller]/CalcPlan")]
+        public async Task<IActionResult> CalcPlanAsync([FromBody] int[] idList,
             [FromServices] IBackgroundCoordinator coordinator)
         {
             await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "inventory",
@@ -427,6 +427,7 @@ namespace SP.Web.Controllers
                 {
                     UpdatedCount = 0
                 };
+
                 return Json(badResult);
             }
 
@@ -435,7 +436,10 @@ namespace SP.Web.Controllers
                 model.Formula = null;
             }
 
-            int updated = await _inventoryService.SetRequirementAsync(fixedAmount, model.Formula, model.IdList);
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            var person = await _masterService.GetPersonAsync(user.Id);
+
+            int updated = await _inventoryService.SetRequirementAsync(fixedAmount, model.Formula, model.IdList, person.Id);
             var successResult = new RequirementViewModel
             {
                 FixedAmount = fixedAmount?.ToString(),

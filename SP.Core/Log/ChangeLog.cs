@@ -33,7 +33,7 @@ namespace SP.Core.Log
         /// <summary>
         /// id записи таблицы
         /// </summary>
-        public int RecordId { get; set; }
+        public long RecordId { get; set; }
         /// <summary>
         /// Предыдущее значение
         /// </summary>

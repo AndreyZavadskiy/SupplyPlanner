@@ -463,7 +463,7 @@
         }
 
         function calcDemand() {
-            var url = "/Inventory/CalcOrder";
+            var url = "/Inventory/CalcPlan";
             var dt = $("#DemandGrid").DataTable();
             var rows = dt.rows({ selected: true }).data();
             if (rows.length === 0) {
