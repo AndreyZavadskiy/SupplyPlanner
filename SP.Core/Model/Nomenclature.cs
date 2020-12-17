@@ -23,7 +23,7 @@ namespace SP.Core.Model
         /// <summary>
         /// Наименование
         /// </summary>
-        [StringLength(100)]
+        [StringLength(200)]
         public string Name { get; set; }
         /// <summary>
         /// Код Петроникса
@@ -33,7 +33,7 @@ namespace SP.Core.Model
         /// <summary>
         /// Наименование Петроникса
         /// </summary>
-        [StringLength(100)]
+        [StringLength(200)]
         public string PetronicsName { get; set; }
         /// <summary>
         /// Единица измерения

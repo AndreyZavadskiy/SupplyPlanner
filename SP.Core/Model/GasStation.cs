@@ -100,9 +100,21 @@ namespace SP.Core.Model
         /// </summary>
         public int FuelDispenserTotal { get; set; }
         /// <summary>
+        /// Количество постов ТРК
+        /// </summary>
+        public int FuelDispenserPostTotal { get; set; }
+        /// <summary>
         /// Количество сан.комнат для клиентов
         /// </summary>
         public int ClientRestroomTotal { get; set; }
+        /// <summary>
+        /// Количество тамбуров для клиентов
+        /// </summary>
+        public int ClientTambourTotal { get; set; }
+        /// <summary>
+        /// Количество раковин для клиентов
+        /// </summary>
+        public int ClientSinkTotal { get; set; }
         /// <summary>
         /// Площадь торгового зала
         /// не ведется для ААЗС и окон
@@ -161,14 +173,27 @@ namespace SP.Core.Model
         [Column(TypeName = "decimal(8,2)")]
         public decimal ChequeBandLengthPerDay { get; set; }
         /// <summary>
-        /// Имиджевый коэффициент для гр.3
+        /// Имиджевый коэффициент
         /// </summary>
         [Column(TypeName = "decimal(8,2)")]
         public decimal RepresentativenessFactor { get; set; }
         /// <summary>
+        /// Имиджевый коэффициент 3 квартал
+        /// </summary>
+        [Column(TypeName = "decimal(8,2)")]
+        public decimal RepresentativenessFactor3Quarter { get; set; }
+        /// <summary>
         /// Количество комбипечей Меришеф
         /// </summary>
         public int MerrychefTotal { get; set; }
+        /// <summary>
+        /// Уборка в день
+        /// </summary>
+        public int DayCleaningTotal { get; set; }
+        /// <summary>
+        /// Уборка в ночь
+        /// </summary>
+        public int NightCleaningTotal { get; set; }
 
         #region Navigation properties
 

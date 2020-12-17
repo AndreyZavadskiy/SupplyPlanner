@@ -43,10 +43,20 @@ namespace SP.Web
             services.AddDefaultIdentity<ApplicationUser>(options =>
                 {
                     options.SignIn.RequireConfirmedAccount = true;
+                    options.Password.RequireNonAlphanumeric = false;
                 })
                 .AddRoles<ApplicationRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.Configure<DatabaseOptions>(Configuration.GetSection("ConnectionStrings"));
+
+            services.AddDistributedMemoryCache();
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromSeconds(1800);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
             services.AddSingleton<IBackgroundCoordinator, BackgroundCoordinator>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IMasterService, MasterService>();
@@ -57,6 +67,7 @@ namespace SP.Web
             services.AddTransient<IExcelParser, ExcelParser>();
             services.AddScoped<ILogService, LogService>();
             services.AddScoped<IAppLogger, AppLogger>();
+            
             services.AddControllersWithViews();
             services.AddRazorPages();
         }
@@ -82,6 +93,8 @@ namespace SP.Web
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseSession();
 
             app.UseEndpoints(endpoints =>
             {

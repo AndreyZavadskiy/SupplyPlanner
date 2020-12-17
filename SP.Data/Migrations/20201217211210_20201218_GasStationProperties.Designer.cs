@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SP.Data;
@@ -9,9 +10,10 @@ using SP.Data;
 namespace SP.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201217211210_20201218_GasStationProperties")]
+    partial class _20201218_GasStationProperties
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -755,8 +757,8 @@ namespace SP.Data.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
-                        .HasColumnType("character varying(200)")
-                        .HasMaxLength(200);
+                        .HasColumnType("character varying(100)")
+                        .HasMaxLength(100);
 
                     b.Property<int>("NomenclatureGroupId")
                         .HasColumnType("integer");
@@ -766,8 +768,8 @@ namespace SP.Data.Migrations
                         .HasMaxLength(20);
 
                     b.Property<string>("PetronicsName")
-                        .HasColumnType("character varying(200)")
-                        .HasMaxLength(200);
+                        .HasColumnType("character varying(100)")
+                        .HasMaxLength(100);
 
                     b.Property<int>("UsefulLife")
                         .HasColumnType("integer");

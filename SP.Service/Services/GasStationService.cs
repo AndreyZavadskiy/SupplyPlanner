@@ -96,7 +96,10 @@ namespace SP.Service.Services
                     CashboxTotal = x.CashboxTotal,
                     PersonnelPerDay = x.PersonnelPerDay,
                     FuelDispenserTotal = x.FuelDispenserTotal,
+                    FuelDispenserPostTotal = x.FuelDispenserPostTotal,
                     ClientRestroomTotal = x.ClientRestroomTotal,
+                    ClientTambourTotal = x.ClientTambourTotal,
+                    ClientSinkTotal = x.ClientSinkTotal,
                     TradingHallArea = x.TradingHallArea,
                     ChequePerDay = x.ChequePerDay,
                     RevenueAvg = x.RevenueAvg,
@@ -108,7 +111,11 @@ namespace SP.Service.Services
                     HasKitchen = x.HasKitchen,
                     CoffeeMachineTotal = x.CoffeeMachineTotal,
                     DishWashingMachineTotal = x.DishWashingMachineTotal,
-                    MerrychefTotal = x.MerrychefTotal
+                    RepresentativenessFactor = x.RepresentativenessFactor,
+                    RepresentativenessFactor3Quarter = x.RepresentativenessFactor3Quarter,
+                    MerrychefTotal = x.MerrychefTotal,
+                    DayCleaningTotal = x.DayCleaningTotal,
+                    NightCleaningTotal = x.NightCleaningTotal
                 })
                 .ToArray();
 
@@ -166,7 +173,10 @@ namespace SP.Service.Services
                 CashboxTotal = station.CashboxTotal,
                 PersonnelPerDay = station.PersonnelPerDay,
                 FuelDispenserTotal = station.FuelDispenserTotal,
+                FuelDispenserPostTotal = station.FuelDispenserPostTotal,
                 ClientRestroomTotal = station.ClientRestroomTotal,
+                ClientTambourTotal = station.ClientTambourTotal,
+                ClientSinkTotal = station.ClientSinkTotal,
                 TradingHallArea = station.TradingHallArea,
                 ChequePerDay = station.ChequePerDay,
                 RevenueAvg = station.RevenueAvg,
@@ -178,7 +188,11 @@ namespace SP.Service.Services
                 HasKitchen = station.HasKitchen,
                 CoffeeMachineTotal = station.CoffeeMachineTotal,
                 DishWashingMachineTotal = station.DishWashingMachineTotal,
-                MerrychefTotal = station.MerrychefTotal
+                RepresentativenessFactor = station.RepresentativenessFactor,
+                RepresentativenessFactor3Quarter = station.RepresentativenessFactor3Quarter,
+                MerrychefTotal = station.MerrychefTotal,
+                DayCleaningTotal = station.DayCleaningTotal,
+                NightCleaningTotal = station.NightCleaningTotal
             };
 
             return model;
@@ -221,7 +235,10 @@ namespace SP.Service.Services
                     CashboxTotal = model.CashboxTotal,
                     PersonnelPerDay = model.PersonnelPerDay,
                     FuelDispenserTotal = model.FuelDispenserTotal,
+                    FuelDispenserPostTotal = model.FuelDispenserPostTotal,
                     ClientRestroomTotal = model.ClientRestroomTotal,
+                    ClientTambourTotal = model.ClientTambourTotal,
+                    ClientSinkTotal = model.ClientSinkTotal,
                     TradingHallArea = model.TradingHallArea,
                     ChequePerDay = model.ChequePerDay,
                     RevenueAvg = model.RevenueAvg,
@@ -234,7 +251,11 @@ namespace SP.Service.Services
                     HasKitchen = model.HasKitchen,
                     CoffeeMachineTotal = model.CoffeeMachineTotal,
                     DishWashingMachineTotal = model.DishWashingMachineTotal,
-                    MerrychefTotal = model.MerrychefTotal
+                    RepresentativenessFactor = model.RepresentativenessFactor,
+                    RepresentativenessFactor3Quarter = model.RepresentativenessFactor3Quarter,
+                    MerrychefTotal = model.MerrychefTotal,
+                    DayCleaningTotal = model.DayCleaningTotal,
+                    NightCleaningTotal = model.NightCleaningTotal
                 };
 
                 _context.GasStations.Add(gasStation);
@@ -282,7 +303,10 @@ namespace SP.Service.Services
                 station.CashboxTotal = model.CashboxTotal;
                 station.PersonnelPerDay = model.PersonnelPerDay;
                 station.FuelDispenserTotal = model.FuelDispenserTotal;
+                station.FuelDispenserPostTotal = model.FuelDispenserPostTotal;
                 station.ClientRestroomTotal = model.ClientRestroomTotal;
+                station.ClientTambourTotal = model.ClientTambourTotal;
+                station.ClientSinkTotal = model.ClientSinkTotal;
                 station.TradingHallArea = model.TradingHallArea;
                 station.ChequePerDay = model.ChequePerDay;
                 station.RevenueAvg = model.RevenueAvg;
@@ -295,7 +319,11 @@ namespace SP.Service.Services
                 station.HasKitchen = model.HasKitchen;
                 station.CoffeeMachineTotal = model.CoffeeMachineTotal;
                 station.DishWashingMachineTotal = model.DishWashingMachineTotal;
+                station.RepresentativenessFactor = model.RepresentativenessFactor;
+                station.RepresentativenessFactor3Quarter = model.RepresentativenessFactor3Quarter;
                 station.MerrychefTotal = model.MerrychefTotal;
+                station.DayCleaningTotal = model.DayCleaningTotal;
+                station.NightCleaningTotal = model.NightCleaningTotal;
 
                 _context.GasStations.Update(station);
                 await _context.SaveChangesAsync();

@@ -136,7 +136,7 @@
         <div class="form-row zero-gutters">
             <div class="form-group row col-6">
                 <label asp-for="OperatorRoomFormatId" class="control-label col-4"></label>
-                
+
                 @if (canEdit)
                 {
                     <select asp-for="OperatorRoomFormatId" asp-items="ViewBag.OperatorRoomFormatList" class="col-8"></select>
@@ -162,8 +162,20 @@
             </div>
             <div class="form-group row col-6">
                 <label asp-for="PersonnelPerDay" class="control-label col-4"></label>
-                <input asp-for="PersonnelPerDay" class="form-control col-4" readonly="@(!canEdit)"/>
+                <input asp-for="PersonnelPerDay" class="form-control col-4" readonly="@(!canEdit)" />
                 <span asp-validation-for="PersonnelPerDay" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="RepresentativenessFactor" class="control-label col-4"></label>
+                <input asp-for="RepresentativenessFactor" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="RepresentativenessFactor" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="RepresentativenessFactor3Quarter" class="control-label col-4"></label>
+                <input asp-for="RepresentativenessFactor3Quarter" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="RepresentativenessFactor3Quarter" class="text-danger"></span>
             </div>
         </div>
         <div class="form-row zero-gutters">
@@ -222,6 +234,18 @@
             </div>
         </div>
         <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="ClientTambourTotal" class="control-label col-4"></label>
+                <input asp-for="ClientTambourTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="ClientTambourTotal" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="ClientSinkTotal" class="control-label col-4"></label>
+                <input asp-for="ClientSinkTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="ClientSinkTotal" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
             <div class="form-group row zero-gutters col-6">
                 <div class="form-group row col-4"></div>
                 <div class="form-group row form-check col-8">
@@ -234,35 +258,31 @@
         <div class="form-row zero-gutters">
             <div class="form-group row zero-gutters col-6">
                 <div class="form-group row col-4"></div>
-                <div class="form-group row form-check col-8">
+                <div class="form-group row form-check col-4">
                     <label class="form-check-label">
                         <input asp-for="HasSibilla" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasSibilla)
                     </label>
                 </div>
-            </div>
-            <div class="form-group row zero-gutters col-6">
-                <div class="form-group row col-4"></div>
-                <div class="form-group row form-check col-8">
+                <div class="form-group row form-check col-4">
                     <label class="form-check-label">
                         <input asp-for="HasBakery" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasBakery)
                     </label>
                 </div>
             </div>
-        </div>
-        <div class="form-row zero-gutters">
             <div class="form-group row zero-gutters col-6">
-                <div class="form-group row col-4"></div>
-                <div class="form-group row form-check col-8">
+                <div class="form-group row form-check col-4">
                     <label class="form-check-label">
                         <input asp-for="HasCakes" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasCakes)
                     </label>
                 </div>
-            </div>
-            <div class="form-group row zero-gutters col-6">
-                <div class="form-group row col-4"></div>
-                <div class="form-group row form-check col-8">
+                <div class="form-group row form-check col-4">
                     <label class="form-check-label">
                         <input asp-for="HasMarmite" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasMarmite)
+                    </label>
+                </div>
+                <div class="form-group row form-check col-4">
+                    <label class="form-check-label">
+                        <input asp-for="HasKitchen" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasKitchen)
                     </label>
                 </div>
             </div>
@@ -273,13 +293,10 @@
                 <input asp-for="DeepFryTotal" class="form-control col-4" readonly="@(!canEdit)" />
                 <span asp-validation-for="DeepFryTotal" class="text-danger"></span>
             </div>
-            <div class="form-group row zero-gutters col-6">
-                <div class="form-group row col-4"></div>
-                <div class="form-group row form-check col-8">
-                    <label class="form-check-label">
-                        <input asp-for="HasKitchen" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasKitchen)
-                    </label>
-                </div>
+            <div class="form-group row col-6">
+                <label asp-for="MerrychefTotal" class="control-label col-4"></label>
+                <input asp-for="MerrychefTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="MerrychefTotal" class="text-danger"></span>
             </div>
         </div>
         <div class="form-row zero-gutters">
@@ -296,11 +313,17 @@
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-6">
-                <label asp-for="MerrychefTotal" class="control-label col-4"></label>
-                <input asp-for="MerrychefTotal" class="form-control col-4" readonly="@(!canEdit)" />
-                <span asp-validation-for="MerrychefTotal" class="text-danger"></span>
+                <label asp-for="DayCleaningTotal" class="control-label col-4"></label>
+                <input asp-for="DayCleaningTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="DayCleaningTotal" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="NightCleaningTotal" class="control-label col-4"></label>
+                <input asp-for="NightCleaningTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="NightCleaningTotal" class="text-danger"></span>
             </div>
         </div>
+
         <div class="form-row button-row">
             @if (isAdminRole || isRegionalManager)
             {

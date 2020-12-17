@@ -126,11 +126,29 @@ namespace SP.Service.Models
         [DisplayName("Количество ТРК")]
         public int FuelDispenserTotal { get; set; }
         /// <summary>
+        /// Количество постов ТРК
+        /// </summary>
+        [Required(ErrorMessage = "Поле является обязательным")]
+        [DisplayName("Количество постов ТРК")]
+        public int FuelDispenserPostTotal { get; set; }
+        /// <summary>
         /// Количество сан.комнат для клиентов
         /// </summary>
         [Required(ErrorMessage = "Поле является обязательным")]
         [DisplayName("Количество сан.комнат для клиентов")]
         public int ClientRestroomTotal { get; set; }
+        /// <summary>
+        /// Количество тамбуров для клиентов
+        /// </summary>
+        [Required(ErrorMessage = "Поле является обязательным")]
+        [DisplayName("Количество тамбуров для клиентов")]
+        public int ClientTambourTotal { get; set; }
+        /// <summary>
+        /// Количество раковин для клиентов
+        /// </summary>
+        [Required(ErrorMessage = "Поле является обязательным")]
+        [DisplayName("Количество раковин для клиентов")]
+        public int ClientSinkTotal { get; set; }
         /// <summary>
         /// Площадь торгового зала
         /// </summary>
@@ -203,10 +221,34 @@ namespace SP.Service.Models
         [DisplayName("Количество посудомоечных машин")]
         public int DishWashingMachineTotal { get; set; }
         /// <summary>
+        /// Имиджевый коэффициент
+        /// </summary>
+        [Required(ErrorMessage = "Поле является обязательным")]
+        [DisplayName("Имиджевый коэффициент")]
+        public decimal RepresentativenessFactor { get; set; }
+        /// <summary>
+        /// Имиджевый коэффициент 3 квартал
+        /// </summary>
+        [Required(ErrorMessage = "Поле является обязательным")]
+        [DisplayName("Имиджевый коэффициент 3 кв.")]
+        public decimal RepresentativenessFactor3Quarter { get; set; }
+        /// <summary>
         /// Количество печей Меришеф
         /// </summary>
         [Required(ErrorMessage = "Поле является обязательным")]
         [DisplayName("Количество печей Меришеф")]
         public int MerrychefTotal { get; set; }
+        /// <summary>
+        /// Уборка в день
+        /// </summary>
+        [Required(ErrorMessage = "Поле является обязательным")]
+        [DisplayName("Уборка в день")]
+        public int DayCleaningTotal { get; set; }
+        /// <summary>
+        /// Уборка в ночь
+        /// </summary>
+        [Required(ErrorMessage = "Поле является обязательным")]
+        [DisplayName("Уборка в ночь")]
+        public int NightCleaningTotal { get; set; }
     }
 }

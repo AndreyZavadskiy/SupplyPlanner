@@ -51,10 +51,15 @@
                     <th class="exportable-column">Кол-во <br />касс</th>
                     <th class="exportable-column">Кол-во персонала <br />в сутки</th>
                     <th class="exportable-column">Кол-во ТРК</th>
+                    <th class="exportable-column">Кол-во постов ТРК</th>
                     <th class="exportable-column">Кол-во сан.комнат <br />для клиентов</th>
+                    <th class="exportable-column">Кол-во тамбуров <br />для клиентов</th>
+                    <th class="exportable-column">Кол-во раковин <br />для клиентов</th>
                     <th class="exportable-column">Площадь <br />торгового зала</th>
                     <th class="exportable-column">Среднее кол-во <br />чеков в сутки</th>
                     <th class="exportable-column">Выручка в месяц</th>
+                    <th class="exportable-column">Имиджевый <br />коэфф.</th>
+                    <th class="exportable-column">Имиджевый <br />коэфф. 3 кв.</th>
                     <th class="exportable-column">Сибилла</th>
                     <th class="exportable-column">Выпечка</th>
                     <th class="exportable-column">Торты</th>
@@ -64,6 +69,8 @@
                     <th class="exportable-column">Кол-во <br />кофемашин</th>
                     <th class="exportable-column">Кол-во посудомоечных <br />машин</th>
                     <th class="exportable-column">Кол-во печей<br />Меришеф</th>
+                    <th class="exportable-column">Уборка <br />в день</th>
+                    <th class="exportable-column">Уборка <br />в ночь</th>
                 </tr>
             </thead>
         </table>
@@ -161,10 +168,17 @@
                     { data: 'cashboxTotal' },
                     { data: 'personnelPerDay' },
                     { data: 'fuelDispenserTotal' },
+                    { data: 'fuelDispenserPostTotal' },
                     { data: 'clientRestroomTotal' },
+                    { data: 'clientTambourTotal' },
+                    { data: 'clientSinkTotal' },
                     { data: 'tradingHallArea' },
                     { data: 'chequePerDay' },
                     { data: 'revenueAvg' },
+                    { data: 'representativenessFactor' },
+                    { data: 'representativenessFactor3Quarter' },
+                    { data: 'dayCleaningTotal' },
+                    { data: 'nightCleaningTotal' },
                     {
                         render: function (data, type, full, meta) {
                             return full.hasSibilla ? 'есть' : '';

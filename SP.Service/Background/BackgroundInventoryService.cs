@@ -747,11 +747,14 @@ namespace SP.Service.Background
                     { "operformat", gasStation.OperatorRoomFormat?.Name.ToLower() },
                     { "regime", gasStation.TradingHallOperatingMode?.Name.ToLower() },
                     { "cashdesk", gasStation.CashboxLocation?.Name.ToLower() },
-                    { "salearea", gasStation.TradingHallSize?.Name.ToLower() },
+                    { "salearea", Convert.ToDouble(gasStation.TradingHallArea) },
                     { "totalarm", gasStation.CashboxTotal },
                     { "totaltrk", gasStation.FuelDispenserTotal },
+                    { "totaltrkpost", gasStation.FuelDispenserPostTotal },
                     { "avgcheck", Convert.ToDouble(gasStation.ChequePerDay) },
                     { "totalclienttoiletroom", gasStation.ClientRestroomTotal },
+                    { "totaltambour", gasStation.ClientTambourTotal },
+                    { "totalsink", gasStation.ClientSinkTotal },
                     { "tambour", gasStation.HasJointRestroomEntrance },
                     { "monthincome", Convert.ToDouble(gasStation.RevenueAvg) },
                     { "sibilla", gasStation.HasSibilla },
@@ -763,7 +766,11 @@ namespace SP.Service.Background
                     { "coffeemachine", gasStation.CoffeeMachineTotal },
                     { "totalpersonal", gasStation.PersonnelPerDay },
                     { "avgbandlength", Convert.ToDouble(gasStation.ChequeBandLengthPerDay) },
-                    { "imagecoef", Convert.ToDouble(gasStation.RepresentativenessFactor) }
+                    { "imagecoef", Convert.ToDouble(gasStation.RepresentativenessFactor) },
+                    { "imagecoef3q", Convert.ToDouble(gasStation.RepresentativenessFactor3Quarter) },
+                    { "daycleaning", gasStation.DayCleaningTotal },
+                    { "merrychef", gasStation.MerrychefTotal },
+                    { "revenue", Convert.ToDouble(gasStation.RevenueAvg) }
                 };
 
                 try
