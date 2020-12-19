@@ -19,8 +19,7 @@
             <div class="form-group row col-12">
                 <label for="RegionList" class="control-label col-2">Регион</label>
                 <select id="RegionList" multiple="multiple" data-placeholder="Выберите регионы..."
-                        asp-items="ViewBag.RegionList" class="col-9"
-                        onchange="changeRegion();">
+                        asp-items="ViewBag.RegionList" class="col-9">
                 </select>
                 <a title="Выделить все" onclick="chosenSelectAll('RegionList');"><img src="/images/check-all.svg" class="icon-button" /></a>
                 <a title="Снять все" onclick="chosenDeselectAll('RegionList');"><img src="/images/x.svg" class="icon-button" /></a>
@@ -30,8 +29,7 @@
             <div class="form-group row col-12">
                 <label for="TerritoryList" class="control-label col-2">Территория</label>
                 <select id="TerritoryList" multiple="multiple" data-placeholder="Выберите территории..."
-                        class="col-9"
-                        onchange="changeTerritory();">
+                        class="col-9">
                 </select>
                 <a title="Выделить все" onclick="chosenSelectAll('TerritoryList');"><img src="/images/check-all.svg" class="icon-button" /></a>
                 <a title="Снять все" onclick="chosenDeselectAll('TerritoryList');"><img src="/images/x.svg" class="icon-button" /></a>
@@ -52,7 +50,7 @@
                 <label for="NomenclatureGroupList" class="control-label col-2">Группа номенклатуры</label>
                 <select id="NomenclatureGroupList" multiple="multiple" data-placeholder="Выберите группу..."
                         asp-items="ViewBag.NomenclatureGroupList"
-                        class="col-9" onchange="loadNomenclature();">
+                        class="col-9">
                 </select>
                 <a title="Выделить все" onclick="chosenSelectAll('NomenclatureGroupList');"><img src="/images/check-all.svg" class="icon-button" /></a>
                 <a title="Снять все" onclick="chosenDeselectAll('NomenclatureGroupList');"><img src="/images/x.svg" class="icon-button" /></a>
@@ -119,15 +117,8 @@
 @section Scripts
 {
     <script>
-        var intervalId;
+        var inervalid;
         $(document).ready(function () {
-            $('#RegionList').chosen();
-            $('#TerritoryList').chosen();
-            $('#GasStationList').chosen();
-            $('#NomenclatureGroupList').chosen();
-            $('#NomenclatureList').chosen();
-            $('#UserfulLifeList').chosen();
-
             $('#submit').on('click', function (evt) {
                 evt.preventDefault();
                 var hasErrors = false;
@@ -145,7 +136,6 @@
                     noms: $('#NomenclatureList').val().join(),
                     usefuls: $('#UserfulLifeList').val().join()
                 };
-                console.log(data);
 
                 $.ajax({
                     url: '',
@@ -167,6 +157,9 @@
                 backdrop: 'static',
                 show: false
             });
+
+            $('#UserfulLifeList').chosen();
+            restoreFilterState();
         });
 
         function updateProgress() {
@@ -191,120 +184,6 @@
             });
         }
 
-        function changeRegion() {
-            var terrList = $('#TerritoryList');
-            var selectedRegions = $('#RegionList').val();
-            var selectedTerrs = terrList.val().join();
-            terrList.empty();
-            if (selectedRegions.length === 0) {
-                terrList.trigger("chosen:updated");
-                terrList.trigger('change');
-                return;
-            }
-            var url = '/Region/LoadTerritories';
-            var requestData = { regions: selectedRegions.join() };
-            $.get(url,
-                requestData,
-                function (data) {
-                    $.each(data,
-                        function (index, element) {
-                            terrList.append($('<option>',
-                                {
-                                    value: element.id,
-                                    text: element.name
-                                }));
-                        });
-
-                    selectOptions(terrList, selectedTerrs);
-                    terrList.trigger("chosen:updated");
-                    terrList.trigger('change');
-                });
-        }
-
-        function changeTerritory() {
-            var regions = $('#RegionList').val();
-            var terrs = $('#TerritoryList').val();
-            var stationList = $("#GasStationList");
-            stationList.empty();
-            if (terrs === '') {
-                stationList.trigger('change');
-                return;
-            }
-            var url = '/Station/LoadStations';
-            var requestData = {
-                'regions': regions.join(),
-                'terrs': terrs.join()
-            };
-            $.post(url,
-                requestData,
-                function (data) {
-                    stationList.append($('<option>',
-                        {
-                            value: '',
-                            text: '-- ВСЕ --'
-                        }));
-                    $.each(data,
-                        function (index, element) {
-                            stationList.append($('<option>',
-                                {
-                                    value: element.id,
-                                    text: element.name
-                                }));
-                        });
-                    stationList.trigger("chosen:updated");
-                });
-        }
-
-        function loadNomenclature() {
-            var nomList = $('#NomenclatureList');
-            var selectedGroups = $('#NomenclatureGroupList').val();
-            var selectedNoms = nomList.val().join();
-            nomList.empty();
-            if (selectedGroups.length === 0) {
-                nomList.trigger("chosen:updated");
-                nomList.trigger('change');
-                return;
-            }
-            var url = '/Nomenclature/LoadNomenclature';
-            var requestData = { groups: selectedGroups.join() };
-            $.get(url,
-                requestData,
-                function (data) {
-                    $.each(data,
-                        function (index, element) {
-                            nomList.append($('<option>',
-                                {
-                                    value: element.id,
-                                    text: element.name
-                                }));
-                        });
-
-                    selectOptions(nomList, selectedNoms);
-                    nomList.trigger("chosen:updated");
-                    nomList.trigger('change');
-                });
-        }
-
-        function chosenSelectAll(controlId) {
-            $('#' + controlId + ' option').prop('selected', true);
-            $('#' + controlId).trigger("chosen:updated");
-            if (controlId === 'RegionList') changeRegion();
-            else if (controlId === 'TerritoryList') changeTerritory();
-        }
-
-        function chosenDeselectAll(controlId) {
-            $('#' + controlId + ' option').prop('selected', false);
-            $('#' + controlId).trigger("chosen:updated");
-        }
-
-        function selectOptions(control, values) {
-            if (values.length === 0) {
-                $(control).val('');
-                return;
-            }
-
-            var selected = values.split(',');
-            $(control).val(selected);
-        }
     </script>
+    <script src="/js/filter.js"></script>
 }

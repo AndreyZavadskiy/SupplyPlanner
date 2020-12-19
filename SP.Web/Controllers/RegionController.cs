@@ -61,7 +61,7 @@ namespace SP.Web.Controllers
         /// <returns></returns>
         public async Task<IActionResult> LoadTerritoriesAsync(string regions)
         {
-            if (!string.IsNullOrWhiteSpace(regions) && regions.Contains("2147483647"))
+            if (string.IsNullOrWhiteSpace(regions))
             {
                 regions = null;
             }

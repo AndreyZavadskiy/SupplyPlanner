@@ -53,7 +53,7 @@ namespace SP.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> LoadList(string regions, string terrs)
         {
-            if (!string.IsNullOrWhiteSpace(regions) && regions.Contains("2147483647"))
+            if (!string.IsNullOrWhiteSpace(regions))
             {
                 regions = null;
             }

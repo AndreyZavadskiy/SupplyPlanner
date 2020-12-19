@@ -32,7 +32,7 @@ namespace SP.Web.Controllers
 
             var nomenclatureGroups = await _masterService.GetDictionaryListAsync<NomenclatureGroup>();
             var groupList = new SelectList(nomenclatureGroups, "Id", "Name").ToList();
-            groupList.Insert(0, new SelectListItem("-- ВСЕ --", ""));
+            groupList.Insert(0, new SelectListItem("-- ВСЕ --", int.MaxValue.ToString()));
             ViewData["NomenclatureGroupList"] = groupList;
 
             return View("Index");

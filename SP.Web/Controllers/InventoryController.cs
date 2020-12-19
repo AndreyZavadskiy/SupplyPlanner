@@ -274,6 +274,10 @@ namespace SP.Web.Controllers
             return View("Balance", model);
         }
 
+        /// <summary>
+        /// Загрузить главные справочники в ViewData
+        /// </summary>
+        /// <returns></returns>
         private async Task LoadEssentialDictionaries()
         {
             var regions = await _masterService.SelectRegionAsync();
@@ -282,7 +286,6 @@ namespace SP.Web.Controllers
 
             var nomenclatureGroups = await _masterService.GetDictionaryListAsync<NomenclatureGroup>();
             var groupList = new SelectList(nomenclatureGroups, "Id", "Name").ToList();
-            groupList.Insert(0, new SelectListItem(string.Empty, string.Empty));
             ViewData["NomenclatureGroupList"] = groupList;
         }
 

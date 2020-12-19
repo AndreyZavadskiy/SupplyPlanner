@@ -12,7 +12,7 @@
         <div class="form-row zero-gutters">
             <div class="form-group row col-4">
                 <label asp-for="ProcessingDate" class="control-label col-6"></label>
-                <input asp-for="ProcessingDate" type="date" class="form-control col-6" readonly="readonly"/>
+                <input asp-for="ProcessingDate" type="date" class="form-control col-6" readonly="readonly" />
                 <span asp-validation-for="ProcessingDate" class="text-danger"></span>
             </div>
         </div>
@@ -62,16 +62,14 @@
                             <div class="form-group row col-12">
                                 <label for="RegionList" class="control-label zero-gutters col-3">Регион</label>
                                 <select id="RegionList" multiple="multiple" data-placeholder="Выберите регионы..."
-                                        asp-items="ViewBag.RegionList"
-                                        onchange="changeRegion();">
+                                        asp-items="ViewBag.RegionList">
                                 </select>
                                 <a title="Выделить все" onclick="chosenSelectAll('RegionList');"><img src="/images/check-all.svg" class="icon-button" /></a>
                                 <a title="Снять все" onclick="chosenDeselectAll('RegionList');"><img src="/images/x.svg" class="icon-button" /></a>
                             </div>
                             <div class="form-group row col-12">
                                 <label for="TerritoryList" class="control-label zero-gutters col-3">Территория</label>
-                                <select id="TerritoryList" multiple="multiple" data-placeholder="Выберите территории..."
-                                        onchange="changeTerritory();">
+                                <select id="TerritoryList" multiple="multiple" data-placeholder="Выберите территории...">
                                 </select>
                                 <a title="Выделить все" onclick="chosenSelectAll('TerritoryList');"><img src="/images/check-all.svg" class="icon-button" /></a>
                                 <a title="Снять все" onclick="chosenDeselectAll('TerritoryList');"><img src="/images/x.svg" class="icon-button" /></a>
@@ -85,8 +83,7 @@
                             <div class="form-group row col-12">
                                 <label for="NomenclatureGroupList" class="control-label zero-gutters col-3">Группа номенклатуры</label>
                                 <select id="NomenclatureGroupList" multiple="multiple" data-placeholder="Выберите группу..."
-                                        asp-items="ViewBag.NomenclatureGroupList"
-                                        onchange="loadNomenclature();">
+                                        asp-items="ViewBag.NomenclatureGroupList">
                                 </select>
                                 <a title="Выделить все" onclick="chosenSelectAll('NomenclatureGroupList');"><img src="/images/check-all.svg" class="icon-button" /></a>
                                 <a title="Снять все" onclick="chosenDeselectAll('NomenclatureGroupList');"><img src="/images/x.svg" class="icon-button" /></a>
@@ -204,6 +201,12 @@
                         d.noms = $('#NomenclatureList').val().join();
                     },
                     dataType: 'json'
+                },
+                initComplete: function (settings, json) {
+                    restoreFilterState()
+                        .then(function () {
+                            applyFilter();
+                        });
                 },
                 columns: [
                     { defaultContent: '' },
@@ -338,122 +341,6 @@
             });
         });
 
-        function changeRegion() {
-            var terrList = $('#TerritoryList');
-            var selectedRegions = $('#RegionList').val();
-            var selectedTerrs = terrList.val().join();
-            terrList.empty();
-            if (selectedRegions.length === 0) {
-                terrList.trigger("chosen:updated");
-                terrList.trigger('change');
-                return;
-            }
-            var url = '/Region/LoadTerritories';
-            var requestData = { regions: selectedRegions.join() };
-            $.get(url,
-                requestData,
-                function (data) {
-                    $.each(data,
-                        function (index, element) {
-                            terrList.append($('<option>',
-                                {
-                                    value: element.id,
-                                    text: element.name
-                                }));
-                        });
-
-                    selectOptions(terrList, selectedTerrs);
-                    terrList.trigger("chosen:updated");
-                    terrList.trigger('change');
-                });
-        }
-
-        function changeTerritory() {
-            var regions = $('#RegionList').val();
-            var terrs = $('#TerritoryList').val();
-            var stationList = $("#GasStationList");
-            stationList.empty();
-            if (terrs === '') {
-                stationList.trigger('change');
-                return;
-            }
-            var url = '/Station/LoadStations';
-            var requestData = {
-                'regions': regions.join(),
-                'terrs': terrs.join()
-            };
-            $.post(url,
-                requestData,
-                function (data) {
-                    stationList.append($('<option>',
-                        {
-                            value: '',
-                            text: '-- ВСЕ --'
-                        }));
-                    $.each(data,
-                        function (index, element) {
-                            stationList.append($('<option>',
-                                {
-                                    value: element.id,
-                                    text: element.name
-                                }));
-                        });
-                    stationList.trigger("chosen:updated");
-                });
-        }
-
-        function loadNomenclature() {
-            var nomList = $('#NomenclatureList');
-            var selectedGroups = $('#NomenclatureGroupList').val();
-            var selectedNoms = nomList.val().join();
-            nomList.empty();
-            if (selectedGroups.length === 0) {
-                nomList.trigger("chosen:updated");
-                nomList.trigger('change');
-                return;
-            }
-            var url = '/Nomenclature/LoadNomenclature';
-            var requestData = { groups: selectedGroups.join() };
-            $.get(url,
-                requestData,
-                function (data) {
-                    $.each(data,
-                        function (index, element) {
-                            nomList.append($('<option>',
-                                {
-                                    value: element.id,
-                                    text: element.name
-                                }));
-                        });
-
-                    selectOptions(nomList, selectedNoms);
-                    nomList.trigger("chosen:updated");
-                    nomList.trigger('change');
-                });
-        }
-
-        function chosenSelectAll(controlId) {
-            $('#' + controlId + ' option').prop('selected', true);
-            $('#' + controlId).trigger("chosen:updated");
-            if (controlId === 'RegionList') changeRegion();
-            else if (controlId === 'TerritoryList') changeTerritory();
-        }
-
-        function chosenDeselectAll(controlId) {
-            $('#' + controlId + ' option').prop('selected', false);
-            $('#' + controlId).trigger("chosen:updated");
-        }
-
-        function selectOptions(control, values) {
-            if (values.length === 0) {
-                $(control).val('');
-                return;
-            }
-
-            var selected = values.split(',');
-            $(control).val(selected);
-        }
-
         function applyFilter() {
             $('#DemandGrid').DataTable().ajax.reload();
             var selectedCount = $('.filter-area option:selected[value!=""]').length;
@@ -478,7 +365,6 @@
                 dataType: 'json',
                 type: 'post',
                 success: function(data) {
-                    console.log(data.key);
                     $('input + span').text('');
                     $('#serviceKey').val(data.key);
                     $('.modal-footer').hide();
@@ -493,7 +379,6 @@
 
         function updateProgress() {
             var keyValue = $('#serviceKey').val();
-            console.log('progress on ' + keyValue);
             $.ajax({
                 url: 'PeekStatus',
                 data: 'key=' + keyValue,
@@ -612,4 +497,5 @@
             });
         }
     </script>
+    <script src="/js/filter.js"></script>
 }
