@@ -67,6 +67,11 @@ namespace SP.Service.Models
         [DisplayName("Статус")]
         public string StationStatusName { get; set; }
         /// <summary>
+        /// Сегмент
+        /// </summary>
+        [DisplayName("Сегмент")]
+        public string SegmentName { get; set; }
+        /// <summary>
         /// Кластер (уровень сервиса)
         /// </summary>
         [DisplayName("Кластер (уровень сервиса)")]
@@ -102,15 +107,24 @@ namespace SP.Service.Models
         [DisplayName("Размер торгового зала")]
         public string TradingHallSizeName { get; set; }
         /// <summary>
+        /// Вид термоленты
+        /// </summary>
+        public string CashRegisterTapeName { get; set; }
+        /// <summary>
         /// Количество касс
         /// </summary>
         [DisplayName("Количество касс")]
         public int CashboxTotal { get; set; }
         /// <summary>
+        /// Количество АРМ менеджера
+        /// </summary>
+        [DisplayName("Количество АРМ менеджера")]
+        public int ManagerArmTotal { get; set; }
+        /// <summary>
         /// Количество персонала в сутки
         /// </summary>
         [DisplayName("Количество персонала в сутки")]
-        public int PersonnelPerDay { get; set; }
+        public decimal PersonnelPerDay { get; set; }
         /// <summary>
         /// Количество ТРК
         /// </summary>
@@ -121,6 +135,11 @@ namespace SP.Service.Models
         /// </summary>
         [DisplayName("Количество постов ТРК")]
         public int FuelDispenserPostTotal { get; set; }
+        /// <summary>
+        /// Количество постов ТРК
+        /// </summary>
+        [DisplayName("Количество постов ТРК без навеса")]
+        public int FuelDispenserPostWithoutShedTotal { get; set; }
         /// <summary>
         /// Количество сан.комнат для клиентов
         /// </summary>
@@ -216,5 +235,20 @@ namespace SP.Service.Models
         /// </summary>
         [DisplayName("Уборка в ночь")]
         public int NightCleaningTotal { get; set; }
+        /// <summary>
+        /// Расстановка заправки в день
+        /// </summary>
+        [DisplayName("Расстановка заправки в день")]
+        public int DayRefuelingTotal { get; set; }
+        /// <summary>
+        /// Расстановка заправки в ночь
+        /// </summary>
+        [DisplayName("Расстановка заправки в ночь")]
+        public int NightRefuelingTotal { get; set; }
+        /// <summary>
+        /// Участвует в проекте выдачи топливных карт
+        /// </summary>
+        [DisplayName("Топливные карты")]
+        public bool HasFuelCardProgram { get; set; }
     }
 }

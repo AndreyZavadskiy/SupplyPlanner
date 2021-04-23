@@ -732,25 +732,31 @@ namespace SP.Service.Background
             {
                 // параметры АЗС
                 var gasStation = await _context.GasStations
+                    .Include(x => x.Segment)
                     .Include(x => x.ServiceLevel)
                     .Include(x => x.OperatorRoomFormat)
                     .Include(x => x.TradingHallOperatingMode)
                     .Include(x => x.CashboxLocation)
                     .Include(x => x.TradingHallSize)
+                    .Include(x => x.CashRegisterTape)
                     .FirstOrDefaultAsync(x => x.Id == nomBalance.GasStationId);
 
                 ExpressionEvaluator evaluator = new ExpressionEvaluator();
                 evaluator.Variables = new Dictionary<string, object>()
                 {
                     { "if", new Func<bool,double,double,double>((c, x, y) => c ? x : y)},
+                    { "segment", gasStation.Segment?.Name.ToLower() },
                     { "cluster", gasStation.ServiceLevel?.Name.ToLower() },
                     { "operformat", gasStation.OperatorRoomFormat?.Name.ToLower() },
                     { "regime", gasStation.TradingHallOperatingMode?.Name.ToLower() },
                     { "cashdesk", gasStation.CashboxLocation?.Name.ToLower() },
                     { "salearea", Convert.ToDouble(gasStation.TradingHallArea) },
                     { "totalarm", gasStation.CashboxTotal },
+                    { "managerarm", gasStation.ManagerArmTotal },
                     { "totaltrk", gasStation.FuelDispenserTotal },
                     { "totaltrkpost", gasStation.FuelDispenserPostTotal },
+                    { "totaltrkopenpost", gasStation.FuelDispenserPostWithoutShedTotal },
+                    { "cashtape", gasStation.CashRegisterTape?.Name.ToLower() },
                     { "avgcheck", Convert.ToDouble(gasStation.ChequePerDay) },
                     { "totalclienttoiletroom", gasStation.ClientRestroomTotal },
                     { "totaltambour", gasStation.ClientTambourTotal },
@@ -764,13 +770,15 @@ namespace SP.Service.Background
                     { "marmite", gasStation.HasMarmite },
                     { "kitchen", gasStation.HasKitchen },
                     { "coffeemachine", gasStation.CoffeeMachineTotal },
-                    { "totalpersonal", gasStation.PersonnelPerDay },
+                    { "totalpersonal", Convert.ToDouble(gasStation.PersonnelPerDay) },
                     { "avgbandlength", Convert.ToDouble(gasStation.ChequeBandLengthPerDay) },
                     { "imagecoef", Convert.ToDouble(gasStation.RepresentativenessFactor) },
                     { "imagecoef3q", Convert.ToDouble(gasStation.RepresentativenessFactor3Quarter) },
                     { "daycleaning", gasStation.DayCleaningTotal },
+                    { "dayrefueling", gasStation.DayRefuelingTotal },
                     { "merrychef", gasStation.MerrychefTotal },
-                    { "revenue", Convert.ToDouble(gasStation.RevenueAvg) }
+                    { "revenue", Convert.ToDouble(gasStation.RevenueAvg) },
+                    { "fuelcard", gasStation.HasFuelCardProgram }
                 };
 
                 try

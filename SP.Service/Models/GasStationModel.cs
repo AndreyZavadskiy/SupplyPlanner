@@ -70,6 +70,12 @@ namespace SP.Service.Models
         [DisplayName("Статус")]
         public int StationStatusId { get; set; }
         /// <summary>
+        /// Сегмент
+        /// </summary>
+        [DisplayName("Сегмент")]
+        [Required(ErrorMessage = "Поле является обязательным")]
+        public int SegmentId { get; set; }
+        /// <summary>
         /// Кластер (уровень сервиса)
         /// </summary>
         [Required(ErrorMessage = "Поле является обязательным")]
@@ -111,20 +117,32 @@ namespace SP.Service.Models
         /// Количество касс
         /// </summary>
         [Required(ErrorMessage = "Поле является обязательным")]
-        [DisplayName("Количество касс")]
+        [DisplayName("Количество АРМ (касс)")]
         public int CashboxTotal { get; set; }
+        /// <summary>
+        /// Количество АРМ менеджера
+        /// </summary>
+        [DisplayName("Количество АРМ менеджера")]
+        [Required(ErrorMessage = "Поле является обязательным")]
+        public int ManagerArmTotal { get; set; }
         /// <summary>
         /// Количество персонала в сутки
         /// </summary>
         [Required(ErrorMessage = "Поле является обязательным")]
         [DisplayName("Количество персонала в сутки")]
-        public int PersonnelPerDay { get; set; }
+        public decimal PersonnelPerDay { get; set; }
         /// <summary>
         /// Количество ТРК
         /// </summary>
         [Required(ErrorMessage = "Поле является обязательным")]
         [DisplayName("Количество ТРК")]
         public int FuelDispenserTotal { get; set; }
+        /// <summary>
+        /// Количество постов ТРК
+        /// </summary>
+        [Required(ErrorMessage = "Поле является обязательным")]
+        [DisplayName("Количество постов ТРК без навеса")]
+        public int FuelDispenserPostWithoutShedTotal { get; set; }
         /// <summary>
         /// Количество постов ТРК
         /// </summary>
@@ -154,6 +172,11 @@ namespace SP.Service.Models
         /// </summary>
         [DisplayName("Площадь торгового зала")]
         public decimal? TradingHallArea { get; set; }
+        /// <summary>
+        /// Вид термоленты
+        /// </summary>
+        [DisplayName("Вид термоленты")]
+        public int? CashRegisterTapeId { get; set; }
         /// <summary>
         /// Среднее количество чеков в сутки
         /// </summary>
@@ -250,5 +273,20 @@ namespace SP.Service.Models
         [Required(ErrorMessage = "Поле является обязательным")]
         [DisplayName("Уборка в ночь")]
         public int NightCleaningTotal { get; set; }
+        /// <summary>
+        /// Расстановка заправки в день
+        /// </summary>
+        [DisplayName("Расстановка заправки в день")]
+        public int DayRefuelingTotal { get; set; }
+        /// <summary>
+        /// Расстановка заправки в ночь
+        /// </summary>
+        [DisplayName("Расстановка заправки в ночь")]
+        public int NightRefuelingTotal { get; set; }
+        /// <summary>
+        /// Участвует в проекте выдачи топливных карт
+        /// </summary>
+        [DisplayName("Топливные карты")]
+        public bool HasFuelCardProgram { get; set; }
     }
 }

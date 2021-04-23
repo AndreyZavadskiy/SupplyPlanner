@@ -138,6 +138,8 @@ namespace SP.Web.Controllers
             ViewData["StationLocationList"] = new SelectList(stationLocationList, "Id", "Name");
             var stationStatusList = await _masterService.GetDictionaryListAsync<StationStatus>();
             ViewData["StationStatusList"] = new SelectList(stationStatusList, "Id", "Name");
+            var segmentList = await _masterService.GetDictionaryListAsync<Segment>();
+            ViewData["SegmentList"] = new SelectList(segmentList, "Id", "Name");
             var serviceLevelList = await _masterService.GetDictionaryListAsync<ServiceLevel>();
             ViewData["ServiceLevelList"] = new SelectList(serviceLevelList, "Id", "Name");
             var operatorRoomFormatList = await _masterService.GetDictionaryListAsync<OperatorRoomFormat>();
@@ -152,6 +154,8 @@ namespace SP.Web.Controllers
             ViewData["CashboxLocationList"] = new SelectList(cashboxLocationList, "Id", "Name");
             var tradingHallSizeList = await _masterService.GetDictionaryListAsync<TradingHallSize>();
             ViewData["TradingHallSizeList"] = new SelectList(tradingHallSizeList, "Id", "Name");
+            var cashRegisterTapeList = await _masterService.GetDictionaryListAsync<CashRegisterTape>();
+            ViewData["CashRegisterTapeList"] = new SelectList(cashRegisterTapeList, "Id", "Name");
 
             ViewData["SelectedRegions"] = regions;
             ViewData["SelectedTerritories"] = terrs;

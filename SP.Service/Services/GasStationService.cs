@@ -41,6 +41,7 @@ namespace SP.Service.Services
                 .Include(x => x.Settlement)
                 .Include(x => x.StationLocation)
                 .Include(x => x.StationStatus)
+                .Include(x => x.Segment)
                 .Include(x => x.ServiceLevel)
                 .Include(x => x.OperatorRoomFormat)
                 .Include(x => x.ManagementSystem)
@@ -48,6 +49,7 @@ namespace SP.Service.Services
                 .Include(x => x.ClientRestroom)
                 .Include(x => x.CashboxLocation)
                 .Include(x => x.TradingHallSize)
+                .Include(x => x.CashRegisterTape)
                 .AsQueryable();
             if (regions != null)
             {
@@ -86,6 +88,7 @@ namespace SP.Service.Services
                     Address = x.Address,
                     StationLocationName = x.StationLocation?.Name,
                     StationStatusName = x.StationStatus?.Name,
+                    SegmentName = x.Segment?.Name,
                     ServiceLevelName = x.ServiceLevel?.Name,
                     OperatorRoomFormatName = x.OperatorRoomFormat?.Name,
                     ManagementSystemName = x.ManagementSystem?.Name,
@@ -94,13 +97,16 @@ namespace SP.Service.Services
                     CashboxLocationName = x.CashboxLocation?.Name,
                     TradingHallSizeName = x.TradingHallSize?.Name,
                     CashboxTotal = x.CashboxTotal,
+                    ManagerArmTotal = x.ManagerArmTotal,
                     PersonnelPerDay = x.PersonnelPerDay,
                     FuelDispenserTotal = x.FuelDispenserTotal,
                     FuelDispenserPostTotal = x.FuelDispenserPostTotal,
+                    FuelDispenserPostWithoutShedTotal = x.FuelDispenserPostWithoutShedTotal,
                     ClientRestroomTotal = x.ClientRestroomTotal,
                     ClientTambourTotal = x.ClientTambourTotal,
                     ClientSinkTotal = x.ClientSinkTotal,
                     TradingHallArea = x.TradingHallArea,
+                    CashRegisterTapeName = x.CashRegisterTape?.Name,
                     ChequePerDay = x.ChequePerDay,
                     RevenueAvg = x.RevenueAvg,
                     HasSibilla = x.HasSibilla,
@@ -115,7 +121,10 @@ namespace SP.Service.Services
                     RepresentativenessFactor3Quarter = x.RepresentativenessFactor3Quarter,
                     MerrychefTotal = x.MerrychefTotal,
                     DayCleaningTotal = x.DayCleaningTotal,
-                    NightCleaningTotal = x.NightCleaningTotal
+                    NightCleaningTotal = x.NightCleaningTotal,
+                    DayRefuelingTotal = x.DayRefuelingTotal,
+                    NightRefuelingTotal = x.NightRefuelingTotal,
+                    HasFuelCardProgram = x.HasFuelCardProgram
                 })
                 .ToArray();
 
@@ -163,6 +172,7 @@ namespace SP.Service.Services
                 Address = station.Address,
                 StationLocationId = station.StationLocationId,
                 StationStatusId = station.StationStatusId,
+                SegmentId = station.SegmentId,
                 ServiceLevelId = station.ServiceLevelId,
                 OperatorRoomFormatId = station.OperatorRoomFormatId,
                 ManagementSystemId = station.ManagementSystemId,
@@ -171,15 +181,19 @@ namespace SP.Service.Services
                 CashboxLocationId = station.CashboxLocationId,
                 TradingHallSizeId = station.TradingHallSizeId,
                 CashboxTotal = station.CashboxTotal,
+                ManagerArmTotal = station.ManagerArmTotal,
                 PersonnelPerDay = station.PersonnelPerDay,
                 FuelDispenserTotal = station.FuelDispenserTotal,
                 FuelDispenserPostTotal = station.FuelDispenserPostTotal,
+                FuelDispenserPostWithoutShedTotal = station.FuelDispenserPostWithoutShedTotal,
                 ClientRestroomTotal = station.ClientRestroomTotal,
                 ClientTambourTotal = station.ClientTambourTotal,
                 ClientSinkTotal = station.ClientSinkTotal,
                 TradingHallArea = station.TradingHallArea,
+                CashRegisterTapeId = station.CashRegisterTapeId,
                 ChequePerDay = station.ChequePerDay,
                 RevenueAvg = station.RevenueAvg,
+                HasJointRestroomEntrance = station.HasJointRestroomEntrance,
                 HasSibilla = station.HasSibilla,
                 HasBakery = station.HasBakery,
                 HasCakes = station.HasCakes,
@@ -192,7 +206,10 @@ namespace SP.Service.Services
                 RepresentativenessFactor3Quarter = station.RepresentativenessFactor3Quarter,
                 MerrychefTotal = station.MerrychefTotal,
                 DayCleaningTotal = station.DayCleaningTotal,
-                NightCleaningTotal = station.NightCleaningTotal
+                NightCleaningTotal = station.NightCleaningTotal,
+                DayRefuelingTotal = station.DayRefuelingTotal,
+                NightRefuelingTotal = station.NightRefuelingTotal,
+                HasFuelCardProgram = station.HasFuelCardProgram
             };
 
             return model;
@@ -293,6 +310,7 @@ namespace SP.Service.Services
                 station.Address = model.Address;
                 station.StationLocationId = model.StationLocationId;
                 station.StationStatusId = model.StationStatusId;
+                station.SegmentId = model.SegmentId;
                 station.ServiceLevelId = model.ServiceLevelId;
                 station.OperatorRoomFormatId = model.OperatorRoomFormatId;
                 station.ManagementSystemId = model.ManagementSystemId;
@@ -301,13 +319,16 @@ namespace SP.Service.Services
                 station.CashboxLocationId = model.CashboxLocationId;
                 station.TradingHallSizeId = model.TradingHallSizeId;
                 station.CashboxTotal = model.CashboxTotal;
+                station.ManagerArmTotal = model.ManagerArmTotal;
                 station.PersonnelPerDay = model.PersonnelPerDay;
                 station.FuelDispenserTotal = model.FuelDispenserTotal;
                 station.FuelDispenserPostTotal = model.FuelDispenserPostTotal;
+                station.FuelDispenserPostWithoutShedTotal = model.FuelDispenserPostWithoutShedTotal;
                 station.ClientRestroomTotal = model.ClientRestroomTotal;
                 station.ClientTambourTotal = model.ClientTambourTotal;
                 station.ClientSinkTotal = model.ClientSinkTotal;
                 station.TradingHallArea = model.TradingHallArea;
+                station.CashRegisterTapeId = model.CashRegisterTapeId;
                 station.ChequePerDay = model.ChequePerDay;
                 station.RevenueAvg = model.RevenueAvg;
                 station.HasJointRestroomEntrance = model.HasJointRestroomEntrance;
@@ -324,6 +345,9 @@ namespace SP.Service.Services
                 station.MerrychefTotal = model.MerrychefTotal;
                 station.DayCleaningTotal = model.DayCleaningTotal;
                 station.NightCleaningTotal = model.NightCleaningTotal;
+                station.DayRefuelingTotal = model.DayRefuelingTotal;
+                station.NightRefuelingTotal = model.NightRefuelingTotal;
+                station.HasFuelCardProgram = model.HasFuelCardProgram;
 
                 _context.GasStations.Update(station);
                 await _context.SaveChangesAsync();

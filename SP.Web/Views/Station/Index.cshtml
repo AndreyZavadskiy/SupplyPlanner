@@ -41,6 +41,7 @@
                     <th class="exportable-column">Статус</th>
                     <th class="exportable-column">Населенный пункт</th>
                     <th class="exportable-column">Местоположение</th>
+                    <th class="exportable-column">Сегмент</th>
                     <th class="exportable-column">Кластер <br />(уровень сервиса)</th>
                     <th class="exportable-column">Формат <br />операторной</th>
                     <th class="exportable-column">Система <br />управления</th>
@@ -49,13 +50,16 @@
                     <th class="exportable-column">Расчетно-<br />кассовый узел</th>
                     <th class="exportable-column">Размер <br />торгового зала</th>
                     <th class="exportable-column">Кол-во <br />касс</th>
+                    <th class="exportable-column">Кол-во АРМ <br />менеджера</th>
                     <th class="exportable-column">Кол-во персонала <br />в сутки</th>
                     <th class="exportable-column">Кол-во ТРК</th>
                     <th class="exportable-column">Кол-во постов ТРК</th>
+                    <th class="exportable-column">Кол-во постов ТРК <br />без навеса</th>
                     <th class="exportable-column">Кол-во сан.комнат <br />для клиентов</th>
                     <th class="exportable-column">Кол-во тамбуров <br />для клиентов</th>
                     <th class="exportable-column">Кол-во раковин <br />для клиентов</th>
                     <th class="exportable-column">Площадь <br />торгового зала</th>
+                    <th class="exportable-column">Вид <br />термоленты</th>
                     <th class="exportable-column">Среднее кол-во <br />чеков в сутки</th>
                     <th class="exportable-column">Выручка в месяц</th>
                     <th class="exportable-column">Имиджевый <br />коэфф.</th>
@@ -71,6 +75,9 @@
                     <th class="exportable-column">Кол-во печей<br />Меришеф</th>
                     <th class="exportable-column">Уборка <br />в день</th>
                     <th class="exportable-column">Уборка <br />в ночь</th>
+                    <th class="exportable-column">Расст.заправки <br />в день</th>
+                    <th class="exportable-column">Расст.заправки <br />в ночь</th>
+                    <th class="exportable-column">Выдача <br />топл.карт</th>
                 </tr>
             </thead>
         </table>
@@ -158,6 +165,7 @@
                     { data: 'stationStatusName' },
                     { data: 'settlementName' },
                     { data: 'stationLocationName' },
+                    { data: 'segmentName' },
                     { data: 'serviceLevelName' },
                     { data: 'operatorRoomFormatName' },
                     { data: 'managementSystemName' },
@@ -166,19 +174,20 @@
                     { data: 'cashboxLocationName' },
                     { data: 'tradingHallSizeName' },
                     { data: 'cashboxTotal' },
+                    { data: 'managerArmTotal' },
                     { data: 'personnelPerDay' },
                     { data: 'fuelDispenserTotal' },
                     { data: 'fuelDispenserPostTotal' },
+                    { data: 'fuelDispenserPostWithoutShedTotal' },
                     { data: 'clientRestroomTotal' },
                     { data: 'clientTambourTotal' },
                     { data: 'clientSinkTotal' },
                     { data: 'tradingHallArea' },
+                    { data: 'cashRegisterTapeName' },
                     { data: 'chequePerDay' },
                     { data: 'revenueAvg' },
                     { data: 'representativenessFactor' },
                     { data: 'representativenessFactor3Quarter' },
-                    { data: 'dayCleaningTotal' },
-                    { data: 'nightCleaningTotal' },
                     {
                         render: function (data, type, full, meta) {
                             return full.hasSibilla ? 'есть' : '';
@@ -207,7 +216,16 @@
                     },
                     { data: 'coffeeMachineTotal' },
                     { data: 'dishWashingMachineTotal' },
-                    { data: 'merrychefTotal' }
+                    { data: 'merrychefTotal' },
+                    { data: 'dayCleaningTotal' },
+                    { data: 'nightCleaningTotal' },
+                    { data: 'dayRefuelingTotal' },
+                    { data: 'nightRefuelingTotal' },
+                    {
+                        render: function (data, type, full, meta) {
+                            return full.hasFuelCardProgram ? 'есть' : '';
+                        }
+                    }
                 ],
                 columnDefs:
                 [

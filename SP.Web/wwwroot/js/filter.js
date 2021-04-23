@@ -24,6 +24,10 @@ function storeFilter(name, control) {
 
 function restoreFilterState() {
     return new Promise(function (resolve, reject) {
+        // TODO: восстановить сохранение списков выбора
+        resolve(false);
+        return;
+
         var regions = localStorage.getItem('regionFilter');
         var terrs = localStorage.getItem('terrFilter');
         var stations = localStorage.getItem('stationFilter');

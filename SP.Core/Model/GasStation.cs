@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using SP.Core.Master;
@@ -56,6 +57,10 @@ namespace SP.Core.Model
         /// </summary>
         public int StationStatusId { get; set; }
         /// <summary>
+        /// Сегмент
+        /// </summary>
+        public int SegmentId { get; set; }
+        /// <summary>
         /// Кластер (уровень сервиса)
         /// </summary>
         public int ServiceLevelId { get; set; }
@@ -88,13 +93,22 @@ namespace SP.Core.Model
         /// </summary>
         public int? TradingHallSizeId { get; set; }
         /// <summary>
+        /// Вид термоленты
+        /// </summary>
+        public int? CashRegisterTapeId { get; set; }
+        /// <summary>
         /// Количество АРМ/касс
         /// </summary>
         public int CashboxTotal { get; set; }
         /// <summary>
+        /// Количество АРМ менеджера
+        /// </summary>
+        public int ManagerArmTotal { get; set; }
+        /// <summary>
         /// Количество персонала в сутки
         /// </summary>
-        public int PersonnelPerDay { get; set; }
+        [Column(TypeName = "decimal(8,2)")] 
+        public decimal PersonnelPerDay { get; set; }
         /// <summary>
         /// Количество ТРК
         /// </summary>
@@ -103,6 +117,10 @@ namespace SP.Core.Model
         /// Количество постов ТРК
         /// </summary>
         public int FuelDispenserPostTotal { get; set; }
+        /// <summary>
+        /// Количество постов ТРК без навеса
+        /// </summary>
+        public int FuelDispenserPostWithoutShedTotal { get; set; }
         /// <summary>
         /// Количество сан.комнат для клиентов
         /// </summary>
@@ -170,6 +188,7 @@ namespace SP.Core.Model
         /// Расход кассовой ленты за день, м
         /// кол-во транзакций * среднюю длину чека
         /// </summary>
+        [Obsolete]
         [Column(TypeName = "decimal(8,2)")]
         public decimal ChequeBandLengthPerDay { get; set; }
         /// <summary>
@@ -194,11 +213,33 @@ namespace SP.Core.Model
         /// Уборка в ночь
         /// </summary>
         public int NightCleaningTotal { get; set; }
+        /// <summary>
+        /// Расстановка заправки в день
+        /// </summary>
+        public int DayRefuelingTotal { get; set; }
+        /// <summary>
+        /// Расстановка заправки в ночь
+        /// </summary>
+        public int NightRefuelingTotal { get; set; }
+        /// <summary>
+        /// Участвует в проекте выдачи топливных карт
+        /// </summary>
+        public bool HasFuelCardProgram { get; set; }
 
         #region Navigation properties
 
-        [ForeignKey("TerritoryId")]
-        public RegionalStructure Territory { get; set; }
+        [ForeignKey("CashboxLocationId")]
+        public CashboxLocation CashboxLocation { get; set; }
+        [ForeignKey("CashRegisterTapeId")]
+        public CashRegisterTape CashRegisterTape { get; set; }
+        [ForeignKey("ClientRestroomId")]
+        public ClientRestroom ClientRestroom { get; set; }
+        [ForeignKey("ManagementSystemId")]
+        public ManagementSystem ManagementSystem { get; set; }
+        [ForeignKey("SegmentId")]
+        public Segment Segment { get; set; }
+        [ForeignKey("OperatorRoomFormatId")]
+        public OperatorRoomFormat OperatorRoomFormat { get; set; }
         [ForeignKey("SettlememtId")]
         public Settlement Settlement { get; set; }
         [ForeignKey("StationLocationId")]
@@ -207,16 +248,10 @@ namespace SP.Core.Model
         public StationStatus StationStatus { get; set; }
         [ForeignKey("ServiceLevelId")]
         public ServiceLevel ServiceLevel { get; set; }
-        [ForeignKey("OperatorRoomFormatId")]
-        public OperatorRoomFormat OperatorRoomFormat { get; set; }
-        [ForeignKey("ManagementSystemId")]
-        public ManagementSystem ManagementSystem { get; set; }
+        [ForeignKey("TerritoryId")]
+        public RegionalStructure Territory { get; set; }
         [ForeignKey("TradingHallOperatingModeId")]
         public TradingHallOperatingMode TradingHallOperatingMode { get; set; }
-        [ForeignKey("ClientRestroomId")]
-        public ClientRestroom ClientRestroom { get; set; }
-        [ForeignKey("CashboxLocationId")]
-        public CashboxLocation CashboxLocation { get; set; }
         [ForeignKey("TradingHallSizeId")]
         public TradingHallSize TradingHallSize { get; set; }
 

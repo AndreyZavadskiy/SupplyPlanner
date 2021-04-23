@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SP.Data;
@@ -9,9 +10,10 @@ using SP.Data;
 namespace SP.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210422103303_20210422_GasStation_NewProperties")]
+    partial class _20210422_GasStation_NewProperties
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -676,8 +678,8 @@ namespace SP.Data.Migrations
                     b.Property<int>("OperatorRoomFormatId")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("PersonnelPerDay")
-                        .HasColumnType("decimal(8,2)");
+                    b.Property<int>("PersonnelPerDay")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("RepresentativenessFactor")
                         .HasColumnType("decimal(8,2)");
@@ -688,7 +690,7 @@ namespace SP.Data.Migrations
                     b.Property<decimal>("RevenueAvg")
                         .HasColumnType("decimal(12,2)");
 
-                    b.Property<int>("SegmentId")
+                    b.Property<int?>("SegmentId")
                         .HasColumnType("integer");
 
                     b.Property<int>("ServiceLevelId")
@@ -1252,9 +1254,7 @@ namespace SP.Data.Migrations
 
                     b.HasOne("SP.Core.Master.Segment", "Segment")
                         .WithMany()
-                        .HasForeignKey("SegmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SegmentId");
 
                     b.HasOne("SP.Core.Master.ServiceLevel", "ServiceLevel")
                         .WithMany()

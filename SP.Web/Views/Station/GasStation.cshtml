@@ -93,16 +93,29 @@
         <div class="form-row zero-gutters">
             <div class="form-group row col-6">
                 <label asp-for="StationStatusId" class="control-label col-4"></label>
-                @if (canEdit)
+                @if (canEditLimited)
                 {
                     <select asp-for="StationStatusId" asp-items="ViewBag.StationStatusList" class="col-8"></select>
                 }
                 else
                 {
-                    <select name="StationStatusId1" asp-for="StationStatusId" asp-items="ViewBag.StationStatusList" class="col-8" disabled="disabled"></select>
+                    <select name="StationStatusId" asp-for="StationStatusId" asp-items="ViewBag.StationStatusList" class="col-8" disabled="disabled"></select>
                     <input name="StationStatusId" type="hidden" value="@Model.StationStatusId" />
                 }
-                <span asp-validation-for="StationStatusId" class="text-danger"></span>
+                <span asp-validation-for="StationLocationId" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="SegmentId" class="control-label col-4"></label>
+                @if (canEdit)
+                {
+                    <select asp-for="SegmentId" asp-items="ViewBag.SegmentList" class="col-8"></select>
+                }
+                else
+                {
+                    <select name="StationStatusId1" asp-for="SegmentId" asp-items="ViewBag.SegmentList" class="col-8" disabled="disabled"></select>
+                    <input name="StationStatusId" type="hidden" value="@Model.SegmentId" />
+                }
+                <span asp-validation-for="SegmentId" class="text-danger"></span>
             </div>
         </div>
         <div class="form-row zero-gutters">
@@ -184,10 +197,29 @@
                 <input asp-for="FuelDispenserTotal" class="form-control col-4" readonly="@(!canEdit)" />
                 <span asp-validation-for="FuelDispenserTotal" class="text-danger"></span>
             </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="FuelDispenserPostTotal" class="control-label col-4"></label>
+                <input asp-for="FuelDispenserPostTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="FuelDispenserPostTotal" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="FuelDispenserPostWithoutShedTotal" class="control-label col-4"></label>
+                <input asp-for="FuelDispenserPostWithoutShedTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="FuelDispenserPostWithoutShedTotal" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
             <div class="form-group row col-6">
                 <label asp-for="CashboxTotal" class="control-label col-4"></label>
                 <input asp-for="CashboxTotal" class="form-control col-4" readonly="@(!canEdit)" />
                 <span asp-validation-for="CashboxTotal" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="ManagerArmTotal" class="control-label col-4"></label>
+                <input asp-for="ManagerArmTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="ManagerArmTotal" class="text-danger"></span>
             </div>
         </div>
         <div class="form-row zero-gutters">
@@ -195,6 +227,11 @@
                 <label asp-for="CashboxLocationId" class="control-label col-4"></label>
                 <select asp-for="CashboxLocationId" asp-items="ViewBag.CashboxLocationList" class="col-8"></select>
                 <span asp-validation-for="CashboxLocationId" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="CashRegisterTapeId" class="control-label col-4"></label>
+                <select asp-for="CashRegisterTapeId" asp-items="ViewBag.CashRegisterTapeList" class="col-8"></select>
+                <span asp-validation-for="CashRegisterTapeId" class="text-danger"></span>
             </div>
         </div>
         <div class="form-row zero-gutters">
@@ -321,6 +358,28 @@
                 <label asp-for="NightCleaningTotal" class="control-label col-4"></label>
                 <input asp-for="NightCleaningTotal" class="form-control col-4" readonly="@(!canEdit)" />
                 <span asp-validation-for="NightCleaningTotal" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="DayRefuelingTotal" class="control-label col-4"></label>
+                <input asp-for="DayRefuelingTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="DayRefuelingTotal" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="NightRefuelingTotal" class="control-label col-4"></label>
+                <input asp-for="NightRefuelingTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="NightRefuelingTotal" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row zero-gutters col-6">
+                <div class="form-group row col-4"></div>
+                <div class="form-group row form-check col-8">
+                    <label class="form-check-label">
+                        <input asp-for="HasFuelCardProgram" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasFuelCardProgram)
+                    </label>
+                </div>
             </div>
         </div>
 
