@@ -130,7 +130,7 @@ namespace SP.Web.Controllers
         {
             var regionList = await _masterService.SelectRegionAsync();
             ViewData["RegionList"] = new SelectList(regionList, "Id", "Name");
-            var territoryList = await _masterService.SelectTerritoryAsync(new int[] { model.RegionId });
+            var territoryList = await _masterService.SelectTerritoryAsync(regions.SplitToIntArray());
             ViewData["TerritoryList"] = new SelectList(territoryList, "Id", "Name");
             var settlementList = await _masterService.GetDictionaryListAsync<Settlement>();
             ViewData["SettlementList"] = new SelectList(settlementList, "Id", "Name");

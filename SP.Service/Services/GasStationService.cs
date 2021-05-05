@@ -242,6 +242,7 @@ namespace SP.Service.Services
                     Address = model.Address,
                     StationLocationId = model.StationLocationId,
                     StationStatusId = model.StationStatusId,
+                    SegmentId = model.SegmentId,
                     ServiceLevelId = model.ServiceLevelId,
                     OperatorRoomFormatId = model.OperatorRoomFormatId,
                     ManagementSystemId = model.ManagementSystemId,
@@ -249,10 +250,13 @@ namespace SP.Service.Services
                     ClientRestroomId = model.ClientRestroomId,
                     CashboxLocationId = model.CashboxLocationId,
                     TradingHallSizeId = model.TradingHallSizeId,
+                    CashRegisterTapeId = model.CashRegisterTapeId,
                     CashboxTotal = model.CashboxTotal,
+                    ManagerArmTotal = model.ManagerArmTotal,
                     PersonnelPerDay = model.PersonnelPerDay,
                     FuelDispenserTotal = model.FuelDispenserTotal,
                     FuelDispenserPostTotal = model.FuelDispenserPostTotal,
+                    FuelDispenserPostWithoutShedTotal = model.FuelDispenserPostWithoutShedTotal,
                     ClientRestroomTotal = model.ClientRestroomTotal,
                     ClientTambourTotal = model.ClientTambourTotal,
                     ClientSinkTotal = model.ClientSinkTotal,
@@ -272,7 +276,10 @@ namespace SP.Service.Services
                     RepresentativenessFactor3Quarter = model.RepresentativenessFactor3Quarter,
                     MerrychefTotal = model.MerrychefTotal,
                     DayCleaningTotal = model.DayCleaningTotal,
-                    NightCleaningTotal = model.NightCleaningTotal
+                    NightCleaningTotal = model.NightCleaningTotal,
+                    DayRefuelingTotal = model.DayRefuelingTotal,
+                    NightRefuelingTotal = model.NightRefuelingTotal,
+                    HasFuelCardProgram = model.HasFuelCardProgram
                 };
 
                 _context.GasStations.Add(gasStation);
