@@ -221,12 +221,12 @@ namespace SP.Web.Controllers
             };
 
             await LoadEssentialDictionaries();
-            var userfulList = new [] {
+            var usefulList = new [] {
                 new SelectListItem("менее 12 месяцев", "1"),
                 new SelectListItem("12 месяцев", "2"),
                 new SelectListItem("более 12 месяцев", "3")
             };
-            ViewData["UserfulLifeList"] = userfulList;
+            ViewData["UsefulLifeList"] = usefulList;
 
             return View("CalcBalance", model);
         }

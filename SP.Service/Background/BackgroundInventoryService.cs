@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CodingSeb.ExpressionEvaluator;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using SP.Core.Enum;
@@ -455,11 +454,11 @@ namespace SP.Service.Background
         }
 
         /// <summary>
-        /// Рассчитать остатки по Номенклатуре
+        /// Рассчитать остатки по Номенклатуре (в разрезе АЗС и номенклатуры)
         /// </summary>
         /// <param name="serviceKey"></param>
         /// <param name="aspNetUserId"></param>
-        /// <returns></returns>
+        /// <returns></returns> 
         public async Task<bool> CalculateBalanceAsync(Guid serviceKey, string aspNetUserId, int[] regions, int[] terrs, int[] stations,
             int[] groups, int[] noms, int[] usefulLife)
         {
@@ -623,7 +622,7 @@ namespace SP.Service.Background
         }
 
         /// <summary>
-        /// Рассчитать потребность в заказе Номенклатуры
+        /// Рассчитать остатки и потребность в заказе Номенклатуры
         /// </summary>
         /// <param name="serviceKey"></param>
         /// <param name="idList"></param>
@@ -644,7 +643,7 @@ namespace SP.Service.Background
 
             try
             {
-                processingLog.AppendLine("Расчет потребности в заказе ТМЦ начат.");
+                processingLog.AppendLine("Расчет остатков и потребности в заказе ТМЦ начат.");
 
                 var person = await _masterService.GetPersonAsync(aspNetUserId);
 
@@ -665,6 +664,8 @@ namespace SP.Service.Background
                         break;
                     }
 
+                    await CalcBalanceListAsync(portion, person.Id);
+
                     foreach (var id in portion)
                     {
                         await CalculateSingleOrder(id, person.Id);
@@ -677,12 +678,12 @@ namespace SP.Service.Background
                     _coordinator.AddOrUpdate(progressIndicator);
                 }
 
-                processingLog.AppendLine($"Расчет потребности в заказе ТМЦ завершен");
+                processingLog.AppendLine($"Расчет остатков и потребности в заказе ТМЦ завершен");
                 var successFinalProgress = new BackgroundServiceProgress
                 {
                     Key = serviceKey,
                     Status = BackgroundServiceStatus.RanToCompletion,
-                    Step = "Расчет потребности в заказе ТМЦ завершен",
+                    Step = "Расчет остатков и потребности в заказе ТМЦ завершен",
                     Progress = 100,
                     Log = processingLog.ToString()
                 };
@@ -705,6 +706,27 @@ namespace SP.Service.Background
 
                 return false;
             }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Рассчитать остатки по выбранной номенклатуре
+        /// </summary>
+        /// <param name="idList"></param>
+        /// <param name="personId"></param>
+        /// <returns></returns>
+        private async Task<bool> CalcBalanceListAsync(int[] idList, int personId)
+        {
+            var pIdList = new NpgsqlParameter("id_list", string.Join(',', idList));
+            var pPerson = new NpgsqlParameter("person_id", personId);
+            var pRows = new NpgsqlParameter("total_rows", DbType.Int32)
+            {
+                Direction = ParameterDirection.InputOutput,
+                Value = 0
+            };
+            await _context.Database.ExecuteSqlRawAsync("CALL \"CalcBalanceList\"(@id_list, @person_id, @total_rows);",
+                pIdList, pPerson, pRows);
 
             return true;
         }
@@ -789,7 +811,7 @@ namespace SP.Service.Background
                         throw new ArithmeticException($"Некорректная формула: {nomBalance.Formula}");
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     Debugger.Break();
                 }

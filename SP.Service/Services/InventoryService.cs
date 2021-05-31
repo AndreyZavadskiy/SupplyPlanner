@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SP.Core.Enum;
 using SP.Core.Model;
@@ -556,7 +554,7 @@ namespace SP.Service.Services
                     .Select(x => x.Id)
                     .ToArrayAsync();
 
-                // формируем список id все выбранных АЗС
+                // формируем список id всех выбранных АЗС
                 var stationQuery = _context.GasStations.AsNoTracking();
                 if (stations != null)
                 {

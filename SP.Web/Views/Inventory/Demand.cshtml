@@ -258,8 +258,8 @@
                         "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
                 buttons: [
                     {
-                        text: 'Рассчитать потребность',
-                        titleAttr: 'Сделать расчет потребности в ТМЦ по формулам',
+                        text: 'Рассчитать',
+                        titleAttr: 'Сделать расчет остатков и потребности в ТМЦ по формулам',
                         className: 'dt-action-button btn btn-primary',
                         action: function() {
                             calcDemand();
@@ -297,7 +297,7 @@
                         text: 'Вернуться назад',
                         className: 'dt-action-button btn btn-secondary',
                         action: function() {
-                            window.location = '@Url.Action("Balance", "Inventory")';
+                            window.location = '@Url.Action("ManualMerge", "Inventory")';
                         }
                     },
                     {

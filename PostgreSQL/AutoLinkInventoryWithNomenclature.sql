@@ -5,14 +5,14 @@ DECLARE statement_rows int;
 
 BEGIN
     total_rows := 0;
-	
+    
     CREATE TEMP TABLE equal_names (
-    	"InventoryId" BIGINT,
-    	"NomenclatureId" INTEGER
+        "InventoryId" BIGINT,
+        "NomenclatureId" INTEGER
     );
    
     -- стыкуем по точному совпадению названия
-	INSERT INTO equal_names ("InventoryId", "NomenclatureId") 
+    INSERT INTO equal_names ("InventoryId", "NomenclatureId") 
     SELECT i."Id", n."Id"
     FROM public."Inventory" i
     JOIN public."Nomenclature" n ON i."Name" = n."PetronicsName"
@@ -28,18 +28,18 @@ BEGIN
     GET DIAGNOSTICS statement_rows = ROW_COUNT;
     total_rows := total_rows + statement_rows;
 
-	INSERT INTO log."Change" ("PersonId", "ChangeDate", "EntityName", "ActionName", "RecordId", "OldValue", "NewValue")
-	SELECT person_id, current_timestamp, 'Inventory', 'AutoMerge', "InventoryId", 
-		null, 
-		'Номенклатура: ' || "NomenclatureId"::text
-	FROM equal_names;
+    INSERT INTO log."Change" ("PersonId", "ChangeDate", "EntityName", "ActionName", "RecordId", "OldValue", "NewValue")
+    SELECT person_id, current_timestamp, 'Inventory', 'AutoMerge', "InventoryId", 
+        null, 
+        'Номенклатура: ' || "NomenclatureId"::text
+    FROM equal_names;
     
-	DROP TABLE IF EXISTS equal_names;
+    DROP TABLE IF EXISTS equal_names;
 
     -- стыкуем по ранее привязанным кодам
     CREATE TEMP TABLE equal_codes (
-    	"InventoryId" BIGINT,
-    	"NomenclatureId" INTEGER
+        "InventoryId" BIGINT,
+        "NomenclatureId" INTEGER
     );
 
    WITH "SingleCodes" AS (
@@ -58,7 +58,7 @@ BEGIN
             AND "NomenclatureId" IS NOT NULL
     )
     INSERT INTO equal_codes ("InventoryId", "NomenclatureId")
-	SELECT DISTINCT
+    SELECT DISTINCT
         i."Id", c."NomenclatureId"
     FROM public."Inventory" i
     JOIN "SingleLinkedInventoryCodes" c ON i."Code" = c."Code"
@@ -73,14 +73,14 @@ BEGIN
     GET DIAGNOSTICS statement_rows = ROW_COUNT;
     total_rows := total_rows + statement_rows;
    
-	INSERT INTO log."Change" ("PersonId", "ChangeDate", "EntityName", "ActionName", "RecordId", "OldValue", "NewValue")
-	SELECT person_id, current_timestamp, 'Inventory', 'AutoMerge', c."InventoryId", 
-		null, 
-		'Номенклатура: ' || c."NomenclatureId"::text || ' ' || n."Name" 
-	FROM equal_codes c
-	JOIN "Nomenclature" n ON c."NomenclatureId" = n."Id" ;
+    INSERT INTO log."Change" ("PersonId", "ChangeDate", "EntityName", "ActionName", "RecordId", "OldValue", "NewValue")
+    SELECT person_id, current_timestamp, 'Inventory', 'AutoMerge', c."InventoryId", 
+        null, 
+        'Номенклатура: ' || c."NomenclatureId"::text || ' ' || n."Name" 
+    FROM equal_codes c
+    JOIN "Nomenclature" n ON c."NomenclatureId" = n."Id" ;
 
-	DROP TABLE IF EXISTS equal_codes;
+    DROP TABLE IF EXISTS equal_codes;
 
 END
 

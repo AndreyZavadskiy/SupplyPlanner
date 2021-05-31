@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using SP.Data;
-
-namespace SP.Service
+﻿namespace SP.Service
 {
     /// <summary>
     /// Настройки БД

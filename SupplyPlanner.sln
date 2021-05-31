@@ -17,6 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PostgreSQL", "PostgreSQL", 
 	ProjectSection(SolutionItems) = preProject
 		PostgreSQL\AutoLinkInventoryWithNomenclature.sql = PostgreSQL\AutoLinkInventoryWithNomenclature.sql
 		PostgreSQL\BlockInventoryList.sql = PostgreSQL\BlockInventoryList.sql
+		PostgreSQL\CalcBalanceList.sql = PostgreSQL\CalcBalanceList.sql
 		PostgreSQL\CalcHistoryFunction.sql = PostgreSQL\CalcHistoryFunction.sql
 		PostgreSQL\CalcHistoryInsertTrigger.sql = PostgreSQL\CalcHistoryInsertTrigger.sql
 		PostgreSQL\CalcHistoryUpdateTrigger.sql = PostgreSQL\CalcHistoryUpdateTrigger.sql
