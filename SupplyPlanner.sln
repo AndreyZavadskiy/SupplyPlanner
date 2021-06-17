@@ -14,19 +14,34 @@ EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SP.Database", "SP.Database\SP.Database.sqlproj", "{D5B33BD8-EFE2-489F-8C70-3BD74E3C3EBD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PostgreSQL", "PostgreSQL", "{7B6FD084-E564-4529-85A5-0F6C7C3C9D51}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Stored Procedures", "Stored Procedures", "{F389BFB5-E76A-4329-AB09-E6DE5EF2E345}"
 	ProjectSection(SolutionItems) = preProject
-		PostgreSQL\AutoLinkInventoryWithNomenclature.sql = PostgreSQL\AutoLinkInventoryWithNomenclature.sql
-		PostgreSQL\BlockInventoryList.sql = PostgreSQL\BlockInventoryList.sql
-		PostgreSQL\CalcBalanceList.sql = PostgreSQL\CalcBalanceList.sql
-		PostgreSQL\CalcHistoryFunction.sql = PostgreSQL\CalcHistoryFunction.sql
-		PostgreSQL\CalcHistoryInsertTrigger.sql = PostgreSQL\CalcHistoryInsertTrigger.sql
-		PostgreSQL\CalcHistoryUpdateTrigger.sql = PostgreSQL\CalcHistoryUpdateTrigger.sql
-		PostgreSQL\CalculateBalance.sql = PostgreSQL\CalculateBalance.sql
-		PostgreSQL\LinkInventoryListWithNomenclature.sql = PostgreSQL\LinkInventoryListWithNomenclature.sql
-		PostgreSQL\MakeFixedOrder.sql = PostgreSQL\MakeFixedOrder.sql
-		PostgreSQL\MakeOrder.sql = PostgreSQL\MakeOrder.sql
-		PostgreSQL\MergeStageToInventory.sql = PostgreSQL\MergeStageToInventory.sql
-		PostgreSQL\QueryDemandList.sql = PostgreSQL\QueryDemandList.sql
+		PostgreSQL\Stored Procedures\AutoLinkInventoryWithNomenclature.sql = PostgreSQL\Stored Procedures\AutoLinkInventoryWithNomenclature.sql
+		PostgreSQL\Stored Procedures\BlockInventoryList.sql = PostgreSQL\Stored Procedures\BlockInventoryList.sql
+		PostgreSQL\Stored Procedures\CalcBalanceList.sql = PostgreSQL\Stored Procedures\CalcBalanceList.sql
+		PostgreSQL\Stored Procedures\CalculateBalance.sql = PostgreSQL\Stored Procedures\CalculateBalance.sql
+		PostgreSQL\Stored Procedures\LinkInventoryListWithNomenclature.sql = PostgreSQL\Stored Procedures\LinkInventoryListWithNomenclature.sql
+		PostgreSQL\Stored Procedures\MakeFixedOrder.sql = PostgreSQL\Stored Procedures\MakeFixedOrder.sql
+		PostgreSQL\Stored Procedures\MakeOrder.sql = PostgreSQL\Stored Procedures\MakeOrder.sql
+		PostgreSQL\Stored Procedures\MergeStageToInventory.sql = PostgreSQL\Stored Procedures\MergeStageToInventory.sql
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Functions", "Functions", "{5A8933EA-EAF1-4100-9E1D-CCF37234E0BA}"
+	ProjectSection(SolutionItems) = preProject
+		PostgreSQL\Functions\CalcHistoryFunction.sql = PostgreSQL\Functions\CalcHistoryFunction.sql
+		PostgreSQL\Functions\QueryDemandList.sql = PostgreSQL\Functions\QueryDemandList.sql
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Triggers", "Triggers", "{39325335-9D8F-4C97-8467-B35DE57C0E64}"
+	ProjectSection(SolutionItems) = preProject
+		PostgreSQL\Triggers\CalcHistoryInsertTrigger.sql = PostgreSQL\Triggers\CalcHistoryInsertTrigger.sql
+		PostgreSQL\Triggers\CalcHistoryUpdateTrigger.sql = PostgreSQL\Triggers\CalcHistoryUpdateTrigger.sql
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{53D7A518-F18E-440C-80E1-BF2101762AF1}"
+	ProjectSection(SolutionItems) = preProject
+		PostgreSQL\Scripts\GasStation list.sql = PostgreSQL\Scripts\GasStation list.sql
 	EndProjectSection
 EndProject
 Global
@@ -59,6 +74,12 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F389BFB5-E76A-4329-AB09-E6DE5EF2E345} = {7B6FD084-E564-4529-85A5-0F6C7C3C9D51}
+		{5A8933EA-EAF1-4100-9E1D-CCF37234E0BA} = {7B6FD084-E564-4529-85A5-0F6C7C3C9D51}
+		{39325335-9D8F-4C97-8467-B35DE57C0E64} = {7B6FD084-E564-4529-85A5-0F6C7C3C9D51}
+		{53D7A518-F18E-440C-80E1-BF2101762AF1} = {7B6FD084-E564-4529-85A5-0F6C7C3C9D51}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BD8B3039-F609-493C-A149-04BCE885BAFF}
