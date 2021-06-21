@@ -763,7 +763,10 @@ namespace SP.Service.Background
                     .Include(x => x.CashRegisterTape)
                     .FirstOrDefaultAsync(x => x.Id == nomBalance.GasStationId);
 
-                ExpressionEvaluator evaluator = new ExpressionEvaluator();
+                var evaluator = new ExpressionEvaluator()
+                {
+                    OptionForceIntegerNumbersEvaluationsAsDoubleByDefault = true
+                };
                 evaluator.Variables = new Dictionary<string, object>()
                 {
                     { "if", new Func<bool,double,double,double>((c, x, y) => c ? x : y)},
