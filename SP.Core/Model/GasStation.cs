@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using SP.Core.Enum;
 using SP.Core.Master;
 
 namespace SP.Core.Model
@@ -17,6 +18,10 @@ namespace SP.Core.Model
         /// </summary>
         public int Id { get; set; }
         /// <summary>
+        /// Тип объекта сети
+        /// </summary>
+        public ObjectType ObjectType { get; set; }
+        /// <summary>
         /// Код
         /// </summary>
         [StringLength(20)]
@@ -24,7 +29,7 @@ namespace SP.Core.Model
         /// <summary>
         /// Код КССС
         /// </summary>
-        public int CodeKSSS { get; set; }
+        public int? CodeKSSS { get; set; }
         /// <summary>
         /// Код SAP R/3
         /// </summary>
@@ -42,7 +47,7 @@ namespace SP.Core.Model
         /// <summary>
         /// ID населенного пункта
         /// </summary>
-        public int SettlementId { get; set; }
+        public int? SettlementId { get; set; }
         /// <summary>
         /// Адрес
         /// </summary>
@@ -51,27 +56,27 @@ namespace SP.Core.Model
         /// <summary>
         /// Местоположение
         /// </summary>
-        public int StationLocationId { get; set; }
+        public int? StationLocationId { get; set; }
         /// <summary>
         /// Статус
         /// </summary>
-        public int StationStatusId { get; set; }
+        public int? StationStatusId { get; set; }
         /// <summary>
         /// Сегмент
         /// </summary>
-        public int SegmentId { get; set; }
+        public int? SegmentId { get; set; }
         /// <summary>
         /// Кластер (уровень сервиса)
         /// </summary>
-        public int ServiceLevelId { get; set; }
+        public int? ServiceLevelId { get; set; }
         /// <summary>
         /// Формат операторной
         /// </summary>
-        public int OperatorRoomFormatId { get; set; }
+        public int? OperatorRoomFormatId { get; set; }
         /// <summary>
         /// Система управления
         /// </summary>
-        public int ManagementSystemId { get; set; }
+        public int? ManagementSystemId { get; set; }
         /// <summary>
         /// Режим работы торгового зала
         /// не ведется для ААЗС и окон
@@ -99,40 +104,40 @@ namespace SP.Core.Model
         /// <summary>
         /// Количество АРМ/касс
         /// </summary>
-        public int CashboxTotal { get; set; }
+        public int? CashboxTotal { get; set; }
         /// <summary>
         /// Количество АРМ менеджера
         /// </summary>
-        public int ManagerArmTotal { get; set; }
+        public int? ManagerArmTotal { get; set; }
         /// <summary>
         /// Количество персонала в сутки
         /// </summary>
         [Column(TypeName = "decimal(8,2)")] 
-        public decimal PersonnelPerDay { get; set; }
+        public decimal? PersonnelPerDay { get; set; }
         /// <summary>
         /// Количество ТРК
         /// </summary>
-        public int FuelDispenserTotal { get; set; }
+        public int? FuelDispenserTotal { get; set; }
         /// <summary>
         /// Количество постов ТРК
         /// </summary>
-        public int FuelDispenserPostTotal { get; set; }
+        public int? FuelDispenserPostTotal { get; set; }
         /// <summary>
         /// Количество постов ТРК без навеса
         /// </summary>
-        public int FuelDispenserPostWithoutShedTotal { get; set; }
+        public int? FuelDispenserPostWithoutShedTotal { get; set; }
         /// <summary>
         /// Количество сан.комнат для клиентов
         /// </summary>
-        public int ClientRestroomTotal { get; set; }
+        public int? ClientRestroomTotal { get; set; }
         /// <summary>
         /// Количество тамбуров для клиентов
         /// </summary>
-        public int ClientTambourTotal { get; set; }
+        public int? ClientTambourTotal { get; set; }
         /// <summary>
         /// Количество раковин для клиентов
         /// </summary>
-        public int ClientSinkTotal { get; set; }
+        public int? ClientSinkTotal { get; set; }
         /// <summary>
         /// Площадь торгового зала
         /// не ведется для ААЗС и окон
@@ -142,12 +147,12 @@ namespace SP.Core.Model
         /// <summary>
         /// Среднее количество чеков в сутки
         /// </summary>
-        public decimal ChequePerDay { get; set; }
+        public decimal? ChequePerDay { get; set; }
         /// <summary>
         /// Выручка в месяц, руб.
         /// </summary>
         [Column(TypeName = "decimal(12,2)")]
-        public decimal RevenueAvg { get; set; }
+        public decimal? RevenueAvg { get; set; }
         /// <summary>
         /// Общий тамбур с раковиной
         /// </summary>
@@ -167,7 +172,7 @@ namespace SP.Core.Model
         /// <summary>
         /// Количество фритюрных аппаратов
         /// </summary>
-        public int DeepFryTotal { get; set; }
+        public int? DeepFryTotal { get; set; }
         /// <summary>
         /// Мармит
         /// </summary>
@@ -179,52 +184,161 @@ namespace SP.Core.Model
         /// <summary>
         /// Количество кофеаппаратов на жидком молоке
         /// </summary>
-        public int CoffeeMachineTotal { get; set; }
+        public int? CoffeeMachineTotal { get; set; }
         /// <summary>
         /// Количество посудомоечных машин
         /// </summary>
-        public int DishWashingMachineTotal { get; set; }
+        public int? DishWashingMachineTotal { get; set; }
         /// <summary>
         /// Расход кассовой ленты за день, м
         /// кол-во транзакций * среднюю длину чека
         /// </summary>
         [Obsolete]
         [Column(TypeName = "decimal(8,2)")]
-        public decimal ChequeBandLengthPerDay { get; set; }
+        public decimal? ChequeBandLengthPerDay { get; set; }
         /// <summary>
         /// Имиджевый коэффициент
         /// </summary>
         [Column(TypeName = "decimal(8,2)")]
-        public decimal RepresentativenessFactor { get; set; }
+        public decimal? RepresentativenessFactor { get; set; }
         /// <summary>
         /// Имиджевый коэффициент 3 квартал
         /// </summary>
         [Column(TypeName = "decimal(8,2)")]
-        public decimal RepresentativenessFactor3Quarter { get; set; }
+        public decimal? RepresentativenessFactor3Quarter { get; set; }
         /// <summary>
         /// Количество комбипечей Меришеф
         /// </summary>
-        public int MerrychefTotal { get; set; }
+        public int? MerrychefTotal { get; set; }
         /// <summary>
         /// Уборка в день
         /// </summary>
-        public int DayCleaningTotal { get; set; }
+        public int? DayCleaningTotal { get; set; }
         /// <summary>
         /// Уборка в ночь
         /// </summary>
-        public int NightCleaningTotal { get; set; }
+        public int? NightCleaningTotal { get; set; }
         /// <summary>
         /// Расстановка заправки в день
         /// </summary>
-        public int DayRefuelingTotal { get; set; }
+        public int? DayRefuelingTotal { get; set; }
         /// <summary>
         /// Расстановка заправки в ночь
         /// </summary>
-        public int NightRefuelingTotal { get; set; }
+        public int? NightRefuelingTotal { get; set; }
         /// <summary>
         /// Участвует в проекте выдачи топливных карт
         /// </summary>
         public bool HasFuelCardProgram { get; set; }
+        /// <summary>
+        /// Количество персонала
+        /// </summary>
+        public int? PersonnelTotal {  get; set; }
+        /// <summary>
+        /// Количество смен в сутки
+        /// </summary>
+        public int? ShiftPerDay { get; set; }
+        /// <summary>
+        /// Количество персонала в смену
+        /// </summary>
+        public int? PersonnelPerShift { get; set; }
+        /// <summary>
+        /// Количество флагштоков
+        /// </summary>
+        public int? FlagpoleTotal { get; set; }
+        /// <summary>
+        /// План поставок ж/д транспортом
+        /// </summary>
+        public decimal? RailwayDeliveryPlanTotal { get; set; }
+        /// <summary>
+        /// Количество бензовозов в год
+        /// </summary>
+        public int? FuelTrackPerYear { get; set; }
+        /// <summary>
+        /// Количество жд цистерн в год
+        /// </summary>
+        public int? RailwayTankPerYear { get; set; }
+        /// <summary>
+        /// Количество резервуаров
+        /// </summary>
+        public int? ReservoirTotal { get; set; }
+        /// <summary>
+        /// Количество рабочих мест
+        /// </summary>
+        public int? WorkingPlaceTotal { get; set; }
+        /// <summary>
+        /// Количество санузлов
+        /// </summary>
+        public int? RestroomTotal { get; set; }
+        /// <summary>
+        /// Количество топлива (92) в год
+        /// </summary>
+        public decimal? Fuel92PerYear { get; set; }
+        /// <summary>
+        /// Количество топлива (95) в год
+        /// </summary>
+        public decimal? Fuel95PerYear { get; set; }
+        /// <summary>
+        /// Количество топлива (100) в год
+        /// </summary>
+        public decimal? Fuel100PerYear { get; set; }
+        /// <summary>
+        /// Количество топлива (ДТ) в год
+        /// </summary>
+        public decimal? DieselFuelPerYear { get; set; }
+        /// <summary>
+        /// Автоматизация нефтебазы
+        /// </summary>
+        public bool HasFuelBaseAutomation { get; set; }
+        /// <summary>
+        /// Площадь обработки противогололёдной смесью
+        /// </summary>
+        public decimal? AntiIcingSquare { get; set; }
+        /// <summary>
+        /// Количество обработок противогололёдной смесью в год
+        /// </summary>
+        public int? AntiIcingPerYear { get; set; }
+        /// <summary>
+        /// Количество комнат приема пищи
+        /// </summary>
+        public int? DiningRoomTotal { get; set; }
+        /// <summary>
+        /// Количество отделов
+        /// </summary>
+        public int? DepartmentTotal { get; set; }
+        /// <summary>
+        /// Централизованное водоснабжение
+        /// </summary>
+        public bool HasCentralWaterSupply {  get; set; }
+        /// <summary>
+        /// Количество закрепленных АЗС
+        /// </summary>
+        public int? ServicingGasStationTotal { get; set; }
+        /// <summary>
+        /// Среднее количество проб в месяц
+        /// </summary>
+        public int? AverageTestPerMonth { get; set; }
+        /// <summary>
+        /// Количество рабочих помещений
+        /// </summary>
+        public int? WorkingRoomTotal { get; set; }
+        /// <summary>
+        /// Наличие скважины
+        /// </summary>
+        public int? HasWell { get; set; }
+        /// <summary>
+        /// Наличие анализатора cпектроскана S
+        /// </summary>
+        public bool HasSpectroscan { get; set; }
+        /// <summary>
+        /// Наличие анализатора Sindy
+        /// </summary>
+        public bool HasSindyAnalyzer { get; set; }
+        /// <summary>
+        /// Количество печатей/штемпелей
+        /// </summary>
+        public int? StampTotal { get; set; }
+
 
         #region Navigation properties
 

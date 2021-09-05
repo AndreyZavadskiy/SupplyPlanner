@@ -235,15 +235,37 @@ namespace SP.Service.Background
                                 processingLog.AppendLine("ТМЦ с вышеуказанным единицами измерения пропущены. Добавьте их в справочник и выполните загрузку остатков заново.");
                             }
 
+                            // поиск дублей
+                            var duplicates = dataWithMeasureUnits
+                                .Where(x => x.GasStationId.HasValue && x.MeasureUnitId.HasValue)
+                                .GroupBy(x => new { x.GasStationId, x.InventoryCode })
+                                .Where(g => g.Count() > 1)
+                                .Select(g => g.Key);
+                            if (duplicates.Any())
+                            {
+                                processingLog.AppendLine("Обнаружены задублированные ТМЦ, будут обработаны только первые попавшиеся значения:");
+                                foreach (var key in duplicates)
+                                {
+                                    var firstDuplicateRecord = dataWithMeasureUnits.FirstOrDefault(x => x.GasStationId == key.GasStationId && x.InventoryCode == key.InventoryCode);
+                                    if (firstDuplicateRecord == null)
+                                        continue;
+
+                                    processingLog.AppendLine($"Объект {firstDuplicateRecord.StationCodeSAP}, ТМЦ {firstDuplicateRecord.InventoryCode}, {firstDuplicateRecord.InventoryName}");
+                                }
+                            }
+
                             var inventoryData = dataWithMeasureUnits
                                 .Where(x => x.GasStationId.HasValue && x.MeasureUnitId.HasValue)
-                                .Select(x => new StageInventory
+                                .GroupBy(x => new { x.GasStationId, x.InventoryCode },
+                                    (key, g) => g.FirstOrDefault()
+                                )
+                                .Select(z => new StageInventory
                                 {
-                                    Code = x.InventoryCode,
-                                    Name = x.InventoryName,
-                                    GasStationId = x.GasStationId.Value,
-                                    MeasureUnitId = x.MeasureUnitId.Value,
-                                    Quantity = x.Quantity,
+                                    Code = z.InventoryCode,
+                                    Name = z.InventoryName,
+                                    GasStationId = z.GasStationId.Value,
+                                    MeasureUnitId = z.MeasureUnitId.Value,
+                                    Quantity = z.Quantity,
                                     LastUpdate = DateTime.Now,
                                     PersonId = person.Id
                                 })
