@@ -30,6 +30,8 @@ namespace SP.Web.Controllers
             _appLogger = appLogger;
         }
 
+        #region Gas stations
+
         public async Task<IActionResult> Index(string regions, string terrs)
         {
             await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "gasstation", "Открыт справочник АЗС.");
@@ -235,5 +237,136 @@ namespace SP.Web.Controllers
             return Redirect($"/Station/{result.Id}?regions={regions}&terrs={terrs}");
         }
 
+        #endregion
+
+        #region Fuel bases
+
+        [Route("Station/FuelBase")]
+        public async Task<IActionResult> FuelBase()
+        {
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "fuelbase", "Открыт справочник нефтебаз.");
+            var user = await _userManager.GetUserAsync(User);
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            var person = await _masterService.GetPersonAsync(user.Id);
+
+            return View("FuelBaseList");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> LoadFuelBaseList()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            var person = await _masterService.GetPersonAsync(user.Id);
+            int? personId = null;
+
+            var stations = await GetFuelBaseListItems(personId);
+
+            return Json(new { data = stations });
+        }
+
+        private async Task<IEnumerable<FuelBaseStationListItem>> GetFuelBaseListItems(int? personId = null)
+        {
+            IEnumerable<FuelBaseStationListItem> stations;
+            if (personId != null)
+            {
+                stations = await _gasStationService.GetFuelBaseListAsync(personId.Value);
+            }
+            else
+            {
+                stations = await _gasStationService.GetFuelBaseListAsync();
+            }
+
+            return stations;
+        }
+
+        [Route("Station/FuelBase/{id}")]
+
+        public async Task<IActionResult> GetFuelBaseAsync(int id)
+        {
+            var station = await _gasStationService.GetFuelBaseAsync(id);
+            if (station == null)
+            {
+                return NotFound();
+            }
+
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "fuelbase",
+                $"Открыта запись {station.ObjectName}");
+
+            return View("FuelBase", station);
+        }
+
+        [Route("Station/CreateFuelBase")]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> CreateFuelBaseAsync(string regions, string terrs)
+        {
+            var model = new FuelBaseModel();
+            return View("FuelBase", model);
+        }
+
+        /// <summary>
+        /// Сохранить нефтебазу и вернуться в список
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> EditFuelBaseAsync([FromForm] FuelBaseModel model)
+        {
+            return await SaveFuelBase(model, actionName: "FuelBaseList");
+        }
+
+        /// <summary>
+        /// Сохранить нефтебазу
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> SaveFuelBaseAsync([FromForm] FuelBaseModel model)
+        {
+            return await SaveFuelBase(model);
+        }
+
+        /// <summary>
+        /// Сохранить запись нефтебазы
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="actionName"></param>
+        /// <returns></returns>
+        private async Task<IActionResult> SaveFuelBase(FuelBaseModel model, string actionName = null)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ActionMessage"] = "Проверьте правильность заполнения полей.";
+                TempData["ActionMessageClass"] = "alert-danger";
+                return View("FuelBase", model);
+            }
+
+            string actionVerb = model.Id == 0 ? "Создана" : "Изменена";
+            var result = await _gasStationService.SaveFuelBaseAsync(model);
+
+            if (!result.Success)
+            {
+                string errorMessage = string.Join("<br/>", result.Errors);
+                TempData["ActionMessage"] = $"Ошибки при сохранении записи:<br/>{errorMessage}";
+                TempData["ActionMessageClass"] = "alert-danger";
+                return View("FuelBase", model);
+            }
+
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "gasstation",
+                $"{actionVerb} запись {model.ObjectName}");
+
+            if (!string.IsNullOrWhiteSpace(actionName))
+            {
+                return Redirect($"/Station/FuelBase");
+            }
+
+            TempData["ActionMessage"] = "Запись сохранена в базе данных.";
+            TempData["ActionMessageClass"] = "alert-info";
+
+            return Redirect($"/Station/FuelBase/{result.Id}");
+        }
+        #endregion
     }
 }

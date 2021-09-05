@@ -2,21 +2,21 @@
 
 namespace SP.Data.Migrations
 {
-    public partial class _20210905_ObjectType : Migration
+    public partial class _20210906_ObjectName : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "ObjectType",
+            migrationBuilder.AddColumn<string>(
+                name: "ObjectName",
                 table: "GasStation",
-                nullable: false,
-                defaultValue: 1);
+                maxLength: 200,
+                nullable: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "ObjectType",
+                name: "ObjectName",
                 table: "GasStation");
         }
     }

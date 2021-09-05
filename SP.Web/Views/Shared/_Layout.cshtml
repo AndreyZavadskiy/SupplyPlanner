@@ -36,84 +36,90 @@
                     @{
                         if (this.User.Identity.IsAuthenticated)
                         {
-                            <ul class="navbar-nav flex-grow-1">
-                                @if (isAdminRole || isSupplySpecialistRole || isSupplyChief)
-                                {
-                                    <li class="nav-item">
-                                        <div class="dropdown">
-                                            <span class="nav-link text-dark dropbtn">Плановая поставка</span>
-                                            <div class="dropdown-content">
-                                                <a class="nav-link text-dark" asp-area="" asp-controller="Inventory" asp-action="FixedDemand">Плановая поставка</a>
-                                                <a class="nav-link text-dark" asp-controller="Inventory" asp-action="Order">Список заказов</a>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="nav-item">
-                                        <div class="dropdown">
-                                            <span class="nav-link text-dark dropbtn">Заказ</span>
-                                            <div class="dropdown-content">
-                                                <a class="nav-link text-dark" asp-controller="Inventory" asp-action="Upload">Загрузка остатков ТМЦ</a>
-                                                <a class="nav-link text-dark" asp-controller="Inventory" asp-action="AutoMerge">Автоматическое объединение ТМЦ с Номенклатурой</a>
-                                                <a class="nav-link text-dark" asp-controller="Inventory" asp-action="ManualMerge">Ручное объединение ТМЦ с Номенклатурой</a>
-                                                <a class="nav-link text-dark" asp-controller="Inventory" asp-action="Demand">Заказ ТМЦ</a>
-                                                <a class="nav-link text-dark" asp-controller="Inventory" asp-action="Order">Список заказов</a>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-controller="Nomenclature" asp-action="Index">Номенклатура</a>
-                                    </li>
-                                }
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Station" asp-action="Index">Реестр АЗС</a>
-                                </li>
-                                @if (isAdminRole)
-                                {
-                                    <li class="nav-item">
-                                        <div class="dropdown">
-                                            <span class="nav-link text-dark dropbtn">Справочники</span>
-                                            <div class="dropdown-content">
-                                                <a class="nav-link text-dark" asp-controller="Region" asp-action="Region">Регионы</a>
-                                                <a class="nav-link text-dark" asp-controller="Settlement" asp-action="Index">Населенный пункт</a>
-                                                <a class="nav-link text-dark" asp-controller="NomenclatureGroup" asp-action="Index">Группы номенклатуры</a>
-                                                <a class="nav-link text-dark" asp-controller="StationLocation" asp-action="Index">Месторасположение</a>
-                                                <a class="nav-link text-dark" asp-controller="StationStatus" asp-action="Index">Статус</a>
-                                                <a class="nav-link text-dark" asp-controller="Segment" asp-action="Index">Сегмент</a>
-                                                <a class="nav-link text-dark" asp-controller="ServiceLevel" asp-action="Index">Кластер (уровень сервиса)</a>
-                                                <a class="nav-link text-dark" asp-controller="OperatorRoomFormat" asp-action="Index">Формат операторной</a>
-                                                <a class="nav-link text-dark" asp-controller="ManagementSystem" asp-action="Index">Режим работы торгового зала</a>
-                                                <a class="nav-link text-dark" asp-controller="TradingHallOperatingMode" asp-action="Index">Месторасположение</a>
-                                                <a class="nav-link text-dark" asp-controller="ClientRestroom" asp-action="Index">Санузел для клиентов</a>
-                                                <a class="nav-link text-dark" asp-controller="CashboxLocation" asp-action="Index">Расчетно-кассовый узел</a>
-                                                <a class="nav-link text-dark" asp-controller="TradingHallSize" asp-action="Index">Размер торгового зала</a>
-                                                <a class="nav-link text-dark" asp-controller="MeasureUnit" asp-action="Index">Единицы измерения</a>
-                                                <a class="nav-link text-dark" asp-controller="CashRegisterTape" asp-action="Index">Вид термоленты</a>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-controller="User" asp-action="Index">Пользователи</a>
-                                    </li>
-                                }
-                                @if (isAdminRole || isSupplySpecialistRole || isSupplyChief)
-                                {
-                                    <li class="nav-item">
-                                        <div class="dropdown">
-                                            <span class="nav-link text-dark dropbtn">Отчеты</span>
-                                            <div class="dropdown-content">
-                                                @if (isAdminRole || isSupplyChief)
-                                                {
-                                                <a class="nav-link text-dark" asp-controller="Report" asp-action="ActionReport">Отчет руководителя</a>
-                                                }
-                                                <a class="nav-link text-dark" asp-controller="Report" asp-action="BalanceReport">Контроль движения ТМЦ более 12 месяцев</a>
-                                                <a class="nav-link text-dark" asp-controller="Report" asp-action="ExceedPlanReport">Контроль соблюдения норм</a>
-                                                <a class="nav-link text-dark" asp-controller="Report" asp-action="OrderReport">Отчет по отгрузке</a>
-                                                <a class="nav-link text-dark" asp-controller="Report" asp-action="ChangeReport">Отчет по изменениям</a>
-                                            </div>
-                                        </div>
-                                    </li>
-                                }
-                            </ul>
+                                        <ul class="navbar-nav flex-grow-1">
+                                            @if (isAdminRole || isSupplySpecialistRole || isSupplyChief)
+                                            {
+                                                <li class="nav-item">
+                                                    <div class="dropdown">
+                                                        <span class="nav-link text-dark dropbtn">Плановая поставка</span>
+                                                        <div class="dropdown-content">
+                                                            <a class="nav-link text-dark" asp-area="" asp-controller="Inventory" asp-action="FixedDemand">Плановая поставка</a>
+                                                            <a class="nav-link text-dark" asp-controller="Inventory" asp-action="Order">Список заказов</a>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <div class="dropdown">
+                                                        <span class="nav-link text-dark dropbtn">Заказ</span>
+                                                        <div class="dropdown-content">
+                                                            <a class="nav-link text-dark" asp-controller="Inventory" asp-action="Upload">Загрузка остатков ТМЦ</a>
+                                                            <a class="nav-link text-dark" asp-controller="Inventory" asp-action="AutoMerge">Автоматическое объединение ТМЦ с Номенклатурой</a>
+                                                            <a class="nav-link text-dark" asp-controller="Inventory" asp-action="ManualMerge">Ручное объединение ТМЦ с Номенклатурой</a>
+                                                            <a class="nav-link text-dark" asp-controller="Inventory" asp-action="Demand">Заказ ТМЦ</a>
+                                                            <a class="nav-link text-dark" asp-controller="Inventory" asp-action="Order">Список заказов</a>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link text-dark" asp-area="" asp-controller="Nomenclature" asp-action="Index">Номенклатура</a>
+                                                </li>
+                                            }
+                                            <li class="nav-item">
+                                                <div class="dropdown">
+                                                    <span class="nav-link text-dark dropbtn">Реестры объектов</span>
+                                                    <div class="dropdown-content">
+                                                        <a class="nav-link text-dark" asp-area="" asp-controller="Station" asp-action="Index">АЗС</a>
+                                                        <a class="nav-link text-dark" asp-area="" asp-controller="Station" asp-action="FuelBase">Нефтебазы</a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            @if (isAdminRole)
+                                            {
+                                                <li class="nav-item">
+                                                    <div class="dropdown">
+                                                        <span class="nav-link text-dark dropbtn">Справочники</span>
+                                                        <div class="dropdown-content">
+                                                            <a class="nav-link text-dark" asp-controller="Region" asp-action="Region">Регионы</a>
+                                                            <a class="nav-link text-dark" asp-controller="Settlement" asp-action="Index">Населенный пункт</a>
+                                                            <a class="nav-link text-dark" asp-controller="NomenclatureGroup" asp-action="Index">Группы номенклатуры</a>
+                                                            <a class="nav-link text-dark" asp-controller="StationLocation" asp-action="Index">Месторасположение</a>
+                                                            <a class="nav-link text-dark" asp-controller="StationStatus" asp-action="Index">Статус</a>
+                                                            <a class="nav-link text-dark" asp-controller="Segment" asp-action="Index">Сегмент</a>
+                                                            <a class="nav-link text-dark" asp-controller="ServiceLevel" asp-action="Index">Кластер (уровень сервиса)</a>
+                                                            <a class="nav-link text-dark" asp-controller="OperatorRoomFormat" asp-action="Index">Формат операторной</a>
+                                                            <a class="nav-link text-dark" asp-controller="ManagementSystem" asp-action="Index">Режим работы торгового зала</a>
+                                                            <a class="nav-link text-dark" asp-controller="TradingHallOperatingMode" asp-action="Index">Месторасположение</a>
+                                                            <a class="nav-link text-dark" asp-controller="ClientRestroom" asp-action="Index">Санузел для клиентов</a>
+                                                            <a class="nav-link text-dark" asp-controller="CashboxLocation" asp-action="Index">Расчетно-кассовый узел</a>
+                                                            <a class="nav-link text-dark" asp-controller="TradingHallSize" asp-action="Index">Размер торгового зала</a>
+                                                            <a class="nav-link text-dark" asp-controller="MeasureUnit" asp-action="Index">Единицы измерения</a>
+                                                            <a class="nav-link text-dark" asp-controller="CashRegisterTape" asp-action="Index">Вид термоленты</a>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link text-dark" asp-controller="User" asp-action="Index">Пользователи</a>
+                                                </li>
+                                            }
+                                            @if (isAdminRole || isSupplySpecialistRole || isSupplyChief)
+                                            {
+                                                <li class="nav-item">
+                                                    <div class="dropdown">
+                                                        <span class="nav-link text-dark dropbtn">Отчеты</span>
+                                                        <div class="dropdown-content">
+                                                            @if (isAdminRole || isSupplyChief)
+                                                            {
+                                                                <a class="nav-link text-dark" asp-controller="Report" asp-action="ActionReport">Отчет руководителя</a>
+                                                            }
+                                                            <a class="nav-link text-dark" asp-controller="Report" asp-action="BalanceReport">Контроль движения ТМЦ более 12 месяцев</a>
+                                                            <a class="nav-link text-dark" asp-controller="Report" asp-action="ExceedPlanReport">Контроль соблюдения норм</a>
+                                                            <a class="nav-link text-dark" asp-controller="Report" asp-action="OrderReport">Отчет по отгрузке</a>
+                                                            <a class="nav-link text-dark" asp-controller="Report" asp-action="ChangeReport">Отчет по изменениям</a>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            }
+                                        </ul>
                         }
                     }
                 </div>

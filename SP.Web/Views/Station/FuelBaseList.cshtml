@@ -1,0 +1,180 @@
+﻿@{
+    ViewData["Title"] = "Station List";
+    bool isAdminRole = this.User.IsInRole("Administrator");
+}
+
+<h1>Реестр нефтебаз</h1>
+
+<section>
+    <div class="col-xl-12">
+        <hr class="section-separate" />
+        <table id="StationGrid" class="table table-striped table-bordered nowrap" width="100%" cellspacing="0">
+            <thead>
+                <tr>
+                    <th class="hidden-column"><input type="checkbox" class="selectAll" /></th>
+                    <th></th>
+                    <th class="exportable-column">Название</th>
+                    <th class="exportable-column">Количество персонала</th>
+                    <th class="exportable-column">Количество смен в сутки</th>
+                    <th class="exportable-column">Количество персонала в смену</th>
+                    <th class="exportable-column">Количество персонала в сутки</th>
+                    <th class="exportable-column">Количество флагштоков</th>
+                    <th class="exportable-column">План поставок ж/д транспортом</th>
+                    <th class="exportable-column">Количество бензовозов в год</th>
+                    <th class="exportable-column">Количество жд цистерн в год</th>
+                    <th class="exportable-column">Количество резервуаров</th>
+                    <th class="exportable-column">Количество рабочих мест</th>
+                    <th class="exportable-column">Количество санузлов</th>
+                    <th class="exportable-column">Количество топлива (92) в год, тонны</th>
+                    <th class="exportable-column">Количество топлива (95) в год, тонны</th>
+                    <th class="exportable-column">Количество топлива (100) в год, тонны</th>
+                    <th class="exportable-column">Количество топлива (ДТ) в год, тонны</th>
+                    <th class="exportable-column">Автоматизация</th>
+                    <th class="exportable-column">Площадь обработки противогололёдной смесью</th>
+                    <th class="exportable-column">Количество обработок противогололёдной смесью в год</th>
+                    <th class="exportable-column">Количество комнат приема пищи</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</section>
+<section>
+    <div class="modal" id="FilterModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Фильтры</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body filter-area">
+                    <p>
+                        <input type="checkbox" id="IncludeBlocked" /> включить заблокированных
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function () {
+            initializeDataTable();
+        });
+
+        function initializeDataTable() {
+            var d = new Date();
+            var todayString = ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
+            $('#StationGrid').DataTable({
+                language: {
+                    url: '/lib/datatables/i18n/dt-russian.json'
+                },
+                //orderFixed: [[4, 'asc'], [5, 'asc']],
+                lengthMenu: [
+                    [10, 25, 50, 100, -1],
+                    [10, 25, 50, 100, 'Все']
+                ],
+                scrollX: true,
+                scrollCollapse: true,
+                fixedColumns: {
+                    leftColumns: 3
+                },
+                processing: true,
+                ajax: {
+                    url: '/Station/LoadFuelBaseList',
+                    type: 'POST',
+                    dataType: 'json'
+                },
+                columns:
+                [
+                    { defaultContent: '' },
+                    {
+                        render: function (data, type, full, meta) {
+                            var url = '/Station/FuelBase/' + full.id;
+                            return '<a href="' + url + '"><img src="/images/pencil-square.svg"/></a>';
+                        }
+                    },
+                    { data: 'objectName' },
+                    { data: 'personnelTotal' },
+                    { data: 'shiftPerDay' },
+                    { data: 'personnelPerShift' },
+                    { data: 'personnelPerDay' },
+                    { data: 'flagpoleTotal' },
+                    { data: 'railwayDeliveryPlanTotal' },
+                    { data: 'fuelTrackPerYear' },
+                    { data: 'railwayTankPerYear' },
+                    { data: 'reservoirTotal' },
+                    { data: 'workingPlaceTotal' },
+                    { data: 'restroomTotal' },
+                    { data: 'fuel92PerYear' },
+                    { data: 'fuel95PerYear' },
+                    { data: 'fuel100PerYear' },
+                    { data: 'dieselFuelPerYear' },
+                    {
+                        render: function (data, type, full, meta) {
+                            return full.hasFuelBaseAutomation ? 'есть' : '';
+                        }
+                    },
+                    { data: 'antiIcingSquare' },
+                    { data: 'antiIcingPerYear' },
+                    { data: 'diningRoomTotal' }
+                ],
+                columnDefs:
+                [
+                    {
+                        targets: 'hidden-column',
+                        visible: false
+                    }
+                ],
+                dom:
+                    "<'row'<'col-sm-12 col-md-6 dt-action-group'B>>" +
+                        "<'row'<'col-sm-12 col-md-4'l><'col-sm-12 col-md-4'i><'col-sm-12 col-md-4'f>>" +
+                        "<'row'<'col-sm-12'tr>>" +
+                        "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
+                buttons:
+                    [
+                        @if (isAdminRole)
+                        {
+                            <text>
+                                {
+                                    text: 'Добавить',
+                                    titleAttr: "Создать новую АЗС",
+                                    className: 'dt-action-button',
+                                    action: function (e, dt, node, config) {
+                                        createFuelBase();
+                                    }
+                                },
+                            </text>
+                        }
+                        {
+                            text: 'Excel',
+                            titleAttr: "Выгрузить таблицу в Excel",
+                            className: 'dt-action-button',
+                            extend: 'excel',
+                            title: 'Список нефтебаз',
+                            messageTop: 'Дата выгрузки ' + todayString,
+                            exportOptions: {
+                                columns: '.exportable-column',
+                                modifier: { search: 'applied' },
+                                grouped_array_index: [4, 5]
+                            }
+                        },
+                        {
+                            text: 'Фильтры',
+                            className: 'dt-action-button filter-button',
+                            action: function (e, dt, node, config) {
+                                //$('#FilterModal').modal();
+                            }
+                        }
+                ]
+            });
+        }
+
+        function createFuelBase() {
+            window.location = '/Station/CreateFuelBase';
+        }
+    </script>
+}

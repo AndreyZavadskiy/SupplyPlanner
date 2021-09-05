@@ -1,0 +1,169 @@
+﻿@model SP.Service.Models.FuelBaseModel
+
+@{
+    ViewData["Title"] = "User";
+    bool isAdminRole = this.User.IsInRole("Administrator");
+    string actionMessageClass = TempData["ActionMessageClass"]?.ToString();
+    bool canEdit = isAdminRole;
+    bool canEditLimited = isAdminRole;
+}
+
+<h1>Карточка нефтебазы</h1>
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+    <input type="hidden" asp-for="Id" />
+    <div class="zero-gutters col-xl-9">
+        <div id="action-message" class="alert alert-row @actionMessageClass">
+            @Html.Raw(TempData["ActionMessage"])
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-12">
+                <label asp-for="ObjectName" class="control-label col-3"></label>
+                <input asp-for="ObjectName" class="form-control col-8" />
+                <span asp-validation-for="ObjectName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-12">
+                <label asp-for="Address" class="control-label col-3"></label>
+                <input asp-for="Address" class="form-control col-8" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="PersonnelTotal" class="control-label col-6"></label>
+                <input asp-for="PersonnelTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="PersonnelTotal" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="ShiftPerDay" class="control-label col-6"></label>
+                <input asp-for="ShiftPerDay" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="ShiftPerDay" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="PersonnelPerShift" class="control-label col-6"></label>
+                <input asp-for="PersonnelPerShift" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="PersonnelPerShift" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="PersonnelPerDay" class="control-label col-6"></label>
+                <input asp-for="PersonnelPerDay" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="PersonnelPerDay" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="WorkingPlaceTotal" class="control-label col-6"></label>
+                <input asp-for="WorkingPlaceTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="WorkingPlaceTotal" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="DiningRoomTotal" class="control-label col-6"></label>
+                <input asp-for="DiningRoomTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="DiningRoomTotal" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="RestroomTotal" class="control-label col-6"></label>
+                <input asp-for="RestroomTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="RestroomTotal" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="FlagpoleTotal" class="control-label col-6"></label>
+                <input asp-for="FlagpoleTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="FlagpoleTotal" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="RailwayDeliveryPlanTotal" class="control-label col-6"></label>
+                <input asp-for="RailwayDeliveryPlanTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="RailwayDeliveryPlanTotal" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="FuelTrackPerYear" class="control-label col-6"></label>
+                <input asp-for="FuelTrackPerYear" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="FuelTrackPerYear" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="RailwayTankPerYear" class="control-label col-6"></label>
+                <input asp-for="RailwayTankPerYear" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="RailwayTankPerYear" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="ReservoirTotal" class="control-label col-6"></label>
+                <input asp-for="ReservoirTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="ReservoirTotal" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="Fuel92PerYear" class="control-label col-6"></label>
+                <input asp-for="Fuel92PerYear" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="Fuel92PerYear" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="Fuel95PerYear" class="control-label col-6"></label>
+                <input asp-for="Fuel95PerYear" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="Fuel95PerYear" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="Fuel100PerYear" class="control-label col-6"></label>
+                <input asp-for="Fuel100PerYear" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="Fuel100PerYear" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="DieselFuelPerYear" class="control-label col-6"></label>
+                <input asp-for="DieselFuelPerYear" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="DieselFuelPerYear" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="AntiIcingSquare" class="control-label col-6"></label>
+                <input asp-for="AntiIcingSquare" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="AntiIcingSquare" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="AntiIcingPerYear" class="control-label col-6"></label>
+                <input asp-for="AntiIcingPerYear" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="AntiIcingPerYear" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row zero-gutters col-6">
+                <div class="form-group row form-check col-12">
+                    <label class="form-check-label">
+                        <input asp-for="HasFuelBaseAutomation" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasFuelBaseAutomation)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row button-row">
+            @if (isAdminRole)
+            {
+                <button asp-action="EditFuelBase" class="btn btn-primary">Сохранить и вернуться</button>
+                <button asp-action="SaveFuelBase" class="btn btn-success">Сохранить</button>
+            }
+            <a class="btn btn-secondary" style="color: white;" onclick="goBack();">Вернуться</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts
+{
+    <script>
+        function goBack() {
+            window.location = '/Station/FuelBase';
+        }
+    </script>
+}

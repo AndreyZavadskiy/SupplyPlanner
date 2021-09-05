@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SP.Data;
@@ -9,9 +10,10 @@ using SP.Data;
 namespace SP.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210905212122_20210906_ObjectName")]
+    partial class _20210906_ObjectName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -792,7 +794,7 @@ namespace SP.Data.Migrations
                     b.Property<int?>("StationStatusId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("TerritoryId")
+                    b.Property<int>("TerritoryId")
                         .HasColumnType("integer");
 
                     b.Property<decimal?>("TradingHallArea")
@@ -1356,7 +1358,9 @@ namespace SP.Data.Migrations
 
                     b.HasOne("SP.Core.Model.RegionalStructure", "Territory")
                         .WithMany()
-                        .HasForeignKey("TerritoryId");
+                        .HasForeignKey("TerritoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("SP.Core.Master.TradingHallOperatingMode", "TradingHallOperatingMode")
                         .WithMany()

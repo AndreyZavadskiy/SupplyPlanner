@@ -41,9 +41,14 @@ namespace SP.Core.Model
         [StringLength(5)]
         public string StationNumber { get; set; }
         /// <summary>
+        /// Название объекта сети
+        /// </summary>
+        [StringLength(200)]
+        public string ObjectName { get; set; }
+        /// <summary>
         /// ID территории
         /// </summary>
-        public int TerritoryId { get; set; }
+        public int? TerritoryId { get; set; }
         /// <summary>
         /// ID населенного пункта
         /// </summary>

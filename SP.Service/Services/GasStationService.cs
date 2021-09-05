@@ -17,6 +17,10 @@ namespace SP.Service.Services
         Task<IEnumerable<GasStationIdentification>> GetGasStationIdentificationListAsync();
         Task<GasStationModel> GetGasStationAsync(int id);
         Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveGasStationAsync(GasStationModel model);
+        Task<IEnumerable<FuelBaseStationListItem>> GetFuelBaseListAsync();
+        Task<IEnumerable<FuelBaseStationListItem>> GetFuelBaseListAsync(int? personId);
+        Task<FuelBaseModel> GetFuelBaseAsync(int id);
+        Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveFuelBaseAsync(FuelBaseModel model);
     }
 
     public class GasStationService : IGasStationService
@@ -27,6 +31,8 @@ namespace SP.Service.Services
         {
             _context = context;
         }
+
+        #region Gas stations
 
         public async Task<IEnumerable<GasStationListItem>> GetGasStationListAsync(int[] regions, int[] territories)
         {
@@ -58,11 +64,11 @@ namespace SP.Service.Services
                     .Where(x => x.ParentId != null && regions.Contains(x.ParentId.Value))
                     .Select(x => x.Id)
                     .ToArray();
-                query = query.Where(x => regionTerritories.Contains(x.TerritoryId));
+                query = query.Where(x => regionTerritories.Contains(x.TerritoryId.Value));
             }
             if (territories != null)
             {
-                query = query.Where(x => territories.Contains(x.TerritoryId));
+                query = query.Where(x => territories.Contains(x.TerritoryId.Value));
             }
             else if (personId != null)
             {
@@ -71,7 +77,7 @@ namespace SP.Service.Services
                     .Select(x => x.RegionalStructureId)
                     .Distinct()
                     .ToArrayAsync();
-                query = query.Where(x => managerTerritories.Contains(x.TerritoryId));
+                query = query.Where(x => managerTerritories.Contains(x.TerritoryId.Value));
             }
 
             var stations = query.AsEnumerable()
@@ -80,7 +86,7 @@ namespace SP.Service.Services
                     Id = x.Id,
                     RegionId = x.Territory.ParentId.Value,
                     RegionName = x.Territory.Parent?.Name,
-                    TerritoryId = x.TerritoryId,
+                    TerritoryId = x.TerritoryId.Value,
                     TerritoryName = x.Territory?.Name,
                     CodeKSSS = x.CodeKSSS.Value,
                     CodeSAP = x.CodeSAP,
@@ -135,6 +141,7 @@ namespace SP.Service.Services
         public async Task<IEnumerable<GasStationIdentification>> GetGasStationIdentificationListAsync()
         {
             var list = await _context.GasStations.AsNoTracking()
+                .Where(x => x.ObjectType == Core.Enum.ObjectType.GasStation)
                 .Select(x => new GasStationIdentification
                 {
                     Id = x.Id,
@@ -168,7 +175,7 @@ namespace SP.Service.Services
                 CodeSAP = station.CodeSAP,
                 StationNumber = station.StationNumber,
                 RegionId = territory.ParentId.Value,
-                TerritoryId = station.TerritoryId,
+                TerritoryId = station.TerritoryId.Value,
                 SettlementId = station.SettlementId.Value,
                 Address = station.Address,
                 StationLocationId = station.StationLocationId.Value,
@@ -234,6 +241,7 @@ namespace SP.Service.Services
             {
                 var gasStation = new GasStation
                 {
+                    ObjectType = Core.Enum.ObjectType.GasStation,
                     Code = model.Code,
                     CodeKSSS = model.CodeKSSS,
                     CodeSAP = model.CodeSAP,
@@ -375,5 +383,203 @@ namespace SP.Service.Services
 
             return (false, model.Id, errors);
         }
+
+        #endregion
+
+        #region Fuel bases
+
+        public async Task<IEnumerable<FuelBaseStationListItem>> GetFuelBaseListAsync()
+        {
+            return await GetFuelBaseListAsync(null);
+        }
+
+        public async Task<IEnumerable<FuelBaseStationListItem>> GetFuelBaseListAsync(int? personId)
+        {
+            var query = _context.GasStations.AsNoTracking()
+                .Where(x => x.ObjectType == Core.Enum.ObjectType.FuelBase)
+                .AsQueryable();
+            if (personId != null)
+            {
+                // TODO: сделать управление правами
+            }
+
+            var stations = query.AsEnumerable()
+                .Select(x => new FuelBaseStationListItem
+                {
+                    Id = x.Id,
+                    ObjectName = x.ObjectName,
+                    PersonnelTotal = x.PersonnelTotal,
+                    ShiftPerDay = x.ShiftPerDay,
+                    PersonnelPerShift = x.PersonnelPerShift,
+                    PersonnelPerDay = x.PersonnelPerDay,
+                    FlagpoleTotal = x.FlagpoleTotal,
+                    RailwayDeliveryPlanTotal = x.RailwayDeliveryPlanTotal,
+                    FuelTrackPerYear = x.FuelTrackPerYear,
+                    RailwayTankPerYear = x.RailwayTankPerYear,
+                    ReservoirTotal = x.ReservoirTotal,
+                    WorkingPlaceTotal = x.WorkingPlaceTotal,
+                    RestroomTotal = x.RestroomTotal,
+                    Fuel92PerYear = x.Fuel92PerYear,
+                    Fuel95PerYear = x.Fuel95PerYear,
+                    Fuel100PerYear = x.Fuel100PerYear,
+                    DieselFuelPerYear = x.DieselFuelPerYear,
+                    HasFuelBaseAutomation = x.HasFuelBaseAutomation,
+                    AntiIcingSquare = x.AntiIcingSquare,
+                    AntiIcingPerYear = x.AntiIcingPerYear,
+                    DiningRoomTotal = x.DiningRoomTotal
+                })
+                .ToArray();
+
+            return stations;
+        }
+
+        public async Task<FuelBaseModel> GetFuelBaseAsync(int id)
+        {
+            var station = await _context.GasStations.FindAsync(id);
+
+            if (station == null)
+            {
+                return null;
+            }
+
+            var model = new FuelBaseModel
+            {
+                Id = station.Id,
+                ObjectName = station.ObjectName,
+                Address = station.Address,
+                PersonnelTotal = station.PersonnelTotal,
+                ShiftPerDay = station.ShiftPerDay,
+                PersonnelPerShift = station.PersonnelPerShift,
+                PersonnelPerDay = station.PersonnelPerDay,
+                FlagpoleTotal = station.FlagpoleTotal,
+                RailwayDeliveryPlanTotal = station.RailwayDeliveryPlanTotal,
+                FuelTrackPerYear = station.FuelTrackPerYear,
+                RailwayTankPerYear = station.RailwayTankPerYear,
+                ReservoirTotal = station.ReservoirTotal,
+                WorkingPlaceTotal = station.WorkingPlaceTotal,
+                RestroomTotal = station.RestroomTotal,
+                Fuel92PerYear = station.Fuel92PerYear,
+                Fuel95PerYear = station.Fuel95PerYear,
+                Fuel100PerYear = station.Fuel100PerYear,
+                DieselFuelPerYear = station.DieselFuelPerYear,
+                HasFuelBaseAutomation = station.HasFuelBaseAutomation,
+                AntiIcingSquare = station.AntiIcingSquare,
+                AntiIcingPerYear = station.AntiIcingPerYear,
+                DiningRoomTotal = station.DiningRoomTotal
+            };
+
+            return model;
+        }
+
+        public async Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveFuelBaseAsync(FuelBaseModel model)
+        {
+            var dbStation = await _context.GasStations.FindAsync(model.Id);
+            if (dbStation == null)
+            {
+                return await InsertFuelBaseAsync(model);
+            }
+
+            return await UpdateFuelBaseAsync(dbStation, model);
+        }
+
+        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> InsertFuelBaseAsync(FuelBaseModel model)
+        {
+            var errors = new List<string>();
+            try
+            {
+                var gasStation = new GasStation
+                {
+                    ObjectType = Core.Enum.ObjectType.FuelBase,
+                    ObjectName = model.ObjectName,
+                    Address = model.Address,
+                    PersonnelTotal = model.PersonnelTotal,
+                    ShiftPerDay = model.ShiftPerDay,
+                    PersonnelPerShift = model.PersonnelPerShift,
+                    PersonnelPerDay = model.PersonnelPerDay,
+                    FlagpoleTotal = model.FlagpoleTotal,
+                    RailwayDeliveryPlanTotal = model.RailwayDeliveryPlanTotal,
+                    FuelTrackPerYear = model.FuelTrackPerYear,
+                    RailwayTankPerYear = model.RailwayTankPerYear,
+                    ReservoirTotal = model.ReservoirTotal,
+                    WorkingPlaceTotal = model.WorkingPlaceTotal,
+                    RestroomTotal = model.RestroomTotal,
+                    Fuel92PerYear = model.Fuel92PerYear,
+                    Fuel95PerYear = model.Fuel95PerYear,
+                    Fuel100PerYear = model.Fuel100PerYear,
+                    DieselFuelPerYear = model.DieselFuelPerYear,
+                    HasFuelBaseAutomation = model.HasFuelBaseAutomation,
+                    AntiIcingSquare = model.AntiIcingSquare,
+                    AntiIcingPerYear = model.AntiIcingPerYear,
+                    DiningRoomTotal = model.DiningRoomTotal
+                };
+
+                _context.GasStations.Add(gasStation);
+                await _context.SaveChangesAsync();
+                //_logger.LogInformation("User created a new account with password.");
+
+                return (true, gasStation.Id, null);
+            }
+            catch (DbUpdateException ex)
+            {
+                Debug.WriteLine(ex);
+                errors.Add("Невозможно сохранить изменения в базе данных. Если ошибка повторится, обратитесь в тех.поддержку.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                errors.Add("Ошибка создания персоны в системе.");
+            }
+
+            return (false, null, errors);
+        }
+
+        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> UpdateFuelBaseAsync(GasStation station, FuelBaseModel model)
+        {
+            var errors = new List<string>();
+
+            try
+            {
+                station.ObjectName = model.ObjectName;
+                station.Address = model.Address;
+                station.PersonnelTotal = model.PersonnelTotal;
+                station.ShiftPerDay = model.ShiftPerDay;
+                station.PersonnelPerShift = model.PersonnelPerShift;
+                station.PersonnelPerDay = model.PersonnelPerDay;
+                station.FlagpoleTotal = model.FlagpoleTotal;
+                station.RailwayDeliveryPlanTotal = model.RailwayDeliveryPlanTotal;
+                station.FuelTrackPerYear = model.FuelTrackPerYear;
+                station.RailwayTankPerYear = model.RailwayTankPerYear;
+                station.ReservoirTotal = model.ReservoirTotal;
+                station.WorkingPlaceTotal = model.WorkingPlaceTotal;
+                station.RestroomTotal = model.RestroomTotal;
+                station.Fuel92PerYear = model.Fuel92PerYear;
+                station.Fuel95PerYear = model.Fuel95PerYear;
+                station.Fuel100PerYear = model.Fuel100PerYear;
+                station.DieselFuelPerYear = model.DieselFuelPerYear;
+                station.HasFuelBaseAutomation = model.HasFuelBaseAutomation;
+                station.AntiIcingSquare = model.AntiIcingSquare;
+                station.AntiIcingPerYear = model.AntiIcingPerYear;
+                station.DiningRoomTotal = model.DiningRoomTotal;
+
+                _context.GasStations.Update(station);
+                await _context.SaveChangesAsync();
+
+                return (true, model.Id, null);
+            }
+            catch (DbUpdateException ex)
+            {
+                Debug.WriteLine(ex);
+                errors.Add("Невозможно сохранить изменения в базе данных. Если ошибка повторится, обратитесь в тех.поддержку.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                errors.Add("Ошибка сохранения персоны в системе.");
+            }
+
+            return (false, model.Id, errors);
+        }
+
+        #endregion
     }
 }

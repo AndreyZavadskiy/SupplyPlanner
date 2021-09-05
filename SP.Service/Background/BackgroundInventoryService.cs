@@ -551,7 +551,7 @@ namespace SP.Service.Background
                 }
                 else if (terrs?.Length > 0)
                 {
-                    stationQuery = stationQuery.Where(x => terrs.Contains(x.TerritoryId));
+                    stationQuery = stationQuery.Where(x => terrs.Contains(x.TerritoryId.Value));
                 }
                 else if (regions?.Length > 0)
                 {

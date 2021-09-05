@@ -81,6 +81,10 @@ div.dataTables_wrapper div.dataTables_processing.card {
     border: none;
 }
 
+.DTFC_LeftBodyLiner {
+    overflow-x: hidden;
+}
+
 /*  dropdown menu   */
 /* Dropdown Button */
 .dropbtn {
@@ -185,3 +189,4 @@ input.selectAll {
 .progress-step {
     margin: 10px 0px 10px 0px;
 }
+

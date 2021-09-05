@@ -481,7 +481,7 @@ namespace SP.Service.Services
                 }
                 else if (terrs != null)
                 {
-                    query = query.Where(x => terrs.Contains(x.GasStation.TerritoryId));
+                    query = query.Where(x => terrs.Contains(x.GasStation.TerritoryId.Value));
                 }
                 else if (regions != null)
                 {
@@ -562,7 +562,7 @@ namespace SP.Service.Services
                 }
                 else if (terrs?.Length > 0)
                 {
-                    stationQuery = stationQuery.Where(x => terrs.Contains(x.TerritoryId));
+                    stationQuery = stationQuery.Where(x => terrs.Contains(x.TerritoryId.Value));
                 }
                 else if (regions?.Length > 0)
                 {
