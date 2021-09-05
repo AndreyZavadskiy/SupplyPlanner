@@ -1,0 +1,80 @@
+﻿@model SP.Service.Models.OfficeModel
+
+@{
+    ViewData["Title"] = "User";
+    bool isAdminRole = this.User.IsInRole("Administrator");
+    string actionMessageClass = TempData["ActionMessageClass"]?.ToString();
+    bool canEdit = isAdminRole;
+    bool canEditLimited = isAdminRole;
+}
+
+<h1>Карточка нефтебазы</h1>
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+    <input type="hidden" asp-for="Id" />
+    <div class="zero-gutters col-xl-9">
+        <div id="action-message" class="alert alert-row @actionMessageClass">
+            @Html.Raw(TempData["ActionMessage"])
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-12">
+                <label asp-for="ObjectName" class="control-label col-3"></label>
+                <input asp-for="ObjectName" class="form-control col-8" />
+                <span asp-validation-for="ObjectName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-12">
+                <label asp-for="Address" class="control-label col-3"></label>
+                <input asp-for="Address" class="form-control col-8" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="PersonnelTotal" class="control-label col-6"></label>
+                <input asp-for="PersonnelTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="PersonnelTotal" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="DepartmentTotal" class="control-label col-6"></label>
+                <input asp-for="DepartmentTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="DepartmentTotal" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="FlagpoleTotal" class="control-label col-6"></label>
+                <input asp-for="FlagpoleTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="FlagpoleTotal" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row zero-gutters col-6">
+                <div class="form-group row form-check col-12">
+                    <label class="form-check-label">
+                        <input asp-for="HasCentralWaterSupply" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasCentralWaterSupply)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row button-row">
+            @if (isAdminRole)
+            {
+                <button asp-action="EditOffice" class="btn btn-primary">Сохранить и вернуться</button>
+                <button asp-action="SaveOffice" class="btn btn-success">Сохранить</button>
+            }
+            <a class="btn btn-secondary" style="color: white;" onclick="goBack();">Вернуться</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts
+{
+    <script>
+        function goBack() {
+            window.location = '/Station/Office';
+        }
+    </script>
+}

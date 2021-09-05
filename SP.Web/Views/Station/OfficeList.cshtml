@@ -1,9 +1,9 @@
 ﻿@{
-    ViewData["Title"] = "FuelBase List";
+    ViewData["Title"] = "Office List";
     bool isAdminRole = this.User.IsInRole("Administrator");
 }
 
-<h1>Реестр нефтебаз</h1>
+<h1>Реестр офисов</h1>
 
 <section>
     <div class="col-xl-12">
@@ -15,24 +15,9 @@
                     <th></th>
                     <th class="exportable-column">Название</th>
                     <th class="exportable-column">Количество персонала</th>
-                    <th class="exportable-column">Количество смен в сутки</th>
-                    <th class="exportable-column">Количество персонала в смену</th>
-                    <th class="exportable-column">Количество персонала в сутки</th>
+                    <th class="exportable-column">Количество отделов</th>
                     <th class="exportable-column">Количество флагштоков</th>
-                    <th class="exportable-column">План поставок ж/д транспортом</th>
-                    <th class="exportable-column">Количество бензовозов в год</th>
-                    <th class="exportable-column">Количество жд цистерн в год</th>
-                    <th class="exportable-column">Количество резервуаров</th>
-                    <th class="exportable-column">Количество рабочих мест</th>
-                    <th class="exportable-column">Количество санузлов</th>
-                    <th class="exportable-column">Количество топлива (92) в год, тонны</th>
-                    <th class="exportable-column">Количество топлива (95) в год, тонны</th>
-                    <th class="exportable-column">Количество топлива (100) в год, тонны</th>
-                    <th class="exportable-column">Количество топлива (ДТ) в год, тонны</th>
-                    <th class="exportable-column">Автоматизация</th>
-                    <th class="exportable-column">Площадь обработки противогололёдной смесью</th>
-                    <th class="exportable-column">Количество обработок противогололёдной смесью в год</th>
-                    <th class="exportable-column">Количество комнат приема пищи</th>
+                    <th class="exportable-column">Централизованное водоснабжение</th>
                 </tr>
             </thead>
         </table>
@@ -84,7 +69,7 @@
                 },
                 processing: true,
                 ajax: {
-                    url: '/Station/LoadFuelBaseList',
+                    url: '/Station/LoadOfficeList',
                     type: 'POST',
                     dataType: 'json'
                 },
@@ -93,34 +78,19 @@
                     { defaultContent: '' },
                     {
                         render: function (data, type, full, meta) {
-                            var url = '/Station/FuelBase/' + full.id;
+                            var url = '/Station/Office/' + full.id;
                             return '<a href="' + url + '"><img src="/images/pencil-square.svg"/></a>';
                         }
                     },
                     { data: 'objectName' },
                     { data: 'personnelTotal' },
-                    { data: 'shiftPerDay' },
-                    { data: 'personnelPerShift' },
-                    { data: 'personnelPerDay' },
+                    { data: 'departmentTotal' },
                     { data: 'flagpoleTotal' },
-                    { data: 'railwayDeliveryPlanTotal' },
-                    { data: 'fuelTrackPerYear' },
-                    { data: 'railwayTankPerYear' },
-                    { data: 'reservoirTotal' },
-                    { data: 'workingPlaceTotal' },
-                    { data: 'restroomTotal' },
-                    { data: 'fuel92PerYear' },
-                    { data: 'fuel95PerYear' },
-                    { data: 'fuel100PerYear' },
-                    { data: 'dieselFuelPerYear' },
                     {
                         render: function (data, type, full, meta) {
-                            return full.hasFuelBaseAutomation ? 'есть' : '';
+                            return full.hasCentralWaterSupply ? 'есть' : '';
                         }
-                    },
-                    { data: 'antiIcingSquare' },
-                    { data: 'antiIcingPerYear' },
-                    { data: 'diningRoomTotal' }
+                    }
                 ],
                 columnDefs:
                 [
@@ -141,10 +111,10 @@
                             <text>
                                 {
                                     text: 'Добавить',
-                                    titleAttr: "Создать новую нефтебазу",
+                                    titleAttr: "Создать новый офис",
                                     className: 'dt-action-button',
                                     action: function (e, dt, node, config) {
-                                        createFuelBase();
+                                        createOffice();
                                     }
                                 },
                             </text>
@@ -154,7 +124,7 @@
                             titleAttr: "Выгрузить таблицу в Excel",
                             className: 'dt-action-button',
                             extend: 'excel',
-                            title: 'Список нефтебаз',
+                            title: 'Список офисов',
                             messageTop: 'Дата выгрузки ' + todayString,
                             exportOptions: {
                                 columns: '.exportable-column',
@@ -173,8 +143,8 @@
             });
         }
 
-        function createFuelBase() {
-            window.location = '/Station/CreateFuelBase';
+        function createOffice() {
+            window.location = '/Station/CreateOffice';
         }
     </script>
 }

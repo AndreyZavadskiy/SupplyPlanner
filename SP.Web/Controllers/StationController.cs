@@ -265,9 +265,9 @@ namespace SP.Web.Controllers
             return Json(new { data = stations });
         }
 
-        private async Task<IEnumerable<FuelBaseStationListItem>> GetFuelBaseListItems(int? personId = null)
+        private async Task<IEnumerable<FuelBaseListItem>> GetFuelBaseListItems(int? personId = null)
         {
-            IEnumerable<FuelBaseStationListItem> stations;
+            IEnumerable<FuelBaseListItem> stations;
             if (personId != null)
             {
                 stations = await _gasStationService.GetFuelBaseListAsync(personId.Value);
@@ -367,6 +367,138 @@ namespace SP.Web.Controllers
 
             return Redirect($"/Station/FuelBase/{result.Id}");
         }
+
         #endregion
+
+        #region Offices
+
+        [Route("Station/Office")]
+        public async Task<IActionResult> Office()
+        {
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "fuelbase", "Открыт справочник нефтебаз.");
+            var user = await _userManager.GetUserAsync(User);
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            var person = await _masterService.GetPersonAsync(user.Id);
+
+            return View("OfficeList");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> LoadOfficeList()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            var person = await _masterService.GetPersonAsync(user.Id);
+            int? personId = null;
+
+            var stations = await GetOfficeListItems(personId);
+
+            return Json(new { data = stations });
+        }
+
+        private async Task<IEnumerable<OfficeListItem>> GetOfficeListItems(int? personId = null)
+        {
+            IEnumerable<OfficeListItem> stations;
+            if (personId != null)
+            {
+                stations = await _gasStationService.GetOfficeListAsync(personId.Value);
+            }
+            else
+            {
+                stations = await _gasStationService.GetOfficeListAsync();
+            }
+
+            return stations;
+        }
+
+        [Route("Station/Office/{id}")]
+
+        public async Task<IActionResult> GetOfficeAsync(int id)
+        {
+            var station = await _gasStationService.GetOfficeAsync(id);
+            if (station == null)
+            {
+                return NotFound();
+            }
+
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "fuelbase",
+                $"Открыта запись {station.ObjectName}");
+
+            return View("Office", station);
+        }
+
+        [Route("Station/CreateOffice")]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> CreateOfficeAsync(string regions, string terrs)
+        {
+            var model = new OfficeModel();
+            return View("Office", model);
+        }
+
+        /// <summary>
+        /// Сохранить нефтебазу и вернуться в список
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> EditOfficeAsync([FromForm] OfficeModel model)
+        {
+            return await SaveOffice(model, actionName: "OfficeList");
+        }
+
+        /// <summary>
+        /// Сохранить нефтебазу
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> SaveOfficeAsync([FromForm] OfficeModel model)
+        {
+            return await SaveOffice(model);
+        }
+
+        /// <summary>
+        /// Сохранить запись нефтебазы
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="actionName"></param>
+        /// <returns></returns>
+        private async Task<IActionResult> SaveOffice(OfficeModel model, string actionName = null)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ActionMessage"] = "Проверьте правильность заполнения полей.";
+                TempData["ActionMessageClass"] = "alert-danger";
+                return View("Office", model);
+            }
+
+            string actionVerb = model.Id == 0 ? "Создана" : "Изменена";
+            var result = await _gasStationService.SaveOfficeAsync(model);
+
+            if (!result.Success)
+            {
+                string errorMessage = string.Join("<br/>", result.Errors);
+                TempData["ActionMessage"] = $"Ошибки при сохранении записи:<br/>{errorMessage}";
+                TempData["ActionMessageClass"] = "alert-danger";
+                return View("Office", model);
+            }
+
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "gasstation",
+                $"{actionVerb} запись {model.ObjectName}");
+
+            if (!string.IsNullOrWhiteSpace(actionName))
+            {
+                return Redirect($"/Station/Office");
+            }
+
+            TempData["ActionMessage"] = "Запись сохранена в базе данных.";
+            TempData["ActionMessageClass"] = "alert-info";
+
+            return Redirect($"/Station/Office/{result.Id}");
+        }
+        #endregion
+
     }
 }
