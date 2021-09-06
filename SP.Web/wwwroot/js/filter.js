@@ -1,4 +1,5 @@
 ﻿$(document).ready(function () {
+    if ($('#ObjectTypeList').length) $('#ObjectTypeList').change(changeObjectTypeHandler);
     if ($('#RegionList').length) $('#RegionList').chosen().change(changeRegionHandler);
     if ($('#TerritoryList').length) $('#TerritoryList').chosen().change(changeTerritoryHandler);
     if ($('#GasStationList').length) $('#GasStationList').chosen().change(changeStationHandler);
@@ -62,6 +63,10 @@ function restoreFilterState() {
     });
 }
 
+function changeObjectTypeHandler(e, args) {
+    changeObjectType();
+}
+
 function changeRegionHandler(e, args) {
     changeRegion();
 }
@@ -72,6 +77,56 @@ function changeTerritoryHandler(e, args) {
 
 function changeStationHandler(e, args) {
     storeFilterState();
+}
+
+function changeObjectType(preventChangeTrigger) {
+    return new Promise(function (resolve, reject) {
+        debugger;
+        if (!preventChangeTrigger) {
+            chosenDeselectAll('RegionList');
+            chosenDeselectAll('NomenclatureList');
+        }
+        var objectType = $('#ObjectTypeList').val();
+        if (objectType == 1) {
+            $('#RegionRow').show();
+            $('#TerritoryRow').show();
+            storeFilterState();
+            resolve(true);
+            return;
+        }
+
+        $('#RegionRow').hide();
+        $('#TerritoryRow').hide();
+
+        var url = '/Station/LoadStations';
+        var requestData = {
+            'objecttype': $('#ObjectTypeList').val(),
+            'regions': $('#RegionList').val().join(),
+            'terrs': $('#TerritoryList').val().join()
+        };
+        var stationList = $("#GasStationList");
+        $.post(url,
+            requestData,
+            function (data) {
+                debugger;
+                stationList.empty();
+                $.each(data,
+                    function (index, element) {
+                        stationList.append($('<option>',
+                            {
+                                value: element.id,
+                                text: element.name
+                            }));
+                    });
+
+                //selectOptions(stationList, selectedStations);
+                stationList.trigger("chosen:updated");
+                if (!preventChangeTrigger) stationList.trigger('change');
+                storeFilterState();
+                resolve(true);
+            });
+        console.log('finishing changeObjectType');
+    });
 }
 
 function changeRegion(terrs, preventChangeTrigger) {
@@ -138,6 +193,7 @@ function changeTerritory(stations, preventChangeTrigger) {
         }
         var url = '/Station/LoadStations';
         var requestData = {
+            'objecttype': $('#ObjectTypeList').val(),
             'regions': regions.join(),
             'terrs': terrs.join()
         };

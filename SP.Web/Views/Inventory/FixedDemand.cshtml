@@ -59,6 +59,12 @@
                     <div class="col-12">
                         <div class="form-row zero-gutters">
                             <div class="form-group row col-12">
+                                <label for="ObjectTypeList" class="control-label zero-gutters col-3">Тип объекта</label>
+                                <select id="ObjectTypeList" class="col-4" data-placeholder="Выберите тип объекта" 
+                                    asp-items="ViewBag.ObjectTypeList">
+                                </select>
+                            </div>
+                            <div id="RegionRow" class="form-group row col-12">
                                 <label for="RegionList" class="control-label zero-gutters col-3">Регион</label>
                                 <select id="RegionList" multiple="multiple" data-placeholder="Выберите регионы..."
                                         asp-items="ViewBag.RegionList">
@@ -66,7 +72,7 @@
                                 <a title="Выделить все" onclick="chosenSelectAll('RegionList');"><img src="/images/check-all.svg" class="icon-button" /></a>
                                 <a title="Снять все" onclick="chosenDeselectAll('RegionList');"><img src="/images/x.svg" class="icon-button" /></a>
                             </div>
-                            <div class="form-group row col-12">
+                            <div id="TerritoryRow" class="form-group row col-12">
                                 <label for="TerritoryList" class="control-label zero-gutters col-3">Территория</label>
                                 <select id="TerritoryList" multiple="multiple" data-placeholder="Выберите территории...">
                                 </select>

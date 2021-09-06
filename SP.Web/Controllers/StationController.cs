@@ -53,7 +53,7 @@ namespace SP.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoadList(string regions, string terrs)
+        public async Task<IActionResult> LoadList(string regions, string terrs, int objectType = 1)
         {
             if (!string.IsNullOrWhiteSpace(regions))
             {
@@ -77,18 +77,56 @@ namespace SP.Web.Controllers
             return Json(new { data = stations });
         }
 
-        public async Task<IActionResult> LoadStations(string regions, string terrs)
+        public async Task<IActionResult> LoadStations(string regions, string terrs, int objectType = 1)
         {
             int[] regionIdList = regions.SplitToIntArray();
             int[] terrIdList = terrs.SplitToIntArray();
-            var list = await GetGasStationListItems(regionIdList, terrIdList);
-            var stations = list
-                .OrderBy(x => x.StationNumber)
-                .Select(x => new DictionaryListItem
-                {
-                    Id = x.Id,
-                    Name = x.StationNumber
-                });
+
+            IEnumerable<DictionaryListItem> stations;
+            var oejctTypeValue = (Core.Enum.ObjectType)objectType;
+            switch (oejctTypeValue)
+            {
+                case Core.Enum.ObjectType.FuelBase:
+                    var fuelBases = await GetFuelBaseListItems();
+                    stations = fuelBases
+                        .OrderBy(x => x.ObjectName)
+                        .Select(x => new DictionaryListItem
+                        {
+                            Id = x.Id,
+                            Name = x.ObjectName
+                        });
+                    break;
+                case Core.Enum.ObjectType.Office:
+                    var offices = await GetOfficeListItems();
+                    stations = offices
+                        .OrderBy(x => x.ObjectName)
+                        .Select(x => new DictionaryListItem
+                        {
+                            Id = x.Id,
+                            Name = x.ObjectName
+                        });
+                    break;
+                case Core.Enum.ObjectType.Laboratory:
+                    var laboratories = await GetLaboratoryListItems();
+                    stations = laboratories
+                        .OrderBy(x => x.ObjectName)
+                        .Select(x => new DictionaryListItem
+                        {
+                            Id = x.Id,
+                            Name = x.ObjectName
+                        });
+                    break;
+                default:
+                    var list = await GetGasStationListItems(regionIdList, terrIdList);
+                    stations = list
+                        .OrderBy(x => x.StationNumber)
+                        .Select(x => new DictionaryListItem
+                        {
+                            Id = x.Id,
+                            Name = x.StationNumber
+                        });
+                    break;
+            }
 
             return Json(stations);
         }
