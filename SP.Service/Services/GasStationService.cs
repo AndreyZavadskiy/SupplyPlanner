@@ -27,6 +27,11 @@ namespace SP.Service.Services
         Task<IEnumerable<OfficeListItem>> GetOfficeListAsync(int? personId);
         Task<OfficeModel> GetOfficeAsync(int id);
         Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveOfficeAsync(OfficeModel model);
+
+        Task<IEnumerable<LaboratoryListItem>> GetLaboratoryListAsync();
+        Task<IEnumerable<LaboratoryListItem>> GetLaboratoryListAsync(int? personId);
+        Task<LaboratoryModel> GetLaboratoryAsync(int id);
+        Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveLaboratoryAsync(LaboratoryModel model);
     }
 
     public class GasStationService : IGasStationService
@@ -725,5 +730,165 @@ namespace SP.Service.Services
 
         #endregion
 
+        #region Laboratories
+
+        public async Task<IEnumerable<LaboratoryListItem>> GetLaboratoryListAsync()
+        {
+            return await GetLaboratoryListAsync(null);
+        }
+
+        public async Task<IEnumerable<LaboratoryListItem>> GetLaboratoryListAsync(int? personId)
+        {
+            var query = _context.GasStations.AsNoTracking()
+                .Where(x => x.ObjectType == Core.Enum.ObjectType.Laboratory)
+                .AsQueryable();
+            if (personId != null)
+            {
+                // TODO: сделать управление правами
+            }
+
+            var stations = query.AsEnumerable()
+                .Select(x => new LaboratoryListItem
+                {
+                    Id = x.Id,
+                    ObjectName = x.ObjectName,
+                    PersonnelTotal = x.PersonnelTotal,
+                    ServicingGasStationTotal = x.ServicingGasStationTotal,
+                    AverageTestPerMonth = x.AverageTestPerMonth,
+                    WorkingRoomTotal = x.WorkingRoomTotal,
+                    HasWell = x.HasWell,
+                    DiningRoomTotal = x.DiningRoomTotal,
+                    HasSpectroscan = x.HasSpectroscan,
+                    HasSindyAnalyzer = x.HasSindyAnalyzer,
+                    RestroomTotal = x.RestroomTotal,
+                    StampTotal = x.StampTotal,
+                })
+                .ToArray();
+
+            return stations;
+        }
+
+        public async Task<LaboratoryModel> GetLaboratoryAsync(int id)
+        {
+            var station = await _context.GasStations.FindAsync(id);
+
+            if (station == null)
+            {
+                return null;
+            }
+
+            var model = new LaboratoryModel
+            {
+                Id = station.Id,
+                ObjectName = station.ObjectName,
+                Address = station.Address,
+                PersonnelTotal = station.PersonnelTotal,
+                ServicingGasStationTotal = station.ServicingGasStationTotal,
+                AverageTestPerMonth = station.AverageTestPerMonth,
+                WorkingRoomTotal = station.WorkingRoomTotal,
+                HasWell = station.HasWell,
+                DiningRoomTotal = station.DiningRoomTotal,
+                HasSpectroscan = station.HasSpectroscan,
+                HasSindyAnalyzer = station.HasSindyAnalyzer,
+                RestroomTotal = station.RestroomTotal,
+                StampTotal = station.StampTotal,
+            };
+
+            return model;
+        }
+
+        public async Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveLaboratoryAsync(LaboratoryModel model)
+        {
+            var dbStation = await _context.GasStations.FindAsync(model.Id);
+            if (dbStation == null)
+            {
+                return await InsertLaboratoryAsync(model);
+            }
+
+            return await UpdateLaboratoryAsync(dbStation, model);
+        }
+
+        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> InsertLaboratoryAsync(LaboratoryModel model)
+        {
+            var errors = new List<string>();
+            try
+            {
+                var gasStation = new GasStation
+                {
+                    ObjectType = Core.Enum.ObjectType.Laboratory,
+                    ObjectName = model.ObjectName,
+                    Address = model.Address,
+                    PersonnelTotal = model.PersonnelTotal,
+                    ServicingGasStationTotal = model.ServicingGasStationTotal,
+                    AverageTestPerMonth = model.AverageTestPerMonth,
+                    WorkingRoomTotal = model.WorkingRoomTotal,
+                    HasWell = model.HasWell,
+                    DiningRoomTotal = model.DiningRoomTotal,
+                    HasSpectroscan = model.HasSpectroscan,
+                    HasSindyAnalyzer = model.HasSindyAnalyzer,
+                    RestroomTotal = model.RestroomTotal,
+                    StampTotal = model.StampTotal,
+                };
+
+                _context.GasStations.Add(gasStation);
+                await _context.SaveChangesAsync();
+                //_logger.LogInformation("User created a new account with password.");
+
+                return (true, gasStation.Id, null);
+            }
+            catch (DbUpdateException ex)
+            {
+                Debug.WriteLine(ex);
+                errors.Add("Невозможно сохранить изменения в базе данных. Если ошибка повторится, обратитесь в тех.поддержку.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                errors.Add("Ошибка создания персоны в системе.");
+            }
+
+            return (false, null, errors);
+        }
+
+        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> UpdateLaboratoryAsync(GasStation station, LaboratoryModel model)
+        {
+            var errors = new List<string>();
+
+            try
+            {
+                station.ObjectName = model.ObjectName;
+                station.ObjectName = model.ObjectName;
+                station.Address = model.Address;
+                station.PersonnelTotal = model.PersonnelTotal;
+                station.ServicingGasStationTotal = model.ServicingGasStationTotal;
+                station.AverageTestPerMonth = model.AverageTestPerMonth;
+                station.WorkingRoomTotal = model.WorkingRoomTotal;
+                station.HasWell = model.HasWell;
+                station.DiningRoomTotal = model.DiningRoomTotal;
+                station.HasSpectroscan = model.HasSpectroscan;
+                station.HasSindyAnalyzer = model.HasSindyAnalyzer;
+                station.RestroomTotal = model.RestroomTotal;
+                station.StampTotal = model.StampTotal;
+
+                _context.GasStations.Update(station);
+                await _context.SaveChangesAsync();
+
+                return (true, model.Id, null);
+            }
+            catch (DbUpdateException ex)
+            {
+                Debug.WriteLine(ex);
+                errors.Add("Невозможно сохранить изменения в базе данных. Если ошибка повторится, обратитесь в тех.поддержку.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                errors.Add("Ошибка сохранения персоны в системе.");
+            }
+
+            return (false, model.Id, errors);
+        }
+
+        #endregion
     }
 }

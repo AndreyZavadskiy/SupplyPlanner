@@ -1,0 +1,170 @@
+﻿@{
+    ViewData["Title"] = "Laboratory List";
+    bool isAdminRole = this.User.IsInRole("Administrator");
+}
+
+<h1>Реестр офисов</h1>
+
+<section>
+    <div class="col-xl-12">
+        <hr class="section-separate" />
+        <table id="StationGrid" class="table table-striped table-bordered nowrap" width="100%" cellspacing="0">
+            <thead>
+                <tr>
+                    <th class="hidden-column"><input type="checkbox" class="selectAll" /></th>
+                    <th></th>
+                    <th class="exportable-column">Название</th>
+                    <th class="exportable-column">Количество персонала</th>
+                    <th class="exportable-column">Количество закрепленных АЗС</th>
+                    <th class="exportable-column">Среднее количество проб в месяц</th>
+                    <th class="exportable-column">Количество рабочих помещений</th>
+                    <th class="exportable-column">Количество помещений для приема пищи</th>
+                    <th class="exportable-column">Количество санузлов</th>
+                    <th class="exportable-column">Наличие скважины</th>
+                    <th class="exportable-column">Наличие анализатора cпектроскана S</th>
+                    <th class="exportable-column">Наличие анализатора Sindy</th>
+                    <th class="exportable-column">Количество печатей/штемпелей</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</section>
+<section>
+    <div class="modal" id="FilterModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Фильтры</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body filter-area">
+                    <p>
+                        <input type="checkbox" id="IncludeBlocked" /> включить заблокированных
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function () {
+            initializeDataTable();
+        });
+
+        function initializeDataTable() {
+            var d = new Date();
+            var todayString = ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
+            $('#StationGrid').DataTable({
+                language: {
+                    url: '/lib/datatables/i18n/dt-russian.json'
+                },
+                //orderFixed: [[4, 'asc'], [5, 'asc']],
+                lengthMenu: [
+                    [10, 25, 50, 100, -1],
+                    [10, 25, 50, 100, 'Все']
+                ],
+                scrollX: true,
+                scrollCollapse: true,
+                fixedColumns: {
+                    leftColumns: 3
+                },
+                processing: true,
+                ajax: {
+                    url: '/Station/LoadLaboratoryList',
+                    type: 'POST',
+                    dataType: 'json'
+                },
+                columns:
+                [
+                    { defaultContent: '' },
+                    {
+                        render: function (data, type, full, meta) {
+                            var url = '/Station/Laboratory/' + full.id;
+                            return '<a href="' + url + '"><img src="/images/pencil-square.svg"/></a>';
+                        }
+                    },
+                    { data: 'objectName' },
+                    { data: 'personnelTotal' },
+                    { data: 'servicingGasStationTotal' },
+                    { data: 'averageTestPerMonth' },
+                    { data: 'workingRoomTotal' },
+                    { data: 'diningRoomTotal' },
+                    { data: 'restroomTotal' },
+                    {
+                        render: function (data, type, full, meta) {
+                            return full.hasWell ? 'есть' : '';
+                        }
+                    },
+                    {
+                        render: function (data, type, full, meta) {
+                            return full.hasSpectroscan ? 'есть' : '';
+                        }
+                    },
+                    {
+                        render: function (data, type, full, meta) {
+                            return full.hasSindyAnalyzer ? 'есть' : '';
+                        }
+                    },
+                    { data: 'stampTotal' }
+                ],
+                columnDefs:
+                [
+                    {
+                        targets: 'hidden-column',
+                        visible: false
+                    }
+                ],
+                dom:
+                    "<'row'<'col-sm-12 col-md-6 dt-action-group'B>>" +
+                        "<'row'<'col-sm-12 col-md-4'l><'col-sm-12 col-md-4'i><'col-sm-12 col-md-4'f>>" +
+                        "<'row'<'col-sm-12'tr>>" +
+                        "<'row'<'col-sm-12 col-md-6 left-pagination'p>>",
+                buttons:
+                    [
+                        @if (isAdminRole)
+                        {
+                            <text>
+                                {
+                                    text: 'Добавить',
+                                    titleAttr: "Создать новую лабораторию",
+                                    className: 'dt-action-button',
+                                    action: function (e, dt, node, config) {
+                                        createLaboratory();
+                                    }
+                                },
+                            </text>
+                        }
+                        {
+                            text: 'Excel',
+                            titleAttr: "Выгрузить таблицу в Excel",
+                            className: 'dt-action-button',
+                            extend: 'excel',
+                            title: 'Список офисов',
+                            messageTop: 'Дата выгрузки ' + todayString,
+                            exportOptions: {
+                                columns: '.exportable-column',
+                                modifier: { search: 'applied' },
+                                grouped_array_index: [4, 5]
+                            }
+                        },
+                        {
+                            text: 'Фильтры',
+                            className: 'dt-action-button filter-button',
+                            action: function (e, dt, node, config) {
+                                //$('#FilterModal').modal();
+                            }
+                        }
+                ]
+            });
+        }
+
+        function createLaboratory() {
+            window.location = '/Station/CreateLaboratory';
+        }
+    </script>
+}

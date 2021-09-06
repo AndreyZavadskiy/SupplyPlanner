@@ -1,0 +1,123 @@
+﻿@model SP.Service.Models.LaboratoryModel
+
+@{
+    ViewData["Title"] = "User";
+    bool isAdminRole = this.User.IsInRole("Administrator");
+    string actionMessageClass = TempData["ActionMessageClass"]?.ToString();
+    bool canEdit = isAdminRole;
+    bool canEditLimited = isAdminRole;
+}
+
+<h1>Карточка нефтебазы</h1>
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+    <input type="hidden" asp-for="Id" />
+    <div class="zero-gutters col-xl-9">
+        <div id="action-message" class="alert alert-row @actionMessageClass">
+            @Html.Raw(TempData["ActionMessage"])
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-12">
+                <label asp-for="ObjectName" class="control-label col-3"></label>
+                <input asp-for="ObjectName" class="form-control col-8" />
+                <span asp-validation-for="ObjectName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-12">
+                <label asp-for="Address" class="control-label col-3"></label>
+                <input asp-for="Address" class="form-control col-8" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="PersonnelTotal" class="control-label col-6"></label>
+                <input asp-for="PersonnelTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="PersonnelTotal" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="WorkingRoomTotal" class="control-label col-6"></label>
+                <input asp-for="WorkingRoomTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="WorkingRoomTotal" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="DiningRoomTotal" class="control-label col-6"></label>
+                <input asp-for="DiningRoomTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="DiningRoomTotal" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="RestroomTotal" class="control-label col-6"></label>
+                <input asp-for="RestroomTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="RestroomTotal" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="ServicingGasStationTotal" class="control-label col-6"></label>
+                <input asp-for="ServicingGasStationTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="ServicingGasStationTotal" class="text-danger"></span>
+            </div>
+            <div class="form-group row col-6">
+                <label asp-for="AverageTestPerMonth" class="control-label col-6"></label>
+                <input asp-for="AverageTestPerMonth" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="AverageTestPerMonth" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row zero-gutters col-6">
+                <div class="form-group row form-check col-1"></div>
+                <div class="form-group row form-check col-11">
+                    <label class="form-check-label">
+                        <input asp-for="HasSpectroscan" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasSpectroscan)
+                    </label>
+                </div>
+            </div>
+            <div class="form-group row zero-gutters col-6">
+                <div class="form-group row form-check col-1"></div>
+                <div class="form-group row form-check col-11">
+                    <label class="form-check-label">
+                        <input asp-for="HasSindyAnalyzer" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasSindyAnalyzer)
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row zero-gutters col-6">
+                <div class="form-group row form-check col-1"></div>
+                <div class="form-group row form-check col-11">
+                    <label class="form-check-label">
+                        <input asp-for="HasWell" readonly="@(!canEdit)" /> @Html.DisplayNameFor(model => model.HasWell)
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
+                <label asp-for="StampTotal" class="control-label col-6"></label>
+                <input asp-for="StampTotal" class="form-control col-4" readonly="@(!canEdit)" />
+                <span asp-validation-for="StampTotal" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-row button-row">
+            @if (isAdminRole)
+            {
+                <button asp-action="EditLaboratory" class="btn btn-primary">Сохранить и вернуться</button>
+                <button asp-action="SaveLaboratory" class="btn btn-success">Сохранить</button>
+            }
+            <a class="btn btn-secondary" style="color: white;" onclick="goBack();">Вернуться</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts
+{
+    <script>
+        function goBack() {
+            window.location = '/Station/Laboratory';
+        }
+    </script>
+}

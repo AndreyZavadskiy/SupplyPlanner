@@ -500,5 +500,134 @@ namespace SP.Web.Controllers
         }
         #endregion
 
+        #region Laboratories
+
+        [Route("Station/Laboratory")]
+        public async Task<IActionResult> Laboratory()
+        {
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "fuelbase", "Открыт справочник нефтебаз.");
+            var user = await _userManager.GetUserAsync(User);
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            var person = await _masterService.GetPersonAsync(user.Id);
+
+            return View("LaboratoryList");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> LoadLaboratoryList()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            var person = await _masterService.GetPersonAsync(user.Id);
+            int? personId = null;
+
+            var stations = await GetLaboratoryListItems(personId);
+
+            return Json(new { data = stations });
+        }
+
+        private async Task<IEnumerable<LaboratoryListItem>> GetLaboratoryListItems(int? personId = null)
+        {
+            IEnumerable<LaboratoryListItem> stations;
+            if (personId != null)
+            {
+                stations = await _gasStationService.GetLaboratoryListAsync(personId.Value);
+            }
+            else
+            {
+                stations = await _gasStationService.GetLaboratoryListAsync();
+            }
+
+            return stations;
+        }
+
+        [Route("Station/Laboratory/{id}")]
+
+        public async Task<IActionResult> GetLaboratoryAsync(int id)
+        {
+            var station = await _gasStationService.GetLaboratoryAsync(id);
+            if (station == null)
+            {
+                return NotFound();
+            }
+
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "fuelbase",
+                $"Открыта запись {station.ObjectName}");
+
+            return View("Laboratory", station);
+        }
+
+        [Route("Station/CreateLaboratory")]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> CreateLaboratoryAsync(string regions, string terrs)
+        {
+            var model = new LaboratoryModel();
+            return View("Laboratory", model);
+        }
+
+        /// <summary>
+        /// Сохранить нефтебазу и вернуться в список
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> EditLaboratoryAsync([FromForm] LaboratoryModel model)
+        {
+            return await SaveLaboratory(model, actionName: "LaboratoryList");
+        }
+
+        /// <summary>
+        /// Сохранить нефтебазу
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> SaveLaboratoryAsync([FromForm] LaboratoryModel model)
+        {
+            return await SaveLaboratory(model);
+        }
+
+        /// <summary>
+        /// Сохранить запись нефтебазы
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="actionName"></param>
+        /// <returns></returns>
+        private async Task<IActionResult> SaveLaboratory(LaboratoryModel model, string actionName = null)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ActionMessage"] = "Проверьте правильность заполнения полей.";
+                TempData["ActionMessageClass"] = "alert-danger";
+                return View("Laboratory", model);
+            }
+
+            string actionVerb = model.Id == 0 ? "Создана" : "Изменена";
+            var result = await _gasStationService.SaveLaboratoryAsync(model);
+
+            if (!result.Success)
+            {
+                string errorMessage = string.Join("<br/>", result.Errors);
+                TempData["ActionMessage"] = $"Ошибки при сохранении записи:<br/>{errorMessage}";
+                TempData["ActionMessageClass"] = "alert-danger";
+                return View("Laboratory", model);
+            }
+
+            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "gasstation",
+                $"{actionVerb} запись {model.ObjectName}");
+
+            if (!string.IsNullOrWhiteSpace(actionName))
+            {
+                return Redirect($"/Station/Laboratory");
+            }
+
+            TempData["ActionMessage"] = "Запись сохранена в базе данных.";
+            TempData["ActionMessageClass"] = "alert-info";
+
+            return Redirect($"/Station/Laboratory/{result.Id}");
+        }
+        #endregion
     }
 }

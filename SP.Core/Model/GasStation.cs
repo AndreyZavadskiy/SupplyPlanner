@@ -254,6 +254,7 @@ namespace SP.Core.Model
         /// <summary>
         /// План поставок ж/д транспортом
         /// </summary>
+        [Column(TypeName = "decimal(12,2)")] 
         public decimal? RailwayDeliveryPlanTotal { get; set; }
         /// <summary>
         /// Количество бензовозов в год
@@ -278,18 +279,22 @@ namespace SP.Core.Model
         /// <summary>
         /// Количество топлива (92) в год
         /// </summary>
+        [Column(TypeName = "decimal(12,2)")]
         public decimal? Fuel92PerYear { get; set; }
         /// <summary>
         /// Количество топлива (95) в год
         /// </summary>
+        [Column(TypeName = "decimal(12,2)")]
         public decimal? Fuel95PerYear { get; set; }
         /// <summary>
         /// Количество топлива (100) в год
         /// </summary>
+        [Column(TypeName = "decimal(12,2)")]
         public decimal? Fuel100PerYear { get; set; }
         /// <summary>
         /// Количество топлива (ДТ) в год
         /// </summary>
+        [Column(TypeName = "decimal(12,2)")]
         public decimal? DieselFuelPerYear { get; set; }
         /// <summary>
         /// Автоматизация нефтебазы
@@ -298,6 +303,7 @@ namespace SP.Core.Model
         /// <summary>
         /// Площадь обработки противогололёдной смесью
         /// </summary>
+        [Column(TypeName = "decimal(8,2)")] 
         public decimal? AntiIcingSquare { get; set; }
         /// <summary>
         /// Количество обработок противогололёдной смесью в год
@@ -330,7 +336,7 @@ namespace SP.Core.Model
         /// <summary>
         /// Наличие скважины
         /// </summary>
-        public int? HasWell { get; set; }
+        public bool HasWell { get; set; }
         /// <summary>
         /// Наличие анализатора cпектроскана S
         /// </summary>

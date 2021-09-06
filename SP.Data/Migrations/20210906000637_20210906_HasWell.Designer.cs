@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SP.Data;
@@ -9,9 +10,10 @@ using SP.Data;
 namespace SP.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210906000637_20210906_HasWell")]
+    partial class _20210906_HasWell
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -579,7 +581,7 @@ namespace SP.Data.Migrations
                         .HasColumnType("integer");
 
                     b.Property<decimal?>("AntiIcingSquare")
-                        .HasColumnType("decimal(8,2)");
+                        .HasColumnType("numeric");
 
                     b.Property<int?>("AverageTestPerMonth")
                         .HasColumnType("integer");
@@ -638,7 +640,7 @@ namespace SP.Data.Migrations
                         .HasColumnType("integer");
 
                     b.Property<decimal?>("DieselFuelPerYear")
-                        .HasColumnType("decimal(12,2)");
+                        .HasColumnType("numeric");
 
                     b.Property<int?>("DiningRoomTotal")
                         .HasColumnType("integer");
@@ -650,13 +652,13 @@ namespace SP.Data.Migrations
                         .HasColumnType("integer");
 
                     b.Property<decimal?>("Fuel100PerYear")
-                        .HasColumnType("decimal(12,2)");
+                        .HasColumnType("numeric");
 
                     b.Property<decimal?>("Fuel92PerYear")
-                        .HasColumnType("decimal(12,2)");
+                        .HasColumnType("numeric");
 
                     b.Property<decimal?>("Fuel95PerYear")
-                        .HasColumnType("decimal(12,2)");
+                        .HasColumnType("numeric");
 
                     b.Property<int?>("FuelDispenserPostTotal")
                         .HasColumnType("integer");
@@ -741,7 +743,7 @@ namespace SP.Data.Migrations
                         .HasColumnType("integer");
 
                     b.Property<decimal?>("RailwayDeliveryPlanTotal")
-                        .HasColumnType("decimal(12,2)");
+                        .HasColumnType("numeric");
 
                     b.Property<int?>("RailwayTankPerYear")
                         .HasColumnType("integer");
