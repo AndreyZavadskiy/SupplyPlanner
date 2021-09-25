@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using SP.Core.Enum;
 using SP.Core.Master;
 using SP.Data;
 using SP.Service.Background;
@@ -385,7 +386,7 @@ namespace SP.Web.Controllers
         /// <param name="shortUse"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> LoadDemandList(string regions, string terrs, string stations, string groups, string noms, bool shortUse = false)
+        public async Task<IActionResult> LoadDemandList(int objtype, string regions, string terrs, string stations, string groups, string noms, bool shortUse = false)
         {
             if (string.IsNullOrWhiteSpace(regions) && string.IsNullOrWhiteSpace(terrs) && string.IsNullOrWhiteSpace(groups))
             {
@@ -393,13 +394,14 @@ namespace SP.Web.Controllers
                 return Json(new { data = new[] { zeroItem } });
             }
 
+            ObjectType objectType = (ObjectType)objtype;
             int[] regionIdList = regions.SplitToIntArray();
             int[] terrIdList = terrs.SplitToIntArray();
             int[] stationIdList = stations.SplitToIntArray();
             int[] groupList = groups.SplitToIntArray();
             int[] nomIdList = noms.SplitToIntArray();
             
-            var list = await _inventoryService.GetDemandListAsync(regionIdList, terrIdList, stationIdList, groupList, nomIdList, shortUse);
+            var list = await _inventoryService.GetDemandListAsync(objectType, regionIdList, terrIdList, stationIdList, groupList, nomIdList, shortUse);
             
             return Json(new { data = list });
         }

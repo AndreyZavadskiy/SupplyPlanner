@@ -32,11 +32,12 @@
                     <th></th>
                     <th class="exportable-column">Код Номенклатуры</th>
                     <th class="exportable-column">Наименование</th>
-                    <th class="exportable-column">АЗС</th>
+                    <th class="exportable-column">Объект</th>
                     <th class="exportable-column">Остаток</th>
                     <th class="exportable-column">Ед.изм.</th>
                     <th class="exportable-column">Фикс. значение</th>
                     <th class="exportable-column">Формула</th>
+                    <th class="exportable-column">Округление</th>
                     <th class="exportable-column">План</th>
                     <th class="exportable-column">Потребность</th>
                     <th class="exportable-column">Посл.заказ</th>
@@ -200,6 +201,7 @@
                     url: '/Inventory/LoadDemandList',
                     type: 'POST',
                     data: function(d) {
+                        d.objtype = $('#ObjectTypeList').val();
                         d.regions = $('#RegionList').val().join();
                         d.terrs = $('#TerritoryList').val().join();
                         d.stations = $('#GasStationList').val().join();
@@ -228,6 +230,7 @@
                     { data: 'measureUnitName' },
                     { data: 'fixedAmount' },
                     { data: 'formula' },
+                    { data: 'roundingName' },
                     { data: 'plan' },
                     { data: 'orderQuantity' },
                     { data: 'lastQuantity' },

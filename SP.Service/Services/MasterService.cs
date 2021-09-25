@@ -390,7 +390,8 @@ namespace SP.Service.Services
                     Id = x.Id,
                     Name = x.Name,
                     Active = x.IsActive ? "1" : "0"
-                });
+                })
+                .OrderBy(x => x.Name);
 
             return result;
         }

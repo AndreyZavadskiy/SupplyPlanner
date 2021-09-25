@@ -40,6 +40,10 @@ namespace SP.Service.Models
         /// </summary>
         public string Formula { get; set; }
         /// <summary>
+        /// Округление
+        /// </summary>
+        public string RoundingName { get; set; }
+        /// <summary>
         /// План потребности
         /// </summary>
         public decimal Plan { get; set; }

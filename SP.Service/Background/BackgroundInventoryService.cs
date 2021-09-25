@@ -600,7 +600,7 @@ namespace SP.Service.Background
                         Value = 0
                     };
                     sw.Restart();
-                    await _context.Database.ExecuteSqlRawAsync("CALL \"CalculateBalance\"(@stations, @nomenclatures, @person_id, @total_rows);", 
+                    await _context.Database.ExecuteSqlRawAsync("CALL \"CalculateBalance\"(@stations, @nomenclatures, @person_id, @total_rows);",
                         pStations, pNomenclatures, pPerson, pRows);
 
                     currentRow += totalNomenclatures;
@@ -789,44 +789,8 @@ namespace SP.Service.Background
                 {
                     OptionForceIntegerNumbersEvaluationsAsDoubleByDefault = true
                 };
-                evaluator.Variables = new Dictionary<string, object>()
-                {
-                    { "if", new Func<bool,double,double,double>((c, x, y) => c ? x : y)},
-                    { "segment", gasStation.Segment?.Name.ToLower() },
-                    { "cluster", gasStation.ServiceLevel?.Name.ToLower() },
-                    { "operformat", gasStation.OperatorRoomFormat?.Name.ToLower() },
-                    { "regime", gasStation.TradingHallOperatingMode?.Name.ToLower() },
-                    { "cashdesk", gasStation.CashboxLocation?.Name.ToLower() },
-                    { "salearea", Convert.ToDouble(gasStation.TradingHallArea) },
-                    { "totalarm", gasStation.CashboxTotal },
-                    { "managerarm", gasStation.ManagerArmTotal },
-                    { "totaltrk", gasStation.FuelDispenserTotal },
-                    { "totaltrkpost", gasStation.FuelDispenserPostTotal },
-                    { "totaltrkopenpost", gasStation.FuelDispenserPostWithoutShedTotal },
-                    { "cashtape", gasStation.CashRegisterTape?.Name.ToLower() },
-                    { "avgcheck", Convert.ToDouble(gasStation.ChequePerDay) },
-                    { "totalclienttoiletroom", gasStation.ClientRestroomTotal },
-                    { "totaltambour", gasStation.ClientTambourTotal },
-                    { "totalsink", gasStation.ClientSinkTotal },
-                    { "tambour", gasStation.HasJointRestroomEntrance },
-                    { "monthincome", Convert.ToDouble(gasStation.RevenueAvg) },
-                    { "sibilla", gasStation.HasSibilla },
-                    { "bakery", gasStation.HasBakery },
-                    { "cakes", gasStation.HasCakes },
-                    { "fries", gasStation.DeepFryTotal },
-                    { "marmite", gasStation.HasMarmite },
-                    { "kitchen", gasStation.HasKitchen },
-                    { "coffeemachine", gasStation.CoffeeMachineTotal },
-                    { "totalpersonal", Convert.ToDouble(gasStation.PersonnelPerDay) },
-                    { "avgbandlength", Convert.ToDouble(gasStation.ChequeBandLengthPerDay) },
-                    { "imagecoef", Convert.ToDouble(gasStation.RepresentativenessFactor) },
-                    { "imagecoef3q", Convert.ToDouble(gasStation.RepresentativenessFactor3Quarter) },
-                    { "daycleaning", gasStation.DayCleaningTotal },
-                    { "dayrefueling", gasStation.DayRefuelingTotal },
-                    { "merrychef", gasStation.MerrychefTotal },
-                    { "revenue", Convert.ToDouble(gasStation.RevenueAvg) },
-                    { "fuelcard", gasStation.HasFuelCardProgram }
-                };
+
+                evaluator.Variables = GetEvaluatorVariables(gasStation);
 
                 try
                 {
@@ -839,6 +803,20 @@ namespace SP.Service.Background
                 catch (Exception ex)
                 {
                     Debugger.Break();
+                }
+
+                // округление
+                switch(nomBalance.Rounding)
+                {
+                    case Rounding.Floor:
+                        plan = Math.Floor(plan);
+                        break;
+                    case Rounding.Ceiling:
+                        plan = Math.Ceiling(plan);
+                        break;
+                    case Rounding.Round:
+                        plan = Math.Round(plan);
+                        break;
                 }
             }
 
@@ -853,7 +831,7 @@ namespace SP.Service.Background
             nomBalance.LastUpdate = now;
             _context.Entry(nomBalance).Property(r => r.Plan).IsModified = true;
             _context.Entry(nomBalance).Property(r => r.LastUpdate).IsModified = true;
-            
+
             var historyRecord = CalcSheetHistory.CreateHistoryRecord(nomBalance, now);
             await _context.CalcSheetHistories.AddAsync(historyRecord);
 
@@ -870,6 +848,81 @@ namespace SP.Service.Background
             await _context.ChangeLogs.AddAsync(changeLogRecord);
 
             return true;
+        }
+
+        private Dictionary<string, object> GetEvaluatorVariables(GasStation gasStation)
+        {
+            var variables = new Dictionary<string, object>()
+            {
+                { "if", new Func<bool,double,double,double>((c, x, y) => c ? x : y)},
+                { "Segment", gasStation.Segment?.Name.ToLower() },
+                { "Cluster", gasStation.ServiceLevel?.Name.ToLower() },
+                { "OperFormat", gasStation.OperatorRoomFormat?.Name.ToLower() },
+                { "Regime", gasStation.TradingHallOperatingMode?.Name.ToLower() },
+                { "Cashdesk", gasStation.CashboxLocation?.Name.ToLower() },
+                { "SaleArea", Convert.ToDouble(gasStation.TradingHallArea) },
+                { "TotalArm", gasStation.CashboxTotal },
+                { "ManagerArm", gasStation.ManagerArmTotal },
+                { "TotalTrk", gasStation.FuelDispenserTotal },
+                { "TotalTrkPost", gasStation.FuelDispenserPostTotal },
+                { "TotalTrkOpenPost", gasStation.FuelDispenserPostWithoutShedTotal },
+                { "CashTape", gasStation.CashRegisterTape?.Name.ToLower() },
+                { "AvgCheck", Convert.ToDouble(gasStation.ChequePerDay) },
+                { "TotalClientToiletRoom", gasStation.ClientRestroomTotal },
+                { "TotalTambour", gasStation.ClientTambourTotal },
+                { "TotalSink", gasStation.ClientSinkTotal },
+                { "Tambour", gasStation.HasJointRestroomEntrance },
+                { "MonthIncome", Convert.ToDouble(gasStation.RevenueAvg) },
+                { "Sibilla", gasStation.HasSibilla },
+                { "Bakery", gasStation.HasBakery },
+                { "Cakes", gasStation.HasCakes },
+                { "Fries", gasStation.DeepFryTotal },
+                { "Marmite", gasStation.HasMarmite },
+                { "Kitchen", gasStation.HasKitchen },
+                { "CoffeeMachine", gasStation.CoffeeMachineTotal },
+                // TODO: исправить название в программе и БД
+                { "TotalPersonal", Convert.ToDouble(gasStation.PersonnelPerDay) },
+                { "AvgBandLength", Convert.ToDouble(gasStation.ChequeBandLengthPerDay) },
+                { "ImageCoef", Convert.ToDouble(gasStation.RepresentativenessFactor) },
+                { "ImageCoef3q", Convert.ToDouble(gasStation.RepresentativenessFactor3Quarter) },
+                { "DayCleaning", gasStation.DayCleaningTotal },
+                { "DayRefueling", gasStation.DayRefuelingTotal },
+                { "Merrychef", gasStation.MerrychefTotal },
+                { "Revenue", Convert.ToDouble(gasStation.RevenueAvg) },
+                { "FuelCard", gasStation.HasFuelCardProgram },
+                { "PersonnelTotal", gasStation.PersonnelTotal },
+                { "FuelTracks", gasStation.FuelTrackPerYear },
+                { "RailwayTanks", gasStation.RailwayTankPerYear },
+                { "ShiftsPerDay", gasStation.ShiftPerDay },
+                { "PersonnelPerShift", gasStation.PersonnelPerShift },
+                { "WorkingPlaces", gasStation.WorkingPlaceTotal },
+                { "DiningRooms", gasStation.DiningRoomTotal },
+                { "Fuel92PerYear", Convert.ToDouble(gasStation.Fuel92PerYear) },
+                { "Fuel95PerYear", Convert.ToDouble(gasStation.Fuel95PerYear) },
+                { "Fuel100PerYear", Convert.ToDouble(gasStation.Fuel100PerYear) },
+                { "DieselFuelPerYear", Convert.ToDouble(gasStation.DieselFuelPerYear) },
+                { "FuelBaseAutomation", gasStation.HasFuelBaseAutomation },
+                { "RailwayDeliveryPlan", Convert.ToDouble(gasStation.RailwayDeliveryPlanTotal) },
+                { "Reservoirs", gasStation.ReservoirTotal },
+                { "AntiIcingSquare", Convert.ToDouble(gasStation.AntiIcingSquare) },
+                { "AntiIcingPerYear", gasStation.AntiIcingPerYear },
+                { "RailwayFuelTanks", gasStation.RailwayTankPerYear },
+                { "Departments", gasStation.DepartmentTotal },
+                { "CentralWaterSupply", gasStation.HasCentralWaterSupply },
+                { "LabTestsPerMonth", gasStation.AverageTestPerMonth },
+                { "ServicingGasStations", gasStation.ServicingGasStationTotal },
+                { "WorkingRooms", gasStation.WorkingRoomTotal },
+                { "Sindy", gasStation.HasSindyAnalyzer },
+                { "Spectroscan", gasStation.HasSpectroscan }
+            };
+
+            var lowered = variables.Select(x => new
+            {
+                Key = x.Key.ToLower(),
+                x.Value
+            }).ToDictionary(x => x.Key, x => x.Value);
+
+            return lowered;
         }
     }
 }

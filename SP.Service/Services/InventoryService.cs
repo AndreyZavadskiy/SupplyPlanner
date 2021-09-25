@@ -30,7 +30,7 @@ namespace SP.Service.Services
         Task<int> LinkInventoryWithNomenclatureAsync(int[] inventoryIdList, int nomenclatureId, int personId);
         Task<int> BlockInventoryAsync(int[] inventoryIdList, int personId);
         Task<IEnumerable<BalanceListItem>> GetBalanceListAsync(int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool zero);
-        Task<IEnumerable<DemandListView>> GetDemandListAsync(int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool shortUse);
+        Task<IEnumerable<DemandListView>> GetDemandListAsync(ObjectType objectType, int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool shortUse);
         Task<IEnumerable<OrderModel>> GetOrderListAsync();
         Task<IEnumerable<OrderDetailModel>> GetOrderDetailAsync(long id);
         Task<int> SetRequirementAsync(decimal? fixedAmount, string formula, long[] idList, int personId);
@@ -179,7 +179,8 @@ namespace SP.Service.Services
                 MeasureUnitId = nomenclature.MeasureUnitId,
                 NomenclatureGroupId = nomenclature.NomenclatureGroupId,
                 UsefulLife = nomenclature.UsefulLife,
-                Inactive = !nomenclature.IsActive
+                Inactive = !nomenclature.IsActive,
+                Description = nomenclature.Description,
             };
 
             return nomenclatureModel;
@@ -256,6 +257,7 @@ namespace SP.Service.Services
                     Id = x.Id,
                     Name = x.Name
                 })
+                .OrderBy(x => x.Name)
                 .ToArrayAsync();
 
             return list;
@@ -310,7 +312,8 @@ namespace SP.Service.Services
                 MeasureUnitId = model.MeasureUnitId,
                 NomenclatureGroupId = model.NomenclatureGroupId,
                 UsefulLife = model.UsefulLife,
-                IsActive = !model.Inactive
+                IsActive = !model.Inactive,
+                Description = model.Description,
             };
 
             var errors = new List<string>();
@@ -359,6 +362,7 @@ namespace SP.Service.Services
                 nomenclature.NomenclatureGroupId = model.NomenclatureGroupId;
                 nomenclature.UsefulLife = model.UsefulLife;
                 nomenclature.IsActive = !model.Inactive;
+                nomenclature.Description = model.Description;
 
                 _context.Nomenclatures.Update(nomenclature);
                 await _context.SaveChangesAsync();
@@ -529,7 +533,7 @@ namespace SP.Service.Services
         /// Получить список остатков и потребности по Номенклатуре для просмотра
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<DemandListView>> GetDemandListAsync(int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool shortUse)
+        public async Task<IEnumerable<DemandListView>> GetDemandListAsync(ObjectType objectType, int[] regions, int[] terrs, int[] stations, int[] groups, int[] noms, bool shortUse)
         {
             try
             {
@@ -555,7 +559,8 @@ namespace SP.Service.Services
                     .ToArrayAsync();
 
                 // формируем список id всех выбранных АЗС
-                var stationQuery = _context.GasStations.AsNoTracking();
+                var stationQuery = _context.GasStations.AsNoTracking()
+                    .Where(x => x.ObjectType == objectType);
                 if (stations != null)
                 {
                     stationQuery = stationQuery.Where(x => stations.Contains(x.Id));

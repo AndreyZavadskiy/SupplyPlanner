@@ -46,6 +46,10 @@ namespace SP.Core.View
         /// </summary>
         public decimal Plan { get; set; }
         /// <summary>
+        /// Округление
+        /// </summary>
+        public string RoundingName { get; set; }
+        /// <summary>
         /// Количество для заказа
         /// </summary>
         public decimal OrderQuantity { get; set; }

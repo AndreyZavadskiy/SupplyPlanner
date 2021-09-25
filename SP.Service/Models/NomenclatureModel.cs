@@ -48,5 +48,10 @@ namespace SP.Service.Models
         /// </summary>
         [DisplayName("Запись исключена")]
         public bool Inactive { get; set; }
+        /// <summary>
+        /// Описание
+        /// </summary>
+        [DisplayName("Характеристики")]
+        public string Description { get; set; }
     }
 }

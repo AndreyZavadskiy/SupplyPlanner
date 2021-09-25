@@ -3,11 +3,12 @@ RETURNS table (
     "Id" bigint,
     "Code" varchar(20),
     "Name" varchar(100),
-    "GasStationName" varchar(5),
+    "GasStationName" varchar(200),
     "Quantity" numeric(19,4),
     "MeasureUnitName" varchar(100),
     "FixedAmount" numeric(19,4),
     "Formula" text,
+    "RoundingName" varchar(25),
     "Plan" numeric(19,4),
     "OrderQuantity" numeric(19,4),
     "LastOrderDate" timestamp,
@@ -21,11 +22,12 @@ BEGIN
         "Id" bigint,
         "Code" varchar(20),
         "Name" varchar(100),
-        "GasStationName" varchar(5),
+        "GasStationName" varchar(200),
         "Quantity" numeric(19,4),
         "MeasureUnitName" varchar(100),
         "FixedAmount" numeric(19,4),
         "Formula" text,
+        "RoundingName" varchar(25),
         "Plan" numeric(19,4),
         "OrderQuantity" numeric(19,4),
         "LastOrderDate" timestamp,
@@ -52,11 +54,19 @@ BEGIN
         c."Id",
         COALESCE(n."Code", CAST(n."Id" AS varchar(10))) AS "Code",
         n."Name",
-        s."StationNumber" AS "GasStationName",
+        CASE s."ObjectType" 
+        	WHEN 1 THEN s."StationNumber" 
+        	ELSE s."ObjectName"
+        END AS "GasStationName",
         c."Quantity",
         mu."Name" AS "MeasureUnitName",
         c."FixedAmount",
         c."Formula",
+        CASE c."Rounding"
+            WHEN 1 THEN 'Вниз'
+            WHEN 2 THEN 'Вверх'
+            WHEN 3 THEN 'До ближайшего'
+        END AS "RoundingName",
         c."Plan",
         c."Plan" - c."Quantity" AS "OrderQuantity",
         c."OrderDate" AS "LastOrderDate",

@@ -31,7 +31,7 @@ namespace SP.Web.Controllers
             await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "nomenclature", "Открыт справочник Номенклатура.");
 
             var nomenclatureGroups = await _masterService.GetDictionaryListAsync<NomenclatureGroup>();
-            var groupList = new SelectList(nomenclatureGroups, "Id", "Name").ToList();
+            var groupList = new SelectList(nomenclatureGroups.OrderBy(x => x.Name), "Id", "Name").ToList();
             groupList.Insert(0, new SelectListItem("-- ВСЕ --", int.MaxValue.ToString()));
             ViewData["NomenclatureGroupList"] = groupList;
 

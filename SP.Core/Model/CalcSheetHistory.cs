@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SP.Core.Enum;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
@@ -51,7 +52,7 @@ namespace SP.Core.Model
         /// Округление
         /// 1 - вниз, 2 - вверх, 3 - до ближайшего целого
         /// </summary>
-        public int Rounding { get; set; }
+        public Rounding Rounding { get; set; }
         /// <summary>
         /// План потребности
         /// </summary>

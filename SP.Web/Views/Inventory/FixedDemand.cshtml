@@ -32,7 +32,7 @@
                     <th></th>
                     <th class="exportable-column">Код Номенклатуры</th>
                     <th class="exportable-column">Наименование</th>
-                    <th class="exportable-column">АЗС</th>
+                    <th class="exportable-column">Объект</th>
                     <th class="exportable-column">Остаток</th>
                     <th class="exportable-column">Ед.изм.</th>
                     <th class="exportable-column">Фикс. значение</th>
@@ -80,8 +80,8 @@
                                 <a title="Снять все" onclick="chosenDeselectAll('TerritoryList');"><img src="/images/x.svg" class="icon-button" /></a>
                             </div>
                             <div class="form-group row col-12">
-                                <label for="GasStationList" class="control-label zero-gutters col-3">АЗС</label>
-                                <select id="GasStationList" multiple="multiple" data-placeholder="Выберите АЗС..."></select>
+                                <label for="GasStationList" class="control-label zero-gutters col-3">Объект</label>
+                                <select id="GasStationList" multiple="multiple" data-placeholder="Выберите объект..."></select>
                                 <a title="Выделить все" onclick="chosenSelectAll('GasStationList');"><img src="/images/check-all.svg" class="icon-button" /></a>
                                 <a title="Снять все" onclick="chosenDeselectAll('GasStationList');"><img src="/images/x.svg" class="icon-button" /></a>
                             </div>
@@ -199,6 +199,7 @@
                     url: '/Inventory/LoadDemandList',
                     type: 'POST',
                     data: function(d) {
+                        d.objtype = $('#ObjectTypeList').val();
                         d.regions = $('#RegionList').val().join();
                         d.terrs = $('#TerritoryList').val().join();
                         d.stations = $('#GasStationList').val().join();
