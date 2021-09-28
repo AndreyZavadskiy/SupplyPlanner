@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using SP.Core.Log;
 using SP.Data;
 using SP.Service.Services;
 
@@ -9,6 +10,7 @@ namespace SP.Web.Utility
     public interface IAppLogger
     {
         Task<bool> SaveActionAsync(string name, DateTime date, string category, string description);
+        Task<bool> SaveLogRecord(ChangeLog changeLogRecord);
     }
 
     /// <summary>
@@ -37,6 +39,11 @@ namespace SP.Web.Utility
         {
             var user = await _userManager.FindByNameAsync(name);
             return await _logService.SaveActionAsync(user.Id, date, category, description);
+        }
+
+        public async Task<bool> SaveLogRecord(ChangeLog changeLogRecord)
+        {
+            return await _logService.SaveLogRecordAsync(changeLogRecord);
         }
     }
 }

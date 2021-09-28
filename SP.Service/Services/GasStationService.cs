@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SP.Core.Model;
@@ -16,7 +17,14 @@ namespace SP.Service.Services
         Task<IEnumerable<GasStationListItem>> GetGasStationListAsync(int[] regions, int[] territories, int? personId);
         Task<IEnumerable<GasStationIdentification>> GetGasStationIdentificationListAsync();
         Task<GasStationModel> GetGasStationAsync(int id);
-        Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveGasStationAsync(GasStationModel model);
+        Task<(bool Success, int? Id, IEnumerable<string> Errors, string Previous, string Next)> SaveGasStationAsync(GasStationModel model);
+    }
+
+    class ChangeItem
+    {
+        public string PreviousValue {  get; set; }
+        public string NextValue { get; set; }
+        public string Name { get; set; }
     }
 
     public class GasStationService : IGasStationService
@@ -215,18 +223,27 @@ namespace SP.Service.Services
             return model;
         }
 
-        public async Task<(bool Success, int? Id, IEnumerable<string> Errors)> SaveGasStationAsync(GasStationModel model)
+        public async Task<(bool Success, int? Id, IEnumerable<string> Errors, string Previous, string Next)> SaveGasStationAsync(GasStationModel model)
         {
             var dbStation = await _context.GasStations.FindAsync(model.Id);
             if (dbStation == null)
             {
-                return await InsertStationAsync(model);
+                var insertResult = await InsertStationAsync(model);
+                return (insertResult.Success, insertResult.Id, insertResult.Errors, null, null);
             }
 
-            return await UpdateStationAsync(dbStation, model);
+            var updateResult = await UpdateStationAsync(dbStation, model);
+            if (updateResult.Changes == null || updateResult.Changes.Count() == 0)
+            {
+                return (updateResult.Success, updateResult.Id, updateResult.Errors, null, null);
+            }
+
+            string previous = string.Join("; ", updateResult.Changes.Select(x => $"{x.Name}: {x.PreviousValue}"));
+            string next = string.Join("; ", updateResult.Changes.Select(x => $"{x.Name}: {x.NextValue}"));
+            return (updateResult.Success, updateResult.Id, updateResult.Errors, previous, next);
         }
 
-        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> InsertStationAsync(GasStationModel model)
+        private async Task<(bool Success, int? Id, IEnumerable<string> Errors, List<ChangeItem> Changes)> InsertStationAsync(GasStationModel model)
         {
             var errors = new List<string>();
             try
@@ -286,7 +303,7 @@ namespace SP.Service.Services
                 await _context.SaveChangesAsync();
                 //_logger.LogInformation("User created a new account with password.");
 
-                return (true, gasStation.Id, null);
+                return (true, gasStation.Id, null, null);
             }
             catch (DbUpdateException ex)
             {
@@ -299,12 +316,14 @@ namespace SP.Service.Services
                 errors.Add("Ошибка создания персоны в системе.");
             }
 
-            return (false, null, errors);
+            return (false, null, errors, null);
         }
 
-        private async Task<(bool Success, int? Id, IEnumerable<string> Errors)> UpdateStationAsync(GasStation station, GasStationModel model)
+        private async Task<(bool Success, int? Id, IEnumerable<string> Errors, List<ChangeItem> Changes)> UpdateStationAsync(GasStation station, GasStationModel model)
         {
             var errors = new List<string>();
+
+            var changes = GetChanges(station, model);
 
             try
             {
@@ -359,7 +378,7 @@ namespace SP.Service.Services
                 _context.GasStations.Update(station);
                 await _context.SaveChangesAsync();
 
-                return (true, model.Id, null);
+                return (true, model.Id, null, changes);
             }
             catch (DbUpdateException ex)
             {
@@ -372,7 +391,105 @@ namespace SP.Service.Services
                 errors.Add("Ошибка сохранения персоны в системе.");
             }
 
-            return (false, model.Id, errors);
+            return (false, model.Id, errors, null);
+        }
+
+        private List<ChangeItem> GetChanges(GasStation station, GasStationModel model)
+        {
+            var changeList = new List<ChangeItem>();
+
+            GetFieldChanges(changeList, station.Code, model.Code, "Код");
+            GetFieldChanges(changeList, station.CodeKSSS, model.CodeKSSS, "Код КССС");
+            GetFieldChanges(changeList, station.CodeSAP, model.CodeSAP, "Код SAP");
+            GetFieldChanges(changeList, station.StationNumber, model.StationNumber, "Номер АЗС");
+            GetFieldChanges(changeList, station.TerritoryId, model.TerritoryId, "Территория");
+            GetFieldChanges(changeList, station.SettlementId, model.SettlementId, "Населенный пункт");
+            GetFieldChanges(changeList, station.Address, model.Address, "Адрес");
+            GetFieldChanges(changeList, station.StationLocationId, model.StationLocationId, "Месторасположение");
+            GetFieldChanges(changeList, station.StationStatusId, model.StationStatusId, "Статус");
+            GetFieldChanges(changeList, station.SegmentId, model.SegmentId, "Сегмент");
+            GetFieldChanges(changeList, station.ServiceLevelId, model.ServiceLevelId, "Кластер (уровень сервиса)");
+            GetFieldChanges(changeList, station.OperatorRoomFormatId, model.OperatorRoomFormatId, "Формат операторной");
+            GetFieldChanges(changeList, station.ManagementSystemId, model.ManagementSystemId, "Система управления");
+            GetFieldChanges(changeList, station.TradingHallOperatingModeId, model.TradingHallOperatingModeId, "Режим работы торгового зала");
+            GetFieldChanges(changeList, station.ClientRestroomId, model.ClientRestroomId, "Санузел для клиентов");
+            GetFieldChanges(changeList, station.CashboxLocationId, model.CashboxLocationId, "Расчетно-кассовый узел");
+            GetFieldChanges(changeList, station.TradingHallSizeId, model.TradingHallSizeId, "Размер торгового зала");
+            GetFieldChanges(changeList, station.CashboxTotal, model.CashboxTotal, "Количество АРМ (касс)");
+            GetFieldChanges(changeList, station.ManagerArmTotal, model.ManagerArmTotal, "Количество АРМ менеджера");
+            GetFieldChanges(changeList, station.PersonnelPerDay, model.PersonnelPerDay, "Количество персонала в сутки");
+            GetFieldChanges(changeList, station.FuelDispenserTotal, model.FuelDispenserTotal, "Количество ТРК");
+            GetFieldChanges(changeList, station.FuelDispenserPostTotal, model.FuelDispenserPostTotal, "Количество постов ТРК");
+            GetFieldChanges(changeList, station.FuelDispenserPostWithoutShedTotal, model.FuelDispenserPostWithoutShedTotal, "Количество постов ТРК без навеса");
+            GetFieldChanges(changeList, station.ClientRestroomTotal, model.ClientRestroomTotal, "Количество сан.комнат для клиентов");
+            GetFieldChanges(changeList, station.ClientTambourTotal, model.ClientTambourTotal, "Количество тамбуров для клиентов");
+            GetFieldChanges(changeList, station.ClientSinkTotal, model.ClientSinkTotal, "Количество раковин для клиентов");
+            GetFieldChanges(changeList, station.TradingHallArea, model.TradingHallArea, "Площадь торгового зала");
+            GetFieldChanges(changeList, station.CashRegisterTapeId, model.CashRegisterTapeId, "Вид термоленты");
+            GetFieldChanges(changeList, station.ChequePerDay, model.ChequePerDay, "Среднее количество чеков в сутки");
+            GetFieldChanges(changeList, station.RevenueAvg, model.RevenueAvg, "Выручка в месяц");
+            GetFieldChanges(changeList, station.HasJointRestroomEntrance, model.HasJointRestroomEntrance, "Общий тамбур с раковиной");
+            GetFieldChanges(changeList, station.HasSibilla, model.HasSibilla, "Сибилла");
+            GetFieldChanges(changeList, station.HasBakery, model.HasBakery, "Выпечка");
+            GetFieldChanges(changeList, station.HasCakes, model.HasCakes, "Торты");
+            GetFieldChanges(changeList, station.DeepFryTotal, model.DeepFryTotal, "Количество фритюрных аппаратов");
+            GetFieldChanges(changeList, station.HasMarmite, model.HasMarmite, "Мармит");
+            GetFieldChanges(changeList, station.HasKitchen, model.HasKitchen, "Кухня");
+            GetFieldChanges(changeList, station.CoffeeMachineTotal, model.CoffeeMachineTotal, "Количество кофемашин");
+            GetFieldChanges(changeList, station.DishWashingMachineTotal, model.DishWashingMachineTotal, "Количество посудомоечных машин");
+            GetFieldChanges(changeList, station.RepresentativenessFactor, model.RepresentativenessFactor, "Имиджевый коэффициент");
+            GetFieldChanges(changeList, station.RepresentativenessFactor3Quarter, model.RepresentativenessFactor3Quarter, "Имиджевый коэффициент 3 кв.");
+            GetFieldChanges(changeList, station.MerrychefTotal, model.MerrychefTotal, "Количество печей Меришеф");
+            GetFieldChanges(changeList, station.DayCleaningTotal, model.DayCleaningTotal, "Уборка в день");
+            GetFieldChanges(changeList, station.NightCleaningTotal, model.NightCleaningTotal, "Уборка в ночь");
+            GetFieldChanges(changeList, station.DayRefuelingTotal, model.DayRefuelingTotal, "Расстановка заправки в день");
+            GetFieldChanges(changeList, station.NightRefuelingTotal, model.NightRefuelingTotal, "Расстановка заправки в ночь");
+            GetFieldChanges(changeList, station.HasFuelCardProgram, model.HasFuelCardProgram, "Топливные карты");
+
+            return changeList;
+        }
+
+        private void GetFieldChanges(List<ChangeItem> changeList, string prev, string next, string fieldName)
+        {
+            if (string.IsNullOrWhiteSpace(prev))
+                prev = string.Empty;
+            if (string.IsNullOrWhiteSpace(next))
+                next = string.Empty;
+            if (prev == next)
+                return;
+
+            changeList.Add(new ChangeItem { 
+                PreviousValue = prev,
+                NextValue = next,
+                Name = fieldName,
+            });
+        }
+
+        private void GetFieldChanges(List<ChangeItem> changeList, int prev, int next, string fieldName)
+        {
+            GetFieldChanges(changeList, prev.ToString(), next.ToString(), fieldName);
+        }
+
+        private void GetFieldChanges(List<ChangeItem> changeList, int? prev, int? next, string fieldName)
+        {
+            GetFieldChanges(changeList, prev?.ToString(), next?.ToString(), fieldName);
+        }
+
+        private void GetFieldChanges(List<ChangeItem> changeList, decimal prev, decimal next, string fieldName)
+        {
+            GetFieldChanges(changeList, prev.ToString(), next.ToString(), fieldName);
+        }
+
+        private void GetFieldChanges(List<ChangeItem> changeList, decimal? prev, decimal? next, string fieldName)
+        {
+            GetFieldChanges(changeList, prev?.ToString(), next?.ToString(), fieldName);
+        }
+
+        private void GetFieldChanges(List<ChangeItem> changeList, bool prev, bool next, string fieldName)
+        {
+            string prevText = prev ? "да" : "нет";
+            string nextText = next ? "да" : "нет";
+            GetFieldChanges(changeList, prevText, nextText, fieldName);
         }
     }
 }
