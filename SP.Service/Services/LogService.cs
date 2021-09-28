@@ -22,6 +22,7 @@ namespace SP.Service.Services
             int? nom, DateTime? start, DateTime? end);
         Task<IEnumerable<OrderDetailReportListItem>> GetOrderListAsync(int? region, int? terr, int? station, int? group,
             int? nom, DateTime? start, DateTime? end);
+        Task<bool> SaveLogRecordAsync(ChangeLog changeLogRecord);
     }
 
     public class LogService : ILogService
@@ -325,6 +326,14 @@ namespace SP.Service.Services
                 .ToArrayAsync();
 
             return list;
+        }
+
+        public async Task<bool> SaveLogRecordAsync(ChangeLog changeLogRecord)
+        {
+            await _context.ChangeLogs.AddAsync(changeLogRecord);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
     }
 }

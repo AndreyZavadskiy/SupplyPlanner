@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using SP.Core.Log;
 using SP.Core.Master;
 using SP.Data;
 using SP.Service.Models;
@@ -261,8 +262,26 @@ namespace SP.Web.Controllers
                 return await PrepareGasStationView(model, regions, terrs);
             }
 
-            await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "gasstation",
-                $"{actionVerb} запись АЗС {model.StationNumber}");
+            if (model.Id == 0 || !string.IsNullOrWhiteSpace(result.Next))
+            {
+                await _appLogger.SaveActionAsync(User.Identity.Name, DateTime.Now, "gasstation",
+                    $"{actionVerb} запись АЗС {model.StationNumber}");
+
+                var user = await _userManager.GetUserAsync(User);
+                var person = await _masterService.GetPersonAsync(user.Id);
+
+                var changeLogRecord = new ChangeLog
+                {
+                    PersonId = person.Id,
+                    ChangeDate = DateTime.Now,
+                    EntityName = "GasStation",
+                    ActionName = "SaveObject",
+                    RecordId = result.Id == null ? 0 : (long)result.Id.Value,
+                    OldValue = $"АЗС {model.StationNumber} {result.Previous}",
+                    NewValue = $"АЗС {model.StationNumber} {result.Next}",
+                };
+                await _appLogger.SaveLogRecord(changeLogRecord);
+            }
 
             if (!string.IsNullOrWhiteSpace(actionName))
             {
