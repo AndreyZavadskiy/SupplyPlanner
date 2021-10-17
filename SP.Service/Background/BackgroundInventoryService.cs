@@ -913,7 +913,9 @@ namespace SP.Service.Background
                 { "ServicingGasStations", gasStation.ServicingGasStationTotal },
                 { "WorkingRooms", gasStation.WorkingRoomTotal },
                 { "Sindy", gasStation.HasSindyAnalyzer },
-                { "Spectroscan", gasStation.HasSpectroscan }
+                { "Spectroscan", gasStation.HasSpectroscan },
+                { "ElectroLabSpecialists", gasStation.SpecialistTotalForElectricalTest},
+                { "ElectroTestsPerYear", gasStation.ElectricalTestPerYear }
             };
 
             var lowered = variables.Select(x => new
