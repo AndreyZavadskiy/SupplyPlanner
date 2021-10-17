@@ -56,5 +56,17 @@ namespace SP.Service.Models
         /// Количество печатей/штемпелей
         /// </summary>
         public int? StampTotal { get; set; }
+        /// <summary>
+        /// Количество специалистов проводящих испытание электрооборудования на объекте (состав бригады)
+        /// </summary>
+        public int? SpecialistTotalForElectricalTest { get; set; }
+        /// <summary>
+        /// Количество объектов испытаний электрооборудования в год
+        /// </summary>
+        public int? ElectricalTestPerYear { get; set; }
+        /// <summary>
+        /// Режим работы лаборатории
+        /// </summary>
+        public string LaboratoryWorkSchedule { get; set; }
     }
 }

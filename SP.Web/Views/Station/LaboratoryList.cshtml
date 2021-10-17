@@ -24,6 +24,9 @@
                     <th class="exportable-column">Наличие анализатора cпектроскана S</th>
                     <th class="exportable-column">Наличие анализатора Sindy</th>
                     <th class="exportable-column">Количество печатей/штемпелей</th>
+                    <th class="exportable-column">Режим работы</th>
+                    <th class="exportable-column">Количество специалистов, проводящих <br />испытание электрооборудования на объекте</th>
+                    <th class="exportable-column">Количество объектов испытаний <br />электрооборудования в год</th>
                 </tr>
             </thead>
         </table>
@@ -110,7 +113,10 @@
                             return full.hasSindyAnalyzer ? 'есть' : '';
                         }
                     },
-                    { data: 'stampTotal' }
+                    { data: 'stampTotal' },
+                    { data: 'laboratoryWorkSchedule' },
+                    { data: 'specialistTotalForElectricalTest' },
+                    { data: 'electricalTestPerYear' }
                 ],
                 columnDefs:
                 [

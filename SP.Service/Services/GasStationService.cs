@@ -762,6 +762,9 @@ namespace SP.Service.Services
                     HasSindyAnalyzer = x.HasSindyAnalyzer,
                     RestroomTotal = x.RestroomTotal,
                     StampTotal = x.StampTotal,
+                    SpecialistTotalForElectricalTest = x.SpecialistTotalForElectricalTest,
+                    ElectricalTestPerYear = x.ElectricalTestPerYear,
+                    LaboratoryWorkSchedule = x.LaboratoryWorkSchedule,
                 })
                 .ToArray();
 
@@ -792,6 +795,9 @@ namespace SP.Service.Services
                 HasSindyAnalyzer = station.HasSindyAnalyzer,
                 RestroomTotal = station.RestroomTotal,
                 StampTotal = station.StampTotal,
+                SpecialistTotalForElectricalTest = station.SpecialistTotalForElectricalTest,
+                ElectricalTestPerYear = station.ElectricalTestPerYear,
+                LaboratoryWorkSchedule = station.LaboratoryWorkSchedule,
             };
 
             return model;
@@ -828,6 +834,9 @@ namespace SP.Service.Services
                     HasSindyAnalyzer = model.HasSindyAnalyzer,
                     RestroomTotal = model.RestroomTotal,
                     StampTotal = model.StampTotal,
+                    SpecialistTotalForElectricalTest = model.SpecialistTotalForElectricalTest,
+                    ElectricalTestPerYear = model.ElectricalTestPerYear,
+                    LaboratoryWorkSchedule = model.LaboratoryWorkSchedule,
                 };
 
                 _context.GasStations.Add(gasStation);
@@ -869,6 +878,9 @@ namespace SP.Service.Services
                 station.HasSindyAnalyzer = model.HasSindyAnalyzer;
                 station.RestroomTotal = model.RestroomTotal;
                 station.StampTotal = model.StampTotal;
+                station.SpecialistTotalForElectricalTest = model.SpecialistTotalForElectricalTest;
+                station.ElectricalTestPerYear = model.ElectricalTestPerYear;
+                station.LaboratoryWorkSchedule = model.LaboratoryWorkSchedule;
 
                 _context.GasStations.Update(station);
                 await _context.SaveChangesAsync();

@@ -74,5 +74,20 @@ namespace SP.Service.Models
         /// </summary>
         [DisplayName("Количество печатей/штемпелей")]
         public int? StampTotal { get; set; }
+        /// <summary>
+        /// Количество специалистов, проводящих испытание электрооборудования на объекте (состав бригады)
+        /// </summary>
+        [DisplayName("Количество специалистов, проводящих испытание электрооборудования на объекте")]
+        public int? SpecialistTotalForElectricalTest { get; set; }
+        /// <summary>
+        /// Количество объектов испытаний электрооборудования в год
+        /// </summary>
+        [DisplayName("Количество объектов испытаний электрооборудования в год")]
+        public int? ElectricalTestPerYear { get; set; }
+        /// <summary>
+        /// Режим работы лаборатории
+        /// </summary>
+        [DisplayName("Режим работы лаборатории")]
+        public string LaboratoryWorkSchedule { get; set; }
     }
 }
