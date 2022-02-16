@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using SP.Core.Master;
 using SP.Core.Model;
 using SP.Data;
 using SP.Service.Models;
@@ -423,18 +424,18 @@ namespace SP.Service.Services
             GetFieldChanges(changeList, station.CodeSAP, model.CodeSAP, "Код SAP");
             GetFieldChanges(changeList, station.StationNumber, model.StationNumber, "Номер АЗС");
             GetFieldChanges(changeList, station.TerritoryId, model.TerritoryId, "Территория");
-            GetFieldChanges(changeList, station.SettlementId, model.SettlementId, "Населенный пункт");
+            GetDictionaryFieldChanges<Settlement>(changeList, station.SettlementId, model.SettlementId, "Населенный пункт");
             GetFieldChanges(changeList, station.Address, model.Address, "Адрес");
-            GetFieldChanges(changeList, station.StationLocationId, model.StationLocationId, "Месторасположение");
-            GetFieldChanges(changeList, station.StationStatusId, model.StationStatusId, "Статус");
-            GetFieldChanges(changeList, station.SegmentId, model.SegmentId, "Сегмент");
-            GetFieldChanges(changeList, station.ServiceLevelId, model.ServiceLevelId, "Кластер (уровень сервиса)");
-            GetFieldChanges(changeList, station.OperatorRoomFormatId, model.OperatorRoomFormatId, "Формат операторной");
-            GetFieldChanges(changeList, station.ManagementSystemId, model.ManagementSystemId, "Система управления");
-            GetFieldChanges(changeList, station.TradingHallOperatingModeId, model.TradingHallOperatingModeId, "Режим работы торгового зала");
-            GetFieldChanges(changeList, station.ClientRestroomId, model.ClientRestroomId, "Санузел для клиентов");
-            GetFieldChanges(changeList, station.CashboxLocationId, model.CashboxLocationId, "Расчетно-кассовый узел");
-            GetFieldChanges(changeList, station.TradingHallSizeId, model.TradingHallSizeId, "Размер торгового зала");
+            GetDictionaryFieldChanges<StationLocation>(changeList, station.StationLocationId, model.StationLocationId, "Месторасположение");
+            GetDictionaryFieldChanges<StationStatus>(changeList, station.StationStatusId, model.StationStatusId, "Статус");
+            GetDictionaryFieldChanges<Segment>(changeList, station.SegmentId, model.SegmentId, "Сегмент");
+            GetDictionaryFieldChanges<ServiceLevel>(changeList, station.ServiceLevelId, model.ServiceLevelId, "Кластер (уровень сервиса)");
+            GetDictionaryFieldChanges<OperatorRoomFormat>(changeList, station.OperatorRoomFormatId, model.OperatorRoomFormatId, "Формат операторной");
+            GetDictionaryFieldChanges<ManagementSystem>(changeList, station.ManagementSystemId, model.ManagementSystemId, "Система управления");
+            GetDictionaryFieldChanges<TradingHallOperatingMode>(changeList, station.TradingHallOperatingModeId, model.TradingHallOperatingModeId, "Режим работы торгового зала");
+            GetDictionaryFieldChanges<ClientRestroom>(changeList, station.ClientRestroomId, model.ClientRestroomId, "Санузел для клиентов");
+            GetDictionaryFieldChanges<CashboxLocation>(changeList, station.CashboxLocationId, model.CashboxLocationId, "Расчетно-кассовый узел");
+            GetDictionaryFieldChanges<TradingHallSize>(changeList, station.TradingHallSizeId, model.TradingHallSizeId, "Размер торгового зала");
             GetFieldChanges(changeList, station.CashboxTotal, model.CashboxTotal, "Количество АРМ (касс)");
             GetFieldChanges(changeList, station.ManagerArmTotal, model.ManagerArmTotal, "Количество АРМ менеджера");
             GetFieldChanges(changeList, station.PersonnelPerDay, model.PersonnelPerDay, "Количество персонала в сутки");
@@ -445,7 +446,7 @@ namespace SP.Service.Services
             GetFieldChanges(changeList, station.ClientTambourTotal, model.ClientTambourTotal, "Количество тамбуров для клиентов");
             GetFieldChanges(changeList, station.ClientSinkTotal, model.ClientSinkTotal, "Количество раковин для клиентов");
             GetFieldChanges(changeList, station.TradingHallArea, model.TradingHallArea, "Площадь торгового зала");
-            GetFieldChanges(changeList, station.CashRegisterTapeId, model.CashRegisterTapeId, "Вид термоленты");
+            GetDictionaryFieldChanges<CashRegisterTape>(changeList, station.CashRegisterTapeId, model.CashRegisterTapeId, "Вид термоленты");
             GetFieldChanges(changeList, station.ChequePerDay, model.ChequePerDay, "Среднее количество чеков в сутки");
             GetFieldChanges(changeList, station.RevenueAvg, model.RevenueAvg, "Выручка в месяц");
             GetFieldChanges(changeList, station.HasJointRestroomEntrance, model.HasJointRestroomEntrance, "Общий тамбур с раковиной");
@@ -1019,5 +1020,38 @@ namespace SP.Service.Services
         }
 
         #endregion
+
+        private void GetDictionaryFieldChanges<T>(List<ChangeItem> changeList, int? prev, int? next, string fieldName)
+            where T: DictionaryItem
+        {
+            if (prev == null && next == null)
+                return;
+
+            string prevValue = string.Empty, 
+                nextValue = string.Empty;
+            if (prev != null)
+            {
+                var prevRecord = _context.Find<T>(prev);
+                if (prevRecord != null)
+                    prevValue = prevRecord.Name;
+            }
+
+            if (next != null)
+            {
+                var nextRecord = _context.Find<T>(next);
+                if (nextRecord != null)
+                    nextValue = nextRecord.Name;
+            }
+
+            if (prevValue == nextValue)
+                return;
+
+            changeList.Add(new ChangeItem
+            {
+                PreviousValue = prevValue,
+                NextValue = nextValue,
+                Name = fieldName,
+            });
+        }
     }
 }

@@ -86,7 +86,7 @@ namespace SP.Service.Background
                 foreach (var file in files)
                 {
                     string stepMessageTemplate = "Парсинг файла [" + fileCount + "/" + totalFiles + "]: \"{0}\", лист: \"{1}\"";
-                    List<ParsedInventory> parsedData = null;
+                    SortedList<InventoryParsingKey, ParsedInventory> parsedData = null;
                     // парсинг
                     using (var p = new ExcelPackage(file.FileInfo))
                     {
@@ -116,7 +116,7 @@ namespace SP.Service.Background
 
                             sw.Start();
                             int lastRow = ws.Dimension.End.Row;
-                            parsedData = new List<ParsedInventory>(lastRow - headerRow);
+                            parsedData = new SortedList<InventoryParsingKey, ParsedInventory>(lastRow - headerRow);
                             // извлекаем данные из листа Excel и сохраняем в списке
                             for (int r = headerRow + 1; r <= lastRow; r++)
                             {
@@ -136,7 +136,20 @@ namespace SP.Service.Background
                                             Quantity = qty
                                         };
 
-                                        parsedData.Add(parsedInventory);
+                                        var key = new InventoryParsingKey
+                                        {
+                                            StationCodeSAP = parsedRowData["StationCodeSAP"],
+                                            InventoryCode = parsedRowData["InventoryCode"],
+                                        };
+
+                                        if (parsedData.ContainsKey(key))
+                                        {
+                                            parsedData[key].Quantity += qty;
+                                        }
+                                        else
+                                        {
+                                            parsedData.Add(key, parsedInventory);
+                                        }
                                     }
                                 }
 
@@ -155,12 +168,12 @@ namespace SP.Service.Background
                             sw.Restart();
                             var dataWithStation = parsedData
                                 .GroupJoin(stations,
-                                    d => d.StationCodeSAP,
+                                    d => d.Value.StationCodeSAP,
                                     s => s.CodeSAP,
                                     (d, s) => new
                                     {
-                                        Data = d,
-                                        Station = s
+                                        Station = s,
+                                        Data = d.Value,
                                     })
                                 .SelectMany(
                                     x => x.Station.DefaultIfEmpty(),
