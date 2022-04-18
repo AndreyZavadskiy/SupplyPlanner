@@ -81,7 +81,6 @@ function changeStationHandler(e, args) {
 
 function changeObjectType(preventChangeTrigger) {
     return new Promise(function (resolve, reject) {
-        debugger;
         if (!preventChangeTrigger) {
             chosenDeselectAll('RegionList');
             chosenDeselectAll('NomenclatureList');
@@ -90,6 +89,7 @@ function changeObjectType(preventChangeTrigger) {
         if (objectType == 1) {
             $('#RegionRow').show();
             $('#TerritoryRow').show();
+            loadNomenclatureGroup();
             storeFilterState();
             resolve(true);
             return;
@@ -108,7 +108,6 @@ function changeObjectType(preventChangeTrigger) {
         $.post(url,
             requestData,
             function (data) {
-                debugger;
                 stationList.empty();
                 $.each(data,
                     function (index, element) {
@@ -125,7 +124,29 @@ function changeObjectType(preventChangeTrigger) {
                 storeFilterState();
                 resolve(true);
             });
+
+        loadNomenclatureGroup();
+
         console.log('finishing changeObjectType');
+    });
+}
+
+function loadNomenclatureGroup() {
+    var url = '/NomenclatureGroup/ListByOjectType?type=' + $('#ObjectTypeList').val();
+    $.get(url, function (response) {
+        var selected = $('#NomenclatureGroupList').val();
+        $('#NomenclatureGroupList').empty();
+        $.each(response.data, function (index, element) {
+            $('#NomenclatureGroupList').append($('<option>',
+                {
+                    value: element.id,
+                    text: element.name
+                }));
+        });
+        $.each(selected, function (index, element) {
+            $('#NomenclatureGroupList option[value="' + element + '"]').prop('selected', true);
+        });
+        $('#NomenclatureGroupList').trigger("chosen:updated");
     });
 }
 

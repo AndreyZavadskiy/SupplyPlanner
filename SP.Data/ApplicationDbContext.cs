@@ -66,6 +66,7 @@ namespace SP.Data
         public DbSet<Inventory> Inventories { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
+        public DbSet<ObjectTypeNomenclatureGroup> ObjectTypeNomenclatureGroups { get; set; }
 
         // справочники
         public DbSet<CashboxLocation> CashboxLocations { get; set; }

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using SP.Core.Enum;
 using SP.Core.Master;
 using SP.Core.Model;
 using SP.Data;
@@ -33,6 +34,9 @@ namespace SP.Service.Services
         Task<Person> GetPersonAsync(string aspNetUserId);
 
         Task<IEnumerable<DictionaryListItem>> GetNomenclatureGroupForShortUse();
+
+        Task<IEnumerable<int>> GetNomenclatureGroupsAsync(ObjectType objectType);
+        Task<(bool Success, IEnumerable<string> Errors)> SaveNomenclatureGroupsAsync(ObjectType objectType, IEnumerable<int> groupIdList);
     }
 
     public class MasterService : IMasterService
@@ -394,6 +398,70 @@ namespace SP.Service.Services
                 .OrderBy(x => x.Name);
 
             return result;
+        }
+
+        public async Task<IEnumerable<int>> GetNomenclatureGroupsAsync(ObjectType objectType)
+        {
+            var result = await _context.ObjectTypeNomenclatureGroups
+                .Where(x => x.ObjectType == objectType)
+                .Select(x => x.NomenclatureGroupId)
+                .ToArrayAsync();
+
+            return result;
+        }
+
+        public async Task<(bool Success, IEnumerable<string> Errors)> SaveNomenclatureGroupsAsync(ObjectType objectType, IEnumerable<int> groupIdList)
+        {
+            if (groupIdList == null)
+                groupIdList = new int[0];
+
+            var errors = new List<string>();
+            try
+            {
+                var existingGroups = await _context.ObjectTypeNomenclatureGroups
+                    .Where(x => x.ObjectType == objectType)
+                    .ToArrayAsync();
+
+                var groupIdsToDelete = existingGroups.Select(x => x.NomenclatureGroupId)
+                    .Except(groupIdList)
+                    .ToArray();
+                if (groupIdsToDelete.Any())
+                {
+                    var groupsToDelete = existingGroups.Where(x => groupIdsToDelete.Contains(x.NomenclatureGroupId));
+                    _context.ObjectTypeNomenclatureGroups.RemoveRange(groupsToDelete);
+                }
+
+                var groupIdsToAdd = groupIdList
+                    .Except(existingGroups.Select(x => x.NomenclatureGroupId))
+                    .ToArray();
+                if (groupIdsToAdd.Any())
+                {
+                    foreach (var id in groupIdsToAdd)
+                    {
+                        _context.ObjectTypeNomenclatureGroups.Add(new ObjectTypeNomenclatureGroup 
+                        { 
+                            ObjectType = objectType,
+                            NomenclatureGroupId = id,
+                        });
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                return (true, null);
+            }
+            catch (DbUpdateException ex)
+            {
+                Debug.WriteLine(ex);
+                errors.Add("Невозможно сохранить изменения в базе данных. Если ошибка повторится, обратитесь в тех.поддержку.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                errors.Add("Ошибка сохранения групп номенклатуры по типу объекта в системе.");
+            }
+
+            return (false, errors);
         }
     }
 }

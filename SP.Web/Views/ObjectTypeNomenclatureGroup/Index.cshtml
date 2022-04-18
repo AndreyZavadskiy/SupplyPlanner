@@ -1,0 +1,78 @@
+﻿@{
+    ViewData["Title"] = "ObjectTypeNomenclatureGroup";
+    bool isAdminRole = this.User.IsInRole("Administrator");
+}
+
+<h1>Группы номенклатуры по типам объектов</h1>
+
+<section>
+    <div class="col-xl-9">
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-12">
+                <label for="ObjectTypeList" class="control-label zero-gutters col-3">Тип объекта</label>
+                <select id="ObjectTypeList" class="col-4" data-placeholder="Выберите тип объекта" 
+                    asp-items="ViewBag.ObjectTypeList" 
+                    onchange="changeSelectedGroups()">
+                </select>
+            </div>
+            <div class="form-group row col-12">
+                <label for="NomenclatureGroupList" class="control-label zero-gutters col-3">Группы номенклатуры</label>
+                <select id="NomenclatureGroupList" multiple="multiple" data-placeholder="Выберите группы..."
+                        asp-items="ViewBag.NomenclatureGroupList">
+                </select>
+                <a title="Выделить все" onclick="chosenSelectAll('NomenclatureGroupList');"><img src="/images/check-all.svg" class="icon-button" /></a>
+                <a title="Снять все" onclick="chosenDeselectAll('NomenclatureGroupList');"><img src="/images/x.svg" class="icon-button" /></a>
+            </div>
+        </div>
+        <div class="modal-footer form-row button-row">
+            @if (isAdminRole)
+            {
+                <button type="button" class="btn btn-primary" onclick="postForm();">Сохранить</button>
+            }
+        </div>
+    </div>
+</section>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function () {
+            $('#NomenclatureGroupList').chosen({ width: '500px' });
+            changeSelectedGroups();
+        });
+
+        function changeSelectedGroups() {
+            chosenDeselectAll('NomenclatureGroupList');
+            var url = '/ObjectTypeNomenclatureGroup/LoadGroups?type=' + $('#ObjectTypeList').val();
+            $.get(url, function(data) {
+                $.each(data,
+                    function (index, element) {
+                        $('#NomenclatureGroupList option[value="' + element + '"]').prop('selected', true);
+                    }
+                );
+                $('#NomenclatureGroupList').trigger("chosen:updated");
+            });
+        }
+
+        function postForm() {
+            var url = '/ObjectTypeNomenclatureGroup/Save';
+            var postData = {
+                objectType: $('#ObjectTypeList').val(),
+                nomenclatureGroups: $('#NomenclatureGroupList').val()
+            };
+            $.post(url, postData, function (data) {
+                // TODO: set hasChanges flag
+            });
+        }
+
+        function chosenSelectAll(controlId) {
+            $('#' + controlId + ' option').prop('selected', true);
+            $('#' + controlId).trigger("chosen:updated");
+        }
+
+        function chosenDeselectAll(controlId) {
+            $('#' + controlId + ' option').prop('selected', false);
+            $('#' + controlId).trigger("chosen:updated");
+        }
+    </script>
+}

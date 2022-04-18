@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -16,6 +11,11 @@ using SP.Service.Models;
 using SP.Service.Services;
 using SP.Web.Utility;
 using SP.Web.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SP.Web.Controllers
 {
@@ -281,7 +281,7 @@ namespace SP.Web.Controllers
         /// <returns></returns>
         private async Task LoadEssentialDictionaries()
         {
-            ViewData["ObjectTypeList"] = GetObjectTypeList();
+            ViewData["ObjectTypeList"] = DictionaryUtility.GetObjectTypeList();
 
             var regions = await _masterService.SelectRegionAsync();
             var list = new SelectList(regions, "Id", "Name").ToList();
@@ -290,19 +290,6 @@ namespace SP.Web.Controllers
             var nomenclatureGroups = await _masterService.GetDictionaryListAsync<NomenclatureGroup>();
             var groupList = new SelectList(nomenclatureGroups, "Id", "Name").ToList();
             ViewData["NomenclatureGroupList"] = groupList;
-        }
-
-        private List<SelectListItem> GetObjectTypeList()
-        {
-            var list = new List<SelectListItem>
-            {
-                new SelectListItem("АЗС", ((int)Core.Enum.ObjectType.GasStation).ToString()),
-                new SelectListItem("Нефтебазы", ((int)Core.Enum.ObjectType.FuelBase).ToString()),
-                new SelectListItem("Офисы", ((int)Core.Enum.ObjectType.Office).ToString()),
-                new SelectListItem("Лаборатории", ((int)Core.Enum.ObjectType.Laboratory).ToString()),
-            };
-
-            return list;
         }
 
         /// <summary>
@@ -361,7 +348,7 @@ namespace SP.Web.Controllers
                 ProcessingDate = DateTime.Now
             };
 
-            ViewData["ObjectTypeList"] = GetObjectTypeList();
+            ViewData["ObjectTypeList"] = DictionaryUtility.GetObjectTypeList();
 
             var regions = await _masterService.SelectRegionAsync();
             var list = new SelectList(regions, "Id", "Name").ToList();

@@ -177,6 +177,7 @@
             $('#GasStationList').chosen({ width: '450px' });
             $('#NomenclatureGroupList').chosen({ width: '450px' });
             $('#NomenclatureList').chosen({ width: '450px' });
+            loadNomenclatureGroup();
 
             var d = new Date();
             var todayString = ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
