@@ -32,6 +32,13 @@
         </div>
         <div class="form-row zero-gutters">
             <div class="form-group row col-6">
+                <label asp-for="CodeSAP" class="control-label col-6"></label>
+                <input asp-for="CodeSAP" class="form-control col-4" readonly="@(!canEditLimited)" />
+                <span asp-validation-for="CodeSAP" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-row zero-gutters">
+            <div class="form-group row col-6">
                 <label asp-for="PersonnelTotal" class="control-label col-6"></label>
                 <input asp-for="PersonnelTotal" class="form-control col-4" readonly="@(!canEdit)" />
                 <span asp-validation-for="PersonnelTotal" class="text-danger"></span>

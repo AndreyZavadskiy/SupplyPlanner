@@ -25,6 +25,12 @@ namespace SP.Service.Models
         [DisplayName("Адрес")]
         public string Address { get; set; }
         /// <summary>
+        /// Код SAP
+        /// </summary>
+        [Required(ErrorMessage = "Поле является обязательным")]
+        [DisplayName("Код SAP")]
+        public string CodeSAP { get; set; }
+        /// <summary>
         /// Количество персонала
         /// </summary>
         [DisplayName("Количество персонала")]

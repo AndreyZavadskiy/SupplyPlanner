@@ -575,6 +575,7 @@ namespace SP.Service.Services
             {
                 Id = station.Id,
                 ObjectName = station.ObjectName,
+                CodeSAP = station.CodeSAP,
                 Address = station.Address,
                 PersonnelTotal = station.PersonnelTotal,
                 ShiftPerDay = station.ShiftPerDay,
@@ -620,6 +621,7 @@ namespace SP.Service.Services
                 {
                     ObjectType = Core.Enum.ObjectType.FuelBase,
                     ObjectName = model.ObjectName,
+                    CodeSAP = model.CodeSAP,
                     Address = model.Address,
                     PersonnelTotal = model.PersonnelTotal,
                     ShiftPerDay = model.ShiftPerDay,
@@ -670,6 +672,7 @@ namespace SP.Service.Services
             {
                 station.ObjectName = model.ObjectName;
                 station.Address = model.Address;
+                station.CodeSAP = model.CodeSAP;
                 station.PersonnelTotal = model.PersonnelTotal;
                 station.ShiftPerDay = model.ShiftPerDay;
                 station.PersonnelPerShift = model.PersonnelPerShift;
@@ -757,6 +760,7 @@ namespace SP.Service.Services
                 Id = station.Id,
                 ObjectName = station.ObjectName,
                 Address = station.Address,
+                CodeSAP = station.CodeSAP,
                 PersonnelTotal = station.PersonnelTotal,
                 DepartmentTotal = station.DepartmentTotal,
                 FlagpoleTotal = station.FlagpoleTotal,
@@ -787,6 +791,7 @@ namespace SP.Service.Services
                     ObjectType = Core.Enum.ObjectType.Office,
                     ObjectName = model.ObjectName,
                     Address = model.Address,
+                    CodeSAP = model.CodeSAP,
                     PersonnelTotal = model.PersonnelTotal,
                     DepartmentTotal = model.DepartmentTotal,
                     FlagpoleTotal = model.FlagpoleTotal,
@@ -822,6 +827,7 @@ namespace SP.Service.Services
                 station.ObjectName = model.ObjectName;
                 station.ObjectName = model.ObjectName;
                 station.Address = model.Address;
+                station.CodeSAP = model.CodeSAP;
                 station.PersonnelTotal = model.PersonnelTotal;
                 station.DepartmentTotal = model.DepartmentTotal;
                 station.FlagpoleTotal = model.FlagpoleTotal;
@@ -903,6 +909,7 @@ namespace SP.Service.Services
                 Id = station.Id,
                 ObjectName = station.ObjectName,
                 Address = station.Address,
+                CodeSAP = station.CodeSAP,
                 PersonnelTotal = station.PersonnelTotal,
                 ServicingGasStationTotal = station.ServicingGasStationTotal,
                 AverageTestPerMonth = station.AverageTestPerMonth,
@@ -942,6 +949,7 @@ namespace SP.Service.Services
                     ObjectType = Core.Enum.ObjectType.Laboratory,
                     ObjectName = model.ObjectName,
                     Address = model.Address,
+                    CodeSAP = model.CodeSAP,
                     PersonnelTotal = model.PersonnelTotal,
                     ServicingGasStationTotal = model.ServicingGasStationTotal,
                     AverageTestPerMonth = model.AverageTestPerMonth,
@@ -986,6 +994,7 @@ namespace SP.Service.Services
                 station.ObjectName = model.ObjectName;
                 station.ObjectName = model.ObjectName;
                 station.Address = model.Address;
+                station.CodeSAP = model.CodeSAP;
                 station.PersonnelTotal = model.PersonnelTotal;
                 station.ServicingGasStationTotal = model.ServicingGasStationTotal;
                 station.AverageTestPerMonth = model.AverageTestPerMonth;
