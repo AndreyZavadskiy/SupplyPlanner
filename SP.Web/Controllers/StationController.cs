@@ -18,12 +18,12 @@ namespace SP.Web.Controllers
     [Authorize]
     public class StationController : Controller
     {
-        private readonly IGasStationService _gasStationService;
+        private readonly INetObjectService _gasStationService;
         private readonly IMasterService _masterService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IAppLogger _appLogger;
 
-        public StationController(IGasStationService gasStationService, IMasterService masterService, UserManager<ApplicationUser> userManager, IAppLogger appLogger)
+        public StationController(INetObjectService gasStationService, IMasterService masterService, UserManager<ApplicationUser> userManager, IAppLogger appLogger)
         {
             _gasStationService = gasStationService;
             _masterService = masterService;

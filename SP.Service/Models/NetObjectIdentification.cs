@@ -1,9 +1,9 @@
 ﻿namespace SP.Service.Models
 {
     /// <summary>
-    /// Идентификационные данные АЗС
+    /// Идентификационные данные объекта сети.
     /// </summary>
-    public class GasStationIdentification
+    public class NetObjectIdentification
     {
         /// <summary>
         /// ID

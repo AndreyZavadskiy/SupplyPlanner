@@ -12,11 +12,12 @@ using SP.Service.Models;
 
 namespace SP.Service.Services
 {
-    public interface IGasStationService
+    public interface INetObjectService
     {
+        Task<IEnumerable<NetObjectIdentification>> GetNetObjectIdentificationListAsync();
+
         Task<IEnumerable<GasStationListItem>> GetGasStationListAsync(int[] regions, int[] territories);
         Task<IEnumerable<GasStationListItem>> GetGasStationListAsync(int[] regions, int[] territories, int? personId);
-        Task<IEnumerable<GasStationIdentification>> GetGasStationIdentificationListAsync();
         Task<GasStationModel> GetGasStationAsync(int id);
         Task<(bool Success, int? Id, IEnumerable<string> Errors, string Previous, string Next)> SaveGasStationAsync(GasStationModel model);
 
@@ -43,14 +44,31 @@ namespace SP.Service.Services
         public string Name { get; set; }
     }
 
-    public class GasStationService : IGasStationService
+    public class NetObjectService : INetObjectService
     {
         private readonly ApplicationDbContext _context;
 
-        public GasStationService(ApplicationDbContext context)
+        public NetObjectService(ApplicationDbContext context)
         {
             _context = context;
         }
+
+        #region Net objects
+
+        public async Task<IEnumerable<NetObjectIdentification>> GetNetObjectIdentificationListAsync()
+        {
+            var list = await _context.GasStations.AsNoTracking()
+                .Select(x => new NetObjectIdentification
+                {
+                    Id = x.Id,
+                    CodeSAP = x.CodeSAP
+                })
+                .ToArrayAsync();
+
+            return list;
+        }
+
+        #endregion
 
         #region Gas stations
 
@@ -156,20 +174,6 @@ namespace SP.Service.Services
                 .ToArray();
 
             return stations;
-        }
-
-        public async Task<IEnumerable<GasStationIdentification>> GetGasStationIdentificationListAsync()
-        {
-            var list = await _context.GasStations.AsNoTracking()
-                .Where(x => x.ObjectType == Core.Enum.ObjectType.GasStation)
-                .Select(x => new GasStationIdentification
-                {
-                    Id = x.Id,
-                    CodeSAP = x.CodeSAP
-                })
-                .ToArrayAsync();
-
-            return list;
         }
 
         public async Task<GasStationModel> GetGasStationAsync(int id)

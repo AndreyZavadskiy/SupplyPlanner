@@ -35,7 +35,7 @@ namespace SP.Service.Background
         private readonly IBackgroundCoordinator _coordinator;
         private readonly IExcelParser _parser;
         private readonly IMasterService _masterService;
-        private readonly IGasStationService _stationService;
+        private readonly INetObjectService _netObjectService;
         private readonly IInventoryService _inventoryService;
         private readonly ApplicationDbContext _context;
 
@@ -52,7 +52,7 @@ namespace SP.Service.Background
                 .Options;
             _context = new ApplicationDbContext(options);
             _masterService = new MasterService(_context);
-            _stationService = new GasStationService(_context);
+            _netObjectService = new NetObjectService(_context);
             _inventoryService = new InventoryService(coordinator, _context);
         }
 
@@ -162,12 +162,13 @@ namespace SP.Service.Background
                             sw.Stop();
                             Debug.WriteLine($"Парсинг Excel файла {sw.ElapsedMilliseconds} мс");
 
-                            var stations = await _stationService.GetGasStationIdentificationListAsync();
+                            var netObjects = await _netObjectService.GetNetObjectIdentificationListAsync();
                             var measureUnits = await _masterService.GetDictionaryListAsync<MeasureUnit>();
-                            // стыковка справочника АЗС
+                            // стыковка справочника объектов сети
                             sw.Restart();
-                            var dataWithStation = parsedData
-                                .GroupJoin(stations,
+
+                            var dataWithNetStation = parsedData
+                                .GroupJoin(netObjects,
                                     d => d.Value.StationCodeSAP,
                                     s => s.CodeSAP,
                                     (d, s) => new
@@ -189,9 +190,9 @@ namespace SP.Service.Background
                                     })
                                 .ToArray();
                             sw.Stop();
-                            Debug.WriteLine($"Объединение со справочником АЗС {sw.ElapsedMilliseconds} мс");
+                            Debug.WriteLine($"Объединение со справочником объектов сети {sw.ElapsedMilliseconds} мс");
 
-                            var emptyStations = dataWithStation
+                            var emptyStations = dataWithNetStation
                                 .Where(x => x.GasStationId == null)
                                 .Select(x => new { x.StationCodeSAP, x.StationPetronicsName })
                                 .Distinct()
@@ -199,18 +200,18 @@ namespace SP.Service.Background
 
                             if (emptyStations.Any())
                             {
-                                processingLog.AppendLine("Обнаружены АЗС, которые отсутствуют в справочнике:");
+                                processingLog.AppendLine("Обнаружены объекты сети, которые отсутствуют в справочнике:");
                                 foreach (var st in emptyStations)
                                 {
                                     processingLog.AppendLine($"Код: {st.StationCodeSAP}, Наименование: {st.StationPetronicsName}");
                                 }
 
-                                processingLog.AppendLine("Вышеуказанные АЗС пропущены. Добавьте их в справочник и выполните загрузку остатков заново.");
+                                processingLog.AppendLine("Вышеуказанные объекты сети пропущены. Добавьте их в справочник и выполните загрузку остатков заново.");
                             }
 
                             // стыковка справочника единиц измерения
                             sw.Restart();
-                            var dataWithMeasureUnits = dataWithStation
+                            var dataWithMeasureUnits = dataWithNetStation
                                 .GroupJoin(measureUnits,
                                     d => d.MeasureUnitName,
                                     m => m.Name,

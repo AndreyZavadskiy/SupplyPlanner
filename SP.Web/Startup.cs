@@ -60,7 +60,7 @@ namespace SP.Web
             services.AddSingleton<IBackgroundCoordinator, BackgroundCoordinator>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IMasterService, MasterService>();
-            services.AddScoped<IGasStationService, GasStationService>();
+            services.AddScoped<INetObjectService, NetObjectService>();
             services.AddScoped<IInventoryService, InventoryService>();
             services.AddTransient<IBackgroundInventoryService, BackgroundInventoryService>();
             services.AddTransient<IReportService, ReportService>();
